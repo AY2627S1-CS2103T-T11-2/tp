@@ -12,24 +12,22 @@ You can reach us at the email `seer[at]comp.nus.edu.sg`
 ## Project team
 
 ### Jessica Chen
+
 <img src="images/jessclouds.png" width="200px">
 
 [[github](https://github.com/jessclouds)]
 
 ### Zhang Jingze
+
 <img src="images/ginger-zjz.png" width="200px">
 
 [[github](https://github.com/ginger-zjz.png)]]
 
-* Role: Project Advisor
+### Foong Yue Ru (Chloe)
 
-### Jane Doe
+<img src="images/chloefoong.png" width="200px">
 
-<img src="images/johndoe.png" width="200px">
-
-[[github](http://github.com/johndoe)]
-[[portfolio](team/johndoe.md)]
-
+[[github](http://github.com/ChloeFoong)]
 
 ### Zhu Xinye
 
@@ -37,23 +35,8 @@ You can reach us at the email `seer[at]comp.nus.edu.sg`
 
 [[github](https://github.com/zhuxinye754)]
 
-* Role: Developer
-* Responsibilities: Data
-
-### 
-
-<img src="images/johndoe.png" width="200px">
-
-[[github](http://github.com/johndoe)]
-[[portfolio](team/johndoe.md)]
-
-* Role: Developer
-* Responsibilities: Dev Ops + Threading
-
 ### avalidgitusername
 
 <img src="images/avalidgitusername.png" width="200px">
 
 [[github](http://github.com/avalidgitusername)]
-
-* Role: Developer
