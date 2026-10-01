@@ -327,7 +327,24 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 1.  Should work on any _mainstream OS_ as long as it has Java `25` or above installed.
 2.  Should be able to hold up to 1000 persons without noticeable sluggishness in performance for typical usage.
-3.  A user with above average typing speed for regular English text (i.e. not code, not system admin commands) should be able to accomplish most of the tasks faster using commands than using the mouse.
+3.  A user with above average typing speed for regular English text (i.e. not code, not system admin commands) should 
+be able to accomplish most of the tasks faster using commands than using the mouse.
+4. Normal operations should complete within 1 second for 200 records. 
+5. Should save data locally in a human-editable text file. 
+6. Should preserve data after being closed and reopened. 
+7. Should prevent partially written files during saving. 
+8. Should provide clear confirmation for destructive operations. 
+9. Should validate all user-entered and imported data. 
+10. Should not transmit student data to external services. 
+11. Should provide clear error messages and usage instructions. 
+12. Should support keyboard or command-based interaction for core tasks. 
+13. Should work on Windows, Linux, and macOS using Java 25. 
+14. Should work without an installer. 
+15. Should not require a remote server 
+16. Should not exceed 100 MB. 
+17. Should remain usable at the required screen resolutions and display scales. 
+18. Should not require an internet connection for core functionality.
+
 
 *{More to be added}*
 
