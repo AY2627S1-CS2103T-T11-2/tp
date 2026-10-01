@@ -11,12 +11,15 @@ You can reach us at the email `seer[at]comp.nus.edu.sg`
 
 ## Project team
 
-### John Doe
+### Jessica Chen
+<img src="images/jessclouds.png" width="200px">
 
+[[github](https://github.com/jessclouds)]
+
+### Zhang Jingze
 <img src="images/ginger-zjz.png" width="200px">
 
-
-[[github](https://github.com/ginger-zjz.png)]
+[[github](https://github.com/ginger-zjz.png)]]
 
 * Role: Project Advisor
 
@@ -27,19 +30,17 @@ You can reach us at the email `seer[at]comp.nus.edu.sg`
 [[github](http://github.com/johndoe)]
 [[portfolio](team/johndoe.md)]
 
-* Role: Team Lead
-* Responsibilities: UI
 
-### Johnny Doe
+### Zhu Xinye
 
-<img src="images/johndoe.png" width="200px">
+<img src="images/zhuxinye754.png" width="200px">
 
 [[github](https://github.com/zhuxinye754)]
 
 * Role: Developer
 * Responsibilities: Data
 
-### Jean Doe
+### 
 
 <img src="images/johndoe.png" width="200px">
 
