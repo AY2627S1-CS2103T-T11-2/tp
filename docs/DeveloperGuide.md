@@ -1,4 +1,4 @@
----
+**---
   layout: default.md
   title: "Developer Guide"
   pageNav: 3
@@ -266,33 +266,41 @@ _{Explain here how the data archiving feature will be implemented}_
 
 ## **Appendix: Requirements**
 
-### Product scope
+## Product scope
 
 **Target user profile**:
 
-* has a need to manage a significant number of contacts
-* prefers desktop apps over other types of applications
-* can type fast
+* is a teaching assistant or tutor managing many students
+* teaches one or more modules or tutorial groups
+* needs to retrieve and update student particulars quickly
+* prefers desktop applications
+* can type quickly
 * prefers typing to mouse interactions
-* is reasonably comfortable using CLI apps
+* is reasonably comfortable using CLI-style commands
 
-**Value proposition**: Manage contacts faster than with a typical mouse-driven GUI application.
+**Value proposition**:
 
+TutorTrack helps teaching assistants manage student information efficiently in one place, including contact details, modules, and tutorial groups, using fast keyboard-based commands.
 
 ### User stories
 
 Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unlikely to have) - `*`
 
-| Priority | As a …                                    | I want to …                 | So that I can…                                                        |
-|----------|--------------------------------------------|------------------------------|------------------------------------------------------------------------|
-| `* * *`  | new user                                   | see usage instructions       | refer to instructions when I forget how to use the App                 |
-| `* * *`  | user                                       | add a new person             |                                                                        |
-| `* * *`  | user                                       | delete a person              | remove entries that I no longer need                                   |
-| `* * *`  | user                                       | find a person by name        | locate details of persons without having to go through the entire list |
-| `* *`    | user                                       | hide private contact details | minimize chance of someone else seeing them by accident                |
-| `*`      | user with many persons in the address book | sort persons by name         | locate a person easily                                                 |
-
-*{More to be added}*
+| Priority | As a … | I want to … | So that I can… |
+|----------|--------|-------------|----------------|
+| `* * *` | new TA user | see usage instructions | refer to instructions when I forget how to use TutorTrack |
+| `* * *` | TA | add a student and their particulars | keep track of students under my care |
+| `* * *` | TA | edit a student's particulars | correct or update their information |
+| `* * *` | TA | delete a student | remove records I no longer need |
+| `* * *` | TA | list all students | view all students I manage |
+| `* * *` | TA | organise students by tutorial group | manage students across different classes |
+| `* * *` | TA | list students from a tutorial group | view students belonging to that group |
+| `* * *` | TA | record a student's module | distinguish students from different modules |
+| `* * *` | TA | show a student's particulars | retrieve their information quickly |
+| `* *` | TA | record tutorial participation | keep track of student participation |
+| `* *` | TA | track consultation bookings | manage consultations with students |
+| `*` | TA | record assessment grades | keep track of students' academic progress |
+| `*` | TA | export student records | keep an external copy of tutoring records |
 
 ### Use cases
 
@@ -389,4 +397,4 @@ testers are expected to do more *exploratory* testing.
 
    1. _{Explain how to simulate missing or corrupted data files and state the expected behavior.}_
 
-1. _{ more test cases … }_
+1. _{ more test cases … }_**
