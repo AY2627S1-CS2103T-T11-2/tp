@@ -266,41 +266,41 @@ _{Explain here how the data archiving feature will be implemented}_
 
 ## **Appendix: Requirements**
 
-### Product scope
+## Product scope
 
 **Target user profile**:
 
-* teaching assistants or tutors managing many students
+* is a teaching assistant or tutor managing many students
 * teaches one or more modules or tutorial groups
 * needs to retrieve and update student particulars quickly
-* prefers desktop apps over other types of applications
-* can type fast
+* prefers desktop applications
+* can type quickly
 * prefers typing to mouse interactions
-* is reasonably comfortable using CLI apps
+* is reasonably comfortable using CLI-style commands
 
-**Value proposition**: TutorTrack helps teaching assistants manage student information quickly in one place, 
-including contact details, modules, and tutorial groups.
-Manage contacts faster than with a typical mouse-driven GUI application.
+**Value proposition**:
 
+TutorTrack helps teaching assistants manage student information efficiently in one place, including contact details, modules, and tutorial groups, using fast keyboard-based commands.
 
-### User stories
-
-Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unlikely to have) - `*`
 ### User stories
 
 Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unlikely to have) - `*`
 
 | Priority | As a … | I want to … | So that I can… |
 |----------|--------|-------------|----------------|
+| `* * *` | new TA user | see usage instructions | refer to instructions when I forget how to use TutorTrack |
 | `* * *` | TA | add a student and their particulars | keep track of students under my care |
-| `* * *` | TA | delete a student | remove a student I no longer need to track |
-| `* * *` | TA | edit a student's particulars | correct or update the student's information |
-| `* * *` | TA | list all students | view all students I am managing |
-| `* * *` | TA | list students from a specified tutorial group | view students belonging to that tutorial group |
-| `* * *` | TA | show a student's particulars | retrieve the student's information quickly |
-| `* * *` | TA | view help for available commands | know how to use TutorTrack's commands |
-
-*{More to be added}*
+| `* * *` | TA | edit a student's particulars | correct or update their information |
+| `* * *` | TA | delete a student | remove records I no longer need |
+| `* * *` | TA | list all students | view all students I manage |
+| `* * *` | TA | organise students by tutorial group | manage students across different classes |
+| `* * *` | TA | list students from a tutorial group | view students belonging to that group |
+| `* * *` | TA | record a student's module | distinguish students from different modules |
+| `* * *` | TA | show a student's particulars | retrieve their information quickly |
+| `* *` | TA | record tutorial participation | keep track of student participation |
+| `* *` | TA | track consultation bookings | manage consultations with students |
+| `*` | TA | record assessment grades | keep track of students' academic progress |
+| `*` | TA | export student records | keep an external copy of tutoring records |
 
 ### Use cases
 
