@@ -306,30 +306,76 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 (For all use cases below, the **System** is the `AddressBook` and the **Actor** is the `user`, unless specified otherwise)
 
-**Use case: Delete a person**
+**Use case: Add a student**
 
 **MSS**
 
-1.  User requests to list persons
-2.  AddressBook shows a list of persons
-3.  User requests to delete a specific person in the list
-4.  AddressBook deletes the person
+1. TA requests to add a student with a name and optional particulars.
+2. TutorTrack validates the supplied particulars.
+3. TutorTrack adds the student.
+4. TutorTrack confirms that the student was added.
 
-    Use case ends.
+Use case ends.
 
 **Extensions**
 
-* 2a. The list is empty.
+* 2a. The supplied name or particulars are invalid.
+    * 2a1. TutorTrack shows the corresponding error message.
+    * Use case ends.
 
-  Use case ends.
+* 2b. A student with the same name already exists.
+    * 2b1. TutorTrack shows an error message.
+    * Use case ends.
 
-* 3a. The given index is invalid.
 
-    * 3a1. AddressBook shows an error message.
+**Use case: Edit a student's particulars**
 
-      Use case resumes at step 2.
+**MSS**
 
-*{More to be added}*
+1. TA requests to edit a student identified by name.
+2. TutorTrack finds the matching student.
+3. TutorTrack validates the new particulars.
+4. TutorTrack updates the specified particulars.
+5. TutorTrack confirms that the student record was updated.
+
+Use case ends.
+
+**Extensions**
+
+* 2a. No matching student is found.
+    * 2a1. TutorTrack shows an error message.
+    * Use case ends.
+
+* 3a. One or more new particulars are invalid.
+    * 3a1. TutorTrack shows the corresponding error message.
+    * Use case ends.
+
+* 3b. The new name is already used by another student.
+    * 3b1. TutorTrack shows an error message.
+    * Use case ends.
+
+
+**Use case: List students from a tutorial group**
+
+**MSS**
+
+1. TA requests to list students from a specified tutorial group.
+2. TutorTrack validates the tutorial group.
+3. TutorTrack finds students belonging to that tutorial group.
+4. TutorTrack displays the matching students.
+
+Use case ends.
+
+**Extensions**
+
+* 2a. The supplied tutorial group is invalid.
+    * 2a1. TutorTrack shows an error message.
+    * Use case ends.
+
+* 3a. No students belong to the specified tutorial group.
+    * 3a1. TutorTrack informs the TA that no students were found.
+    * Use case ends.
+
 
 ### Non-Functional Requirements
 
@@ -358,8 +404,11 @@ be able to accomplish most of the tasks faster using commands than using the mou
 
 ### Glossary
 
-* **Mainstream OS**: Windows, Linux, Unix, or macOS
-* **Private contact detail**: A contact detail that is not meant to be shared with others
+* **TA**: Teaching Assistant.
+* **Tutorial Group**: A tutorial class or group that a student belongs to.
+* **Module/Subject**: An academic course associated with a student, e.g. `CS1231S`.
+* **Student particulars**: Information stored about a student, such as name, phone number, email, module/subject, and tutorial group.
+* **CLI-style command**: A text command entered by the user to perform an action in TutorTrack.
 
 --------------------------------------------------------------------------------------------------------------------
 
