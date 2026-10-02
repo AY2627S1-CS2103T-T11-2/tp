@@ -49,6 +49,12 @@ dependencies {
     String jUnitVersion = '5.14.4'
     String javaFxVersion = '17.0.7'
 
+    implementation "org.openjfx:javafx-base:$javaFxVersion:mac-aarch64"
+    implementation "org.openjfx:javafx-controls:$javaFxVersion:mac-aarch64"
+    implementation "org.openjfx:javafx-fxml:$javaFxVersion:mac-aarch64"
+    implementation "org.openjfx:javafx-graphics:$javaFxVersion:mac-aarch64"
+
+    /*
     implementation "org.openjfx:javafx-base:${javaFxVersion}:win"
     implementation "org.openjfx:javafx-base:${javaFxVersion}:mac"
     implementation "org.openjfx:javafx-base:${javaFxVersion}:linux"
@@ -61,6 +67,7 @@ dependencies {
     implementation "org.openjfx:javafx-graphics:${javaFxVersion}:win"
     implementation "org.openjfx:javafx-graphics:${javaFxVersion}:mac"
     implementation "org.openjfx:javafx-graphics:${javaFxVersion}:linux"
+     */
 
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.7.0'
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.7.4'
