@@ -27,7 +27,7 @@ public class PersonBuilder {
     private Phone phone;
     private Email email;
     private Address address;
-    private Remark remark; 
+    private Remark remark;
     private Set<Tag> tags;
 
     /**
