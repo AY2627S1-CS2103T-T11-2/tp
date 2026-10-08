@@ -35,7 +35,7 @@ public class FindCommandParser implements Parser<FindCommand> {
             throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, FindCommand.MESSAGE_USAGE));
         }
 
-        if (startsWithQuote && endsWithQuote && trimmedArgs.length() >= 2) {
+        if (startsWithQuote) {
             String phrase = trimmedArgs.substring(1, trimmedArgs.length() - 1).trim();
             if (phrase.isEmpty()) {
                 throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, FindCommand.MESSAGE_USAGE));
