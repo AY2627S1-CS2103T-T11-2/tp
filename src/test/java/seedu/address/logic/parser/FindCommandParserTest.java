@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 
 import seedu.address.logic.commands.FindCommand;
 import seedu.address.model.person.NameContainsKeywordsPredicate;
+import seedu.address.model.person.NameContainsPhrasePredicate;
 
 public class FindCommandParserTest {
 
@@ -21,7 +22,7 @@ public class FindCommandParserTest {
     }
 
     @Test
-    public void parse_validArgs_returnsFindCommand() {
+    public void parse_validKeywordArgs_returnsFindCommand() {
         // no leading and trailing whitespaces
         FindCommand expectedFindCommand =
                 new FindCommand(new NameContainsKeywordsPredicate(List.of("Alice", "Bob")));
@@ -29,6 +30,32 @@ public class FindCommandParserTest {
 
         // multiple whitespaces between keywords
         assertParseSuccess(parser, " \n Alice \n \t Bob  \t", expectedFindCommand);
+    }
+
+    @Test
+    public void parse_validPhraseArgs_returnsFindCommand() {
+        // no leading and trailing whitespaces
+        FindCommand expectedFindCommand =
+                new FindCommand(new NameContainsPhrasePredicate("Alice Chen"));
+        assertParseSuccess(parser, "\"Alice Chen\"", expectedFindCommand);
+
+        // surrounding whitespace is ignored
+        assertParseSuccess(parser, " \n \"Alice Chen\"  \t", expectedFindCommand);
+
+        FindCommand expectedPhraseWithRepeatedSpaces =
+                new FindCommand(new NameContainsPhrasePredicate("Alice   Chen"));
+        assertParseSuccess(parser, "\"Alice   Chen\"", expectedPhraseWithRepeatedSpaces);
+    }
+
+    @Test
+    public void parse_phraseArgWithoutFullQuotations_throwsParseException() {
+        String expectedMessage =
+                String.format(MESSAGE_INVALID_COMMAND_FORMAT, FindCommand.MESSAGE_USAGE);
+
+        assertParseFailure(parser, "\"chloe seow", expectedMessage);
+        assertParseFailure(parser, "chloe seow\"", expectedMessage);
+        assertParseFailure(parser, "\"\"", expectedMessage);
+        assertParseFailure(parser, "\"", expectedMessage);
     }
 
 }
