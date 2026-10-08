@@ -12,9 +12,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import seedu.address.commons.exceptions.IllegalValueException;
 import seedu.address.model.person.Address;
 import seedu.address.model.person.Email;
+import seedu.address.model.person.Group;
 import seedu.address.model.person.Name;
 import seedu.address.model.person.Person;
 import seedu.address.model.person.Phone;
+import seedu.address.model.person.Subject;
 import seedu.address.model.tag.Tag;
 
 /**
@@ -23,11 +25,15 @@ import seedu.address.model.tag.Tag;
 class JsonAdaptedPerson {
 
     public static final String MISSING_FIELD_MESSAGE_FORMAT = "Person's %s field is missing!";
+    private static final String DEFAULT_SUBJECT = "General";
+    private static final String DEFAULT_GROUP = "General";
 
     private final String name;
     private final String phone;
     private final String email;
     private final String address;
+    private final String subject;
+    private final String group;
     private final List<JsonAdaptedTag> tags = new ArrayList<>();
 
     /**
@@ -36,14 +42,24 @@ class JsonAdaptedPerson {
     @JsonCreator
     public JsonAdaptedPerson(@JsonProperty("name") String name, @JsonProperty("phone") String phone,
             @JsonProperty("email") String email, @JsonProperty("address") String address,
+            @JsonProperty("subject") String subject, @JsonProperty("group") String group,
             @JsonProperty("tags") List<JsonAdaptedTag> tags) {
         this.name = name;
         this.phone = phone;
         this.email = email;
         this.address = address;
+        this.subject = subject;
+        this.group = group;
         if (tags != null) {
             this.tags.addAll(tags);
         }
+    }
+
+    /**
+     * Constructs a legacy {@code JsonAdaptedPerson} without subject and group values.
+     */
+    public JsonAdaptedPerson(String name, String phone, String email, String address, List<JsonAdaptedTag> tags) {
+        this(name, phone, email, address, DEFAULT_SUBJECT, DEFAULT_GROUP, tags);
     }
 
     /**
@@ -54,6 +70,8 @@ class JsonAdaptedPerson {
         phone = source.getPhone().value;
         email = source.getEmail().value;
         address = source.getAddress().value;
+        subject = source.getSubject().subject;
+        group = source.getGroup().group;
         tags.addAll(source.getTags().stream()
                 .map(JsonAdaptedTag::new)
                 .collect(Collectors.toList()));
@@ -102,8 +120,20 @@ class JsonAdaptedPerson {
         }
         final Address modelAddress = new Address(address);
 
+        String subjectValue = subject == null ? DEFAULT_SUBJECT : subject;
+        if (!Subject.isValidSubject(subjectValue)) {
+            throw new IllegalValueException(Subject.MESSAGE_CONSTRAINTS);
+        }
+        final Subject modelSubject = new Subject(subjectValue);
+
+        String groupValue = group == null ? DEFAULT_GROUP : group;
+        if (!Group.isValidGroup(groupValue)) {
+            throw new IllegalValueException(Group.MESSAGE_CONSTRAINTS);
+        }
+        final Group modelGroup = new Group(groupValue);
+
         final Set<Tag> modelTags = new HashSet<>(personTags);
-        return new Person(modelName, modelPhone, modelEmail, modelAddress, modelTags);
+        return new Person(modelName, modelPhone, modelEmail, modelAddress, modelTags, modelSubject, modelGroup);
     }
 
 }
