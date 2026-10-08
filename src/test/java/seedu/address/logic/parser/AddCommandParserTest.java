@@ -26,8 +26,10 @@ import static seedu.address.logic.commands.CommandTestUtil.VALID_TAG_FRIEND;
 import static seedu.address.logic.commands.CommandTestUtil.VALID_TAG_HUSBAND;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_ADDRESS;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_EMAIL;
+import static seedu.address.logic.parser.CliSyntax.PREFIX_GROUP;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_NAME;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_PHONE;
+import static seedu.address.logic.parser.CliSyntax.PREFIX_SUBJECT;
 import static seedu.address.logic.parser.CommandParserTestUtil.assertParseFailure;
 import static seedu.address.logic.parser.CommandParserTestUtil.assertParseSuccess;
 import static seedu.address.testutil.TypicalPersons.AMY;
@@ -39,14 +41,28 @@ import seedu.address.logic.Messages;
 import seedu.address.logic.commands.AddCommand;
 import seedu.address.model.person.Address;
 import seedu.address.model.person.Email;
+import seedu.address.model.person.Group;
 import seedu.address.model.person.Name;
 import seedu.address.model.person.Person;
 import seedu.address.model.person.Phone;
+import seedu.address.model.person.Subject;
 import seedu.address.model.tag.Tag;
 import seedu.address.testutil.PersonBuilder;
 
 public class AddCommandParserTest {
+    private static final String SUBJECT_DESC_CS2103T = " s/CS2103T";
+    private static final String GROUP_DESC_T11 = " g/T11";
+
     private AddCommandParser parser = new AddCommandParser();
+
+    @Test
+    public void parse_subjectAndGroupPresent_success() {
+        Person expectedPerson = new PersonBuilder(BOB).withSubject("CS2103T").withGroup("T11").build();
+
+        assertParseSuccess(parser, NAME_DESC_BOB + PHONE_DESC_BOB + EMAIL_DESC_BOB + ADDRESS_DESC_BOB
+                + SUBJECT_DESC_CS2103T + GROUP_DESC_T11 + TAG_DESC_HUSBAND + TAG_DESC_FRIEND,
+                new AddCommand(expectedPerson));
+    }
 
     @Test
     public void parse_allFieldsPresent_success() {
@@ -85,6 +101,14 @@ public class AddCommandParserTest {
         // multiple addresses
         assertParseFailure(parser, ADDRESS_DESC_AMY + validExpectedPersonString,
                 Messages.getErrorMessageForDuplicatePrefixes(PREFIX_ADDRESS));
+
+        // multiple subjects
+        assertParseFailure(parser, validExpectedPersonString + SUBJECT_DESC_CS2103T + " s/CS2101",
+                Messages.getErrorMessageForDuplicatePrefixes(PREFIX_SUBJECT));
+
+        // multiple groups
+        assertParseFailure(parser, validExpectedPersonString + GROUP_DESC_T11 + " g/T12",
+                Messages.getErrorMessageForDuplicatePrefixes(PREFIX_GROUP));
 
         // multiple fields repeated
         assertParseFailure(parser,
@@ -131,7 +155,7 @@ public class AddCommandParserTest {
 
     @Test
     public void parse_optionalFieldsMissing_success() {
-        // zero tags
+        // zero tags, subject and group default to General
         Person expectedPerson = new PersonBuilder(AMY).withTags().build();
         assertParseSuccess(parser, NAME_DESC_AMY + PHONE_DESC_AMY + EMAIL_DESC_AMY + ADDRESS_DESC_AMY,
                 new AddCommand(expectedPerson));
@@ -183,6 +207,14 @@ public class AddCommandParserTest {
         // invalid tag
         assertParseFailure(parser, NAME_DESC_BOB + PHONE_DESC_BOB + EMAIL_DESC_BOB + ADDRESS_DESC_BOB
                 + INVALID_TAG_DESC + VALID_TAG_FRIEND, Tag.MESSAGE_CONSTRAINTS);
+
+        // invalid subject
+        assertParseFailure(parser, NAME_DESC_BOB + PHONE_DESC_BOB + EMAIL_DESC_BOB + ADDRESS_DESC_BOB
+                + " s/CS2103T!", Subject.MESSAGE_CONSTRAINTS);
+
+        // invalid group
+        assertParseFailure(parser, NAME_DESC_BOB + PHONE_DESC_BOB + EMAIL_DESC_BOB + ADDRESS_DESC_BOB
+                + " g/", Group.MESSAGE_CONSTRAINTS);
 
         // two invalid values, only first invalid value reported
         assertParseFailure(parser, INVALID_NAME_DESC + PHONE_DESC_BOB + EMAIL_DESC_BOB + INVALID_ADDRESS_DESC,
