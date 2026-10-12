@@ -78,18 +78,43 @@ Format: `help`
 
 ### Adding a person: `add`
 
-Adds a person to the address book.
+Adds a student to TutorTrack.
 
-Format: `add n/NAME p/PHONE_NUMBER e/EMAIL a/ADDRESS [t/TAG]... `
+Format: `add n/NAME p/PHONE e/EMAIL a/ADDRESS [s/SUBJECT] [g/GROUP] [t/TAG]...`
+
+* `n/NAME`, `p/PHONE`, `e/EMAIL`, and `a/ADDRESS` are required.
+* `s/SUBJECT`, `g/GROUP`, and `t/TAG` are optional.
+* If `s/SUBJECT` is omitted, the subject is set to `General`.
+* If `g/GROUP` is omitted, the group is set to `General`.
+* A student can have zero or more tags. To add multiple tags, repeat the `t/TAG` parameter.
+* Parameters can be supplied in any order.
+
+The following validation rules apply:
+
+* Names and subjects must be non-blank and contain only alphanumeric characters and spaces.
+* Phone numbers must contain only digits and be at least 3 digits long.
+* Emails must use the `local-part@domain` format. The local part must start and end with an alphanumeric character;
+  `+`, `_`, `.`, and `-` are allowed only between alphanumeric characters. Domain labels may be separated by periods,
+  may contain hyphens only between alphanumeric characters, and the final label must be at least 2 characters long.
+* Addresses and groups can contain any characters but must not be blank.
+* Tags must be non-blank and contain only alphanumeric characters.
+* Leading and trailing whitespace around each value is ignored.
+
+After leading and trailing whitespace is removed, TutorTrack considers two students duplicates when their names are
+exactly the same, including letter case. If an existing student has the same name, the new student is rejected even if
+the other details are different.
 
 <box type="tip" seamless>
 
-**Tip:** A person can have any number of tags, including zero.
+**Tip:** Use `s/` and `g/` when the subject or group is known. Otherwise, TutorTrack records `General`, and the details can
+be updated later using the `edit` command.
 </box>
 
 Examples:
-* `add n/John Doe p/98765432 e/johnd@example.com a/John street, block 123, #01-01`
-* `add n/Betsy Crowe t/friend e/betsycrowe@example.com a/Newgate Prison p/1234567 t/criminal`
+* `add n/Alice Tan p/91234567 e/alice@example.com a/Clementi s/Mathematics g/Sec 3A t/Student`
+* `add n/Bob Lee p/92345678 e/bob@example.com a/Tampines s/Physics g/J1A t/Student t/Online`
+* `add n/Charlie Lim p/93456789 e/charlie@example.com a/Bishan` adds a student whose subject and group are both
+  `General` and who has no tags.
 
 ### Listing all persons: `list`
 
@@ -196,7 +221,7 @@ _Details coming soon ..._
 
 Action     | Format, Examples
 -----------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-**Add**    | `add n/NAME p/PHONE_NUMBER e/EMAIL a/ADDRESS [t/TAG]... ` <br> e.g., `add n/James Ho p/22224444 e/jamesho@example.com a/123, Clementi Rd, 1234665 t/friend t/colleague`
+**Add**    | `add n/NAME p/PHONE e/EMAIL a/ADDRESS [s/SUBJECT] [g/GROUP] [t/TAG]...` <br> e.g., `add n/Alice Tan p/91234567 e/alice@example.com a/Clementi s/Mathematics g/Sec 3A t/Student`
 **Clear**  | `clear`
 **Delete** | `delete INDEX`<br> e.g., `delete 3`
 **Edit**   | `edit INDEX [n/NAME] [p/PHONE_NUMBER] [e/EMAIL] [a/ADDRESS] [t/TAG]... `<br> e.g.,`edit 2 n/James Lee e/jameslee@example.com`
