@@ -4,9 +4,9 @@
   pageNav: 3
 ---
 
-# AB-3 User Guide
+# TutorTrack User Guide
 
-AddressBook Level 3 (AB3) is a **desktop application for managing contacts, optimized for use through a Command Line Interface (CLI)** while retaining the benefits of a Graphical User Interface (GUI). If you type quickly, AB3 can help you manage contacts faster than traditional GUI applications.
+TutorTrack is a **desktop application for tutors to manage student contacts, optimized for use through a Command Line Interface (CLI)** while retaining the benefits of a Graphical User Interface (GUI). If you type quickly, TutorTrack can help you manage student contacts faster than traditional GUI applications.
 
 <!-- * Table of Contents -->
 <page-nav-print />
@@ -18,7 +18,7 @@ AddressBook Level 3 (AB3) is a **desktop application for managing contacts, opti
 1. Ensure that Java `25` or later is installed on your computer.<br>
    **Mac users:** Ensure you have the precise JDK version prescribed [here](https://se-education.org/guides/tutorials/javaInstallationMac.html).
 
-1. Download the latest `.jar` file from [here](https://github.com/se-edu/addressbook-level3/releases).
+1. Download the latest `.jar` file from [here](https://github.com/AY2627S1-CS2103T-T11-2/tp/releases).
 
 1. Copy the file to the folder you want to use as the _home folder_ for your AddressBook.
 
@@ -28,11 +28,12 @@ AddressBook Level 3 (AB3) is a **desktop application for managing contacts, opti
 
 1. Type a command in the command box and press Enter to execute it. For example, type **`help`** and press Enter to open the help window.<br>
    Some example commands you can try:
-   - `list` : Lists all contacts.
 
-   - `add n/John Doe p/98765432 e/johnd@example.com a/John street, block 123, #01-01` : Adds a contact named `John Doe` to the Address Book.
+   - `list` : Lists all students.
 
-   - `delete 3` : Deletes the 3rd contact shown in the current list.
+   - `add n/John Doe p/98765432 e/johnd@example.com a/Clementi s/Mathematics g/Sec 3A` : Adds a student named `John Doe` to TutorTrack.
+
+   * `delete 2,4-6` : Deletes the 2nd, 4th, 5th and 6th contacts shown in the current list.
 
    - `clear` : Deletes all contacts.
 
@@ -64,7 +65,7 @@ AddressBook Level 3 (AB3) is a **desktop application for managing contacts, opti
   For example, `help 123` is interpreted as `help`.
 
 - If you are using a PDF version of this document, be careful when copying and pasting commands that span multiple lines as space characters surrounding line-breaks may be omitted when copied over to the application.
-  </box>
+</box>
 
 ### Viewing help: `help`
 
@@ -74,21 +75,46 @@ Shows a message explaining how to access the help page.
 
 Format: `help`
 
+
 ### Adding a person: `add`
 
-Adds a person to the address book.
+Adds a student to TutorTrack.
 
-Format: `add n/NAME p/PHONE_NUMBER e/EMAIL a/ADDRESS [t/TAG]... `
+Format: `add n/NAME p/PHONE e/EMAIL a/ADDRESS [s/SUBJECT] [g/GROUP] [t/TAG]...`
+
+* `n/NAME`, `p/PHONE`, `e/EMAIL`, and `a/ADDRESS` are required.
+* `s/SUBJECT`, `g/GROUP`, and `t/TAG` are optional.
+* If `s/SUBJECT` is omitted, the subject is set to `General`.
+* If `g/GROUP` is omitted, the group is set to `General`.
+* A student can have zero or more tags. To add multiple tags, repeat the `t/TAG` parameter.
+* Parameters can be supplied in any order.
+
+The following validation rules apply:
+
+* Names and subjects must be non-blank and contain only alphanumeric characters and spaces.
+* Phone numbers must contain only digits and be at least 3 digits long.
+* Emails must use the `local-part@domain` format. The local part must start and end with an alphanumeric character;
+  `+`, `_`, `.`, and `-` are allowed only between alphanumeric characters. Domain labels may be separated by periods,
+  may contain hyphens only between alphanumeric characters, and the final label must be at least 2 characters long.
+* Addresses and groups can contain any characters but must not be blank.
+* Tags must be non-blank and contain only alphanumeric characters.
+* Leading and trailing whitespace around each value is ignored.
+
+After leading and trailing whitespace is removed, TutorTrack considers two students duplicates when their names are
+exactly the same, including letter case. If an existing student has the same name, the new student is rejected even if
+the other details are different.
 
 <box type="tip" seamless>
 
-**Tip:** A person can have any number of tags, including zero.
+**Tip:** Use `s/` and `g/` when the subject or group is known. Otherwise, TutorTrack records `General`, and the details can
+be updated later using the `edit` command.
 </box>
 
 Examples:
-
-- `add n/John Doe p/98765432 e/johnd@example.com a/John street, block 123, #01-01`
-- `add n/Betsy Crowe t/friend e/betsycrowe@example.com a/Newgate Prison p/1234567 t/criminal`
+* `add n/Alice Tan p/91234567 e/alice@example.com a/Clementi s/Mathematics g/Sec 3A t/Student`
+* `add n/Bob Lee p/92345678 e/bob@example.com a/Tampines s/Physics g/J1A t/Student t/Online`
+* `add n/Charlie Lim p/93456789 e/charlie@example.com a/Bishan` adds a student whose subject and group are both
+  `General` and who has no tags.
 
 ### Listing all persons: `list`
 
@@ -100,7 +126,7 @@ Format: `list`
 
 Edits an existing person in the address book.
 
-Format: `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [t/TAG]... `
+Format: `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [s/SUBJECT] [g/GROUP] [t/TAG]... `
 
 - Edits the person at the specified `INDEX`. The index refers to the index number shown in the displayed person list. The index **must be a positive integer** 1, 2, 3, ...
 - At least one of the optional fields must be provided.
@@ -115,8 +141,7 @@ Examples:
 
 ### Locating persons: `find`
 
-Finds persons whose names contain any of the given keywords or quoted phrases.
-Finds persons whose names contain any of the given keywords or a quoted phrase, subject, or group.
+Finds persons by name, containing any of the given keywords or quoted phrases, subject, group or a combination of these criteria.
 
 Formats:
 
@@ -141,20 +166,26 @@ Examples:
 * `find "John" s/CS3434` returns persons whose names contain `John` and whose subject is `CS3434`.
   ![result for 'find alex david'](images/findAlexDavidResult.png)
 
-### Deleting a person: `delete`
+### Deleting contacts: `delete`
 
-Deletes the specified person from the address book.
+Deletes one or more contacts from the address book.
 
-Format: `delete INDEX`
+Format: `delete INDEX_OR_RANGE[,INDEX_OR_RANGE]...`
 
-- Deletes the person at the specified `INDEX`.
-- The index refers to the index number shown in the displayed person list.
-- The index **must be a positive integer** 1, 2, 3, ...
+* `INDEX_OR_RANGE` is either an individual `INDEX` or an inclusive range written as `START_INDEX-END_INDEX`.
+
+* The index refers to the index number shown in the displayed person list.
+* The index **must be a positive integer** 1, 2, 3, ...
+* Commas can be used to combine individual indexes and ranges.
+* Spaces are not allowed around commas or hyphens. For example, use `delete 1,3-5` not `delete 1, 3 - 5`.
+* Duplicate and overlapping indexes are deleted only once. For example, `delete 1-3,2-4` deletes contacts 1 through 4.
+* All indexes are validated before any contact is deleted. If any index is invalid, no contacts are deleted.
 
 Examples:
-
-- `list` followed by `delete 2` deletes the 2nd person in the address book.
-- `find Betsy` followed by `delete 1` deletes the 1st person in the results of the `find` command.
+* `list` followed by `delete 2` deletes the 2nd person in the address book.
+* `find Betsy` followed by `delete 1` deletes the 1st person in the results of the `find` command.
+* `list` followed by `delete 1,3,5` deletes the 1st, 3rd and 5th person in the address book.
+* `list` followed by `delete 1,3-5,6` deletes the 1st, 3rd, 4th, 5th and 6th person in the address book.
 
 ### Clearing all entries: `clear`
 
@@ -205,12 +236,13 @@ _Details coming soon ..._
 
 ## Command summary
 
-| Action     | Format, Examples                                                                                                                                                        |
-| ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| **Add**    | `add n/NAME p/PHONE_NUMBER e/EMAIL a/ADDRESS [t/TAG]... ` <br> e.g., `add n/James Ho p/22224444 e/jamesho@example.com a/123, Clementi Rd, 1234665 t/friend t/colleague` |
-| **Clear**  | `clear`                                                                                                                                                                 |
-| **Delete** | `delete INDEX`<br> e.g., `delete 3`                                                                                                                                     |
-| **Edit**   | `edit INDEX [n/NAME] [p/PHONE_NUMBER] [e/EMAIL] [a/ADDRESS] [t/TAG]... `<br> e.g.,`edit 2 n/James Lee e/jameslee@example.com`                                           |
-| **Find**   | `find [KEYWORD ...                                                                                                                                                      | "PHRASE"] [s/SUBJECT] [g/GROUP]`<br> e.g., `find James Jake`, `find g/T11`, `find "John" s/CS3434` |
-| **List**   | `list`                                                                                                                                                                  |
-| **Help**   | `help`                                                                                                                                                                  |
+| Action | Format / Example |
+| ------ | ---------------- |
+| **Add** | `add n/NAME p/PHONE e/EMAIL a/ADDRESS [s/SUBJECT] [g/GROUP] [t/TAG]...` |
+| **Clear** | `clear` |
+| **Delete** | `delete INDEX_OR_RANGE[,INDEX_OR_RANGE]...`<br> e.g., `delete 1,3-5,7` |
+| **Edit** | `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [s/SUBJECT] [g/GROUP] [t/TAG]...` |
+| **Find** | `find KEYWORD [MORE_KEYWORDS] [s/SUBJECT] [g/GROUP]` or `find "PHRASE" [s/SUBJECT] [g/GROUP]` |
+| **List** | `list` |
+| **Help** | `help` |
+| **Exit** | `exit` |

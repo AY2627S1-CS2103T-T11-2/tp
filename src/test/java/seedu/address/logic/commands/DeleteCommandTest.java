@@ -10,6 +10,9 @@ import static seedu.address.testutil.TypicalIndexes.INDEX_FIRST_PERSON;
 import static seedu.address.testutil.TypicalIndexes.INDEX_SECOND_PERSON;
 import static seedu.address.testutil.TypicalPersons.getTypicalAddressBook;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.junit.jupiter.api.Test;
 
 import seedu.address.commons.core.index.Index;
@@ -103,9 +106,9 @@ public class DeleteCommandTest {
 
     @Test
     public void toStringMethod() {
-        Index targetIndex = Index.fromOneBased(1);
-        DeleteCommand deleteCommand = new DeleteCommand(targetIndex);
-        String expected = DeleteCommand.class.getCanonicalName() + "{targetIndex=" + targetIndex + "}";
+        DeleteTarget target = new IndexDeleteTarget(List.of(IndexRange.single(INDEX_FIRST_PERSON)));
+        DeleteCommand deleteCommand = new DeleteCommand(target);
+        String expected = DeleteCommand.class.getCanonicalName() + "{target=" + target + "}";
         assertEquals(expected, deleteCommand.toString());
     }
 
@@ -116,5 +119,123 @@ public class DeleteCommandTest {
         model.updateFilteredPersonList(p -> false);
 
         assertTrue(model.getFilteredPersonList().isEmpty());
+    }
+
+    @Test
+    public void execute_multipleIndexesUnfilteredList_success() {
+        List<Person> peopleToDelete = List.of(
+                model.getFilteredPersonList().get(0),
+                model.getFilteredPersonList().get(2),
+                model.getFilteredPersonList().get(3));
+        DeleteCommand deleteCommand = commandFor(
+                IndexRange.single(Index.fromOneBased(1)),
+                new IndexRange(
+                        Index.fromOneBased(3),
+                        Index.fromOneBased(4)));
+
+        Model expectedModel =
+                new ModelManager(model.getAddressBook(), new UserPrefs());
+        peopleToDelete.forEach(expectedModel::deletePerson);
+
+        assertCommandSuccess(
+                deleteCommand,
+                model,
+                formatMultipleSuccess(peopleToDelete),
+                expectedModel);
+    }
+
+    @Test
+    public void execute_overlappingRanges_deletesEachPersonOnce() {
+        List<Person> peopleToDelete = List.copyOf(
+                model.getFilteredPersonList().subList(0, 4));
+        DeleteCommand deleteCommand = commandFor(
+                new IndexRange(
+                        Index.fromOneBased(1),
+                        Index.fromOneBased(3)),
+                new IndexRange(
+                        Index.fromOneBased(2),
+                        Index.fromOneBased(4)));
+
+        Model expectedModel =
+                new ModelManager(model.getAddressBook(), new UserPrefs());
+        peopleToDelete.forEach(expectedModel::deletePerson);
+
+        assertCommandSuccess(
+                deleteCommand,
+                model,
+                formatMultipleSuccess(peopleToDelete),
+                expectedModel);
+    }
+
+    @Test
+    public void execute_oneInvalidIndex_doesNotDeleteAnyone() {
+        int size = model.getFilteredPersonList().size();
+        DeleteCommand deleteCommand = commandFor(
+                IndexRange.single(INDEX_FIRST_PERSON),
+                IndexRange.single(Index.fromOneBased(size + 1)));
+
+        assertCommandFailure(
+                deleteCommand,
+                model,
+                Messages.MESSAGE_INVALID_PERSON_DISPLAYED_INDEX);
+    }
+
+    @Test
+    public void execute_validIndexesFilteredList_success() {
+        List<Person> initialPeople =
+                List.copyOf(model.getFilteredPersonList());
+        Person firstPerson = initialPeople.get(0);
+        Person secondPerson = initialPeople.get(1);
+
+        model.updateFilteredPersonList(
+                person -> person.equals(firstPerson)
+                        || person.equals(secondPerson));
+
+        DeleteCommand deleteCommand = commandFor(
+                new IndexRange(
+                        INDEX_FIRST_PERSON,
+                        INDEX_SECOND_PERSON));
+        List<Person> peopleToDelete =
+                List.of(firstPerson, secondPerson);
+
+        Model expectedModel =
+                new ModelManager(model.getAddressBook(), new UserPrefs());
+        expectedModel.updateFilteredPersonList(
+                person -> person.equals(firstPerson)
+                        || person.equals(secondPerson));
+        peopleToDelete.forEach(expectedModel::deletePerson);
+
+        assertCommandSuccess(
+                deleteCommand,
+                model,
+                formatMultipleSuccess(peopleToDelete),
+                expectedModel);
+    }
+
+    /**
+     * Creates a delete command for the supplied index ranges.
+     *
+     * @param ranges Ranges the command should delete.
+     * @return A delete command containing the ranges.
+     */
+    private DeleteCommand commandFor(IndexRange... ranges) {
+        return new DeleteCommand(
+                new IndexDeleteTarget(List.of(ranges)));
+    }
+
+    /**
+     * Formats the expected success message for a multiple-person deletion.
+     *
+     * @param people People included in the message.
+     * @return The formatted success message.
+     */
+    private String formatMultipleSuccess(List<Person> people) {
+        String details = people.stream()
+                .map(Messages::format)
+                .collect(Collectors.joining("\n"));
+        return String.format(
+                DeleteCommand.MESSAGE_DELETE_PERSONS_SUCCESS,
+                people.size(),
+                details);
     }
 }
