@@ -90,9 +90,9 @@ Here's a (partial) class diagram of the `Logic` component:
 
 <puml src="diagrams/LogicClassDiagram.puml" width="550"/>
 
-The sequence diagram below illustrates the interactions within the `Logic` component, taking `execute("delete 1")` API call as an example.
+The sequence diagram below illustrates the interactions within the `Logic` component, taking `execute("delete 1,3-4")` API call as an example.
 
-<puml src="diagrams/DeleteSequenceDiagram.puml" alt="Interactions Inside the Logic Component for the `delete 1` Command" />
+<puml src="diagrams/DeleteSequenceDiagram.puml" alt="Interactions Inside the Logic Component for the `delete 1,3-4` Command" />
 
 <box type="info" seamless>
 
@@ -115,6 +115,25 @@ Here are the other classes in `Logic` (omitted from the class diagram above) tha
 How the parsing works:
 * When called upon to parse a user command, the `AddressBookParser` class creates an `XYZCommandParser` (`XYZ` is a placeholder for the specific command name, e.g., `AddCommandParser`). The parser uses the other classes shown above to parse the user command and create an `XYZCommand` object (e.g., `AddCommand`). The `AddressBookParser` returns that object as a `Command` object.
 * All `XYZCommandParser` classes, such as `AddCommandParser` and `DeleteCommandParser`, implement the `Parser` interface so they can be treated similarly where appropriate, for example during testing.
+
+#### Delete command
+`DeleteCommandParser` parses the argument as a comma-separated sequence of individual indexes and inclusive index
+ranges. For example, `1,3-5,7` represents indexes 1, 3, 4, 5, and 7.
+
+Each parsed component is represented by an `IndexRange`. An individual index is represented as a range whose start
+and end are equal.
+
+`IndexDeleteTarget` sorts and merges duplicate, adjacent, or overlapping ranges. For example, `1-3,2-4,4` is
+normalized to `1-4`. This ensures that each contact is deleted at most once.
+
+Before deleting any contacts, `IndexDeleteTarget` resolves and validates every index against a snapshot of the
+currently displayed person list. Consequently, a command such as `delete 1,999` fails without deleting contact 1
+(suppose that contact index 999 does not exist).
+
+`DeleteCommand` depends on the `DeleteTarget` interface rather than directly on an index. This allows future
+implementations such as `GroupDeleteTarget`, `SubjectDeleteTarget`, and `TagDeleteTarget` to reuse the deletion
+workflow.
+
 
 ### Model component
 **API** : [`Model.java`](https://github.com/se-edu/addressbook-level3/tree/master/src/main/java/seedu/address/model/Model.java)
@@ -440,14 +459,18 @@ testers are expected to do more *exploratory* testing.
 
 1. _{ more test cases … }_
 
-### Deleting a person
+### Deleting contacts
 
-1. Deleting a person while all persons are being shown
+1. Deleting contacts while all persons are being shown
 
-   1. Prerequisites: List all persons using the `list` command, with multiple persons in the list.
+   1. Prerequisites: List all persons using the `list` command, with multiple (at least 7) persons in the list.
 
    1. Test case: `delete 1`<br>
       Expected: The first contact is deleted from the list. The status message shows the deleted contact's details.
+
+   1. Test case: `delete 1,3,5-7`<br>
+      Expected: The 1st, 3rd, 5th, 6th and 7th contact is deleted from the list. The status message
+      shows the deleted contacts' details.
 
    1. Test case: `delete 0`<br>
       Expected: No person is deleted. The status message shows error details.

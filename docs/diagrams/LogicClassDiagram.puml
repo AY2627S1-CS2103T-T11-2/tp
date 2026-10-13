@@ -12,6 +12,10 @@ Class XYZCommand
 Class CommandResult
 Class "{abstract}\nCommand" as Command
 
+Class DeleteCommand
+Class "<<interface>>\nDeleteTarget" as DeleteTarget
+Class IndexDeleteTarget
+Class IndexRange
 
 Class "<<interface>>\nLogic" as Logic
 Class LogicManager
@@ -30,15 +34,24 @@ HiddenOutside ..> Logic
 LogicManager .right.|> Logic
 LogicManager -right->"1" ParserClasses
 ParserClasses ..> XYZCommand : <<create>>
+ParserClasses ..> DeleteCommand : <<create>>
 
 XYZCommand -up-|> Command
+DeleteCommand -up-|> Command
+
 LogicManager .left.> Command : <<call>>
+
+DeleteCommand --> "1" DeleteTarget : target
+IndexDeleteTarget .up.|> DeleteTarget
+IndexDeleteTarget --> "1..*" IndexRange : ranges
 
 LogicManager --> Model
 LogicManager --> Storage
 Storage --[hidden] Model
+
 Command .[hidden]up.> Storage
 Command .right.> Model
+DeleteTarget ..> Model : <<use>>
 note right of XYZCommand: XYZCommand = AddCommand, \nFindCommand, etc
 
 Logic ..> CommandResult
