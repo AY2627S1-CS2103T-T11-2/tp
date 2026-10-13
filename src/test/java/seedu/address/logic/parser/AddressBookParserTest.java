@@ -40,6 +40,22 @@ public class AddressBookParserTest {
     }
 
     @Test
+    public void parseCommand_addWithSubjectAndGroup() throws Exception {
+        Person student = new PersonBuilder()
+                .withName("Alice Tan")
+                .withPhone("91234567")
+                .withEmail("alice@example.com")
+                .withAddress("Clementi")
+                .withSubject("Mathematics")
+                .withGroup("Sec 3A")
+                .build();
+
+        AddCommand command = (AddCommand) parser.parseCommand(PersonUtil.getAddCommand(student));
+
+        assertEquals(new AddCommand(student), command);
+    }
+
+    @Test
     public void parseCommand_clear() throws Exception {
         assertTrue(parser.parseCommand(ClearCommand.COMMAND_WORD) instanceof ClearCommand);
         assertTrue(parser.parseCommand(ClearCommand.COMMAND_WORD + " 3") instanceof ClearCommand);
@@ -56,9 +72,11 @@ public class AddressBookParserTest {
     public void parseCommand_edit() throws Exception {
         Person person = new PersonBuilder().build();
         EditPersonDescriptor descriptor = new EditPersonDescriptorBuilder(person).build();
+        EditCommand toTest = new EditCommand(INDEX_FIRST_PERSON, descriptor);
         EditCommand command = (EditCommand) parser.parseCommand(EditCommand.COMMAND_WORD + " "
                 + INDEX_FIRST_PERSON.getOneBased() + " " + PersonUtil.getEditPersonDescriptorDetails(descriptor));
-        assertEquals(new EditCommand(INDEX_FIRST_PERSON, descriptor), command);
+        //EditCommand toTest2 = command;
+        assertEquals(toTest, command);
     }
 
     @Test
