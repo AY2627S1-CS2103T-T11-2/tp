@@ -115,20 +115,22 @@ Examples:
 
 ### Locating persons by name: `find`
 
-Finds persons whose names contain any of the given keywords or a quoted phrase.
+Finds persons whose names contain any of the given keywords or quoted phrases.
 
-Format: `find KEYWORD [MORE_KEYWORDS]` or `find "PHRASE"`
+Format: `find SEARCH_TERM [MORE_SEARCH_TERMS]`, where a search term is a `KEYWORD` or `"PHRASE"`
 
 * The search is case-insensitive; for example, `hans` matches `Hans`.
 * Keyword order does not matter; for example, `Hans Bo` matches `Bo Hans`.
 * The search considers only names.
-* Only full words match; for example, `Han` does not match `Hans`.
+* Keywords match only full words; for example, `Han` does not match `Hans`.
 * Persons matching at least one keyword are returned (an `OR` search); for example, `Hans Bo` returns `Hans Gruber` and `Bo Yang`.
+* A quoted phrase matches names containing the phrase, ignoring case.
 
 Examples:
 * `find John` returns `john` and `John Doe`
 * `find alex david` returns `Alex Yeoh`, `David Li`<br>
 * `find "Alex Yeoh"` returns names containing the phrase `Alex Yeoh`, ignoring case.
+* `find "Alex Yeoh" David` returns names containing either the phrase `Alex Yeoh` or the keyword `David`.
   ![result for 'find alex david'](images/findAlexDavidResult.png)
 
 ### Deleting a person: `delete`

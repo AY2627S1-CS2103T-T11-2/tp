@@ -17,13 +17,15 @@ public class FindCommand extends Command {
 
     public static final String COMMAND_WORD = "find";
 
-    public static final String MESSAGE_USAGE = COMMAND_WORD + ": Finds all persons whose names contain any of "
-            + "the specified keywords or a quoted phrase (case-insensitive) and displays them as a list with "
-            + "index numbers.\n"
-            + "Parameters: KEYWORD [MORE_KEYWORDS]... | \"PHRASE\"\n"
+    public static final String MESSAGE_USAGE = COMMAND_WORD + ": Finds all persons whose names match any search term "
+            + "(case-insensitive) and displays them as a list with index numbers.\n"
+            + "Parameters: SEARCH_TERM [MORE_SEARCH_TERMS]...\n"
+            + "A search term is either a KEYWORD (one word without quotation marks) or a \"PHRASE\" "
+            + "(one or more words enclosed in quotation marks).\n"
             + "Examples:\n"
             + "  " + COMMAND_WORD + " alice bob\n"
-            + "  " + COMMAND_WORD + " \"Alice Pauline\"";
+            + "  " + COMMAND_WORD + " \"Alice Pauline\"\n"
+            + "  " + COMMAND_WORD + " alice \"Bob Chen\"";
 
     private final Predicate<Person> predicate;
 
