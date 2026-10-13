@@ -11,7 +11,7 @@ AddressBook Level 3 (AB3) is a **desktop application for managing contacts, opti
 <!-- * Table of Contents -->
 <page-nav-print />
 
---------------------------------------------------------------------------------------------------------------------
+---
 
 ## Quick start
 
@@ -28,20 +28,19 @@ AddressBook Level 3 (AB3) is a **desktop application for managing contacts, opti
 
 1. Type a command in the command box and press Enter to execute it. For example, type **`help`** and press Enter to open the help window.<br>
    Some example commands you can try:
+   - `list` : Lists all contacts.
 
-   * `list` : Lists all contacts.
+   - `add n/John Doe p/98765432 e/johnd@example.com a/John street, block 123, #01-01` : Adds a contact named `John Doe` to the Address Book.
 
-   * `add n/John Doe p/98765432 e/johnd@example.com a/John street, block 123, #01-01` : Adds a contact named `John Doe` to the Address Book.
+   - `delete 3` : Deletes the 3rd contact shown in the current list.
 
-   * `delete 3` : Deletes the 3rd contact shown in the current list.
+   - `clear` : Deletes all contacts.
 
-   * `clear` : Deletes all contacts.
-
-   * `exit` : Exits the app.
+   - `exit` : Exits the app.
 
 1. Refer to the [Features](#features) section below for details of each command.
 
---------------------------------------------------------------------------------------------------------------------
+---
 
 ## Features
 
@@ -49,23 +48,23 @@ AddressBook Level 3 (AB3) is a **desktop application for managing contacts, opti
 
 **Notes about the command format:**<br>
 
-* Words in `UPPER_CASE` are the parameters to be supplied by the user.<br>
+- Words in `UPPER_CASE` are the parameters to be supplied by the user.<br>
   For example, in `add n/NAME`, replace `NAME` with a value such as `John Doe`.
 
-* Items in square brackets are optional.<br>
+- Items in square brackets are optional.<br>
   For example, `n/NAME [t/TAG]` can be used as `n/John Doe t/friend` or as `n/John Doe`.
 
-* Items followed by `...` can appear zero or more times.<br>
+- Items followed by `...` can appear zero or more times.<br>
   For example, `[t/TAG]... ` may be omitted, or written as `t/friend` or `t/friend t/family`.
 
-* Parameters can be in any order.<br>
+- Parameters can be in any order.<br>
   For example, if the command specifies `n/NAME p/PHONE_NUMBER`, `p/PHONE_NUMBER n/NAME` is also acceptable.
 
-* Extraneous parameters for commands that take no parameters, such as `help`, `list`, `exit`, and `clear`, are ignored.<br>
+- Extraneous parameters for commands that take no parameters, such as `help`, `list`, `exit`, and `clear`, are ignored.<br>
   For example, `help 123` is interpreted as `help`.
 
-* If you are using a PDF version of this document, be careful when copying and pasting commands that span multiple lines as space characters surrounding line-breaks may be omitted when copied over to the application.
-</box>
+- If you are using a PDF version of this document, be careful when copying and pasting commands that span multiple lines as space characters surrounding line-breaks may be omitted when copied over to the application.
+  </box>
 
 ### Viewing help: `help`
 
@@ -74,7 +73,6 @@ Shows a message explaining how to access the help page.
 ![help message](images/helpMessage.png)
 
 Format: `help`
-
 
 ### Adding a person: `add`
 
@@ -88,8 +86,9 @@ Format: `add n/NAME p/PHONE_NUMBER e/EMAIL a/ADDRESS [t/TAG]... `
 </box>
 
 Examples:
-* `add n/John Doe p/98765432 e/johnd@example.com a/John street, block 123, #01-01`
-* `add n/Betsy Crowe t/friend e/betsycrowe@example.com a/Newgate Prison p/1234567 t/criminal`
+
+- `add n/John Doe p/98765432 e/johnd@example.com a/John street, block 123, #01-01`
+- `add n/Betsy Crowe t/friend e/betsycrowe@example.com a/Newgate Prison p/1234567 t/criminal`
 
 ### Listing all persons: `list`
 
@@ -103,33 +102,43 @@ Edits an existing person in the address book.
 
 Format: `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [t/TAG]... `
 
-* Edits the person at the specified `INDEX`. The index refers to the index number shown in the displayed person list. The index **must be a positive integer** 1, 2, 3, ...
-* At least one of the optional fields must be provided.
-* Existing values will be updated to the input values.
-* When editing tags, all of the person's existing tags are removed; adding tags is not cumulative.
-* To remove all of a person's tags, enter `t/` without a tag after it.
+- Edits the person at the specified `INDEX`. The index refers to the index number shown in the displayed person list. The index **must be a positive integer** 1, 2, 3, ...
+- At least one of the optional fields must be provided.
+- Existing values will be updated to the input values.
+- When editing tags, all of the person's existing tags are removed; adding tags is not cumulative.
+- To remove all of a person's tags, enter `t/` without a tag after it.
 
 Examples:
-*  `edit 1 p/91234567 e/johndoe@example.com` Edits the phone number and email address of the 1st person to be `91234567` and `johndoe@example.com` respectively.
-*  `edit 2 n/Betsy Crower t/` Edits the name of the 2nd person to be `Betsy Crower` and clears all existing tags.
 
-### Locating persons by name: `find`
+- `edit 1 p/91234567 e/johndoe@example.com` Edits the phone number and email address of the 1st person to be `91234567` and `johndoe@example.com` respectively.
+- `edit 2 n/Betsy Crower t/` Edits the name of the 2nd person to be `Betsy Crower` and clears all existing tags.
 
-Finds persons whose names contain any of the given keywords or a quoted phrase.
+### Locating persons: `find`
 
-Format: `find KEYWORD [MORE_KEYWORDS]` or `find "PHRASE"`
+Finds persons whose names contain any of the given keywords or a quoted phrase, subject, or group.
 
-* The search is case-insensitive; for example, `hans` matches `Hans`.
-* Keyword order does not matter; for example, `Hans Bo` matches `Bo Hans`.
-* The search considers only names.
-* Only full words match; for example, `Han` does not match `Hans`.
-* Persons matching at least one keyword are returned (an `OR` search); for example, `Hans Bo` returns `Hans Gruber` and `Bo Yang`.
+Formats:
+
+- `find KEYWORD [MORE_KEYWORDS] [s/SUBJECT] [g/GROUP]`
+- `find "PHRASE" [s/SUBJECT] [g/GROUP]`
+
+- All searches are case-insensitive; for example, `hans` matches `Hans` and `g/t11` matches `T11`.
+- Keyword order does not matter; for example, `Hans Bo` matches `Bo Hans`.
+- Only full words match; for example, `Han` does not match `Hans`.
+- Persons matching at least one keyword are returned (an `OR` search); for example, `Hans Bo` returns `Hans Gruber` and `Bo Yang`.
+- Subject and group filters require an exact match, ignoring letter case.
+- When name, subject, or group criteria are combined, a person must match every supplied criterion (an `AND` search).
 
 Examples:
-* `find John` returns `john` and `John Doe`
-* `find alex david` returns `Alex Yeoh`, `David Li`<br>
-* `find "Alex Yeoh"` returns names containing the phrase `Alex Yeoh`, ignoring case.
+
+- `find John` returns `john` and `John Doe`
+- `find alex david` returns `Alex Yeoh`, `David Li`<br>
   ![result for 'find alex david'](images/findAlexDavidResult.png)
+- `find "Alex Yeoh"` returns names containing the phrase `Alex Yeoh`, ignoring case.
+- `find s/CS2103T` returns persons whose subject is `CS2103T`.
+- `find g/T11` returns persons whose group is `T11`.
+- `find s/CS2103T g/T11` returns persons in group `T11` whose subject is `CS2103T`.
+- `find "John" s/CS3434` returns persons whose names contain `John` and whose subject is `CS3434`.
 
 ### Deleting a person: `delete`
 
@@ -137,13 +146,14 @@ Deletes the specified person from the address book.
 
 Format: `delete INDEX`
 
-* Deletes the person at the specified `INDEX`.
-* The index refers to the index number shown in the displayed person list.
-* The index **must be a positive integer** 1, 2, 3, ...
+- Deletes the person at the specified `INDEX`.
+- The index refers to the index number shown in the displayed person list.
+- The index **must be a positive integer** 1, 2, 3, ...
 
 Examples:
-* `list` followed by `delete 2` deletes the 2nd person in the address book.
-* `find Betsy` followed by `delete 1` deletes the 1st person in the results of the `find` command.
+
+- `list` followed by `delete 2` deletes the 2nd person in the address book.
+- `find Betsy` followed by `delete 1` deletes the 1st person in the results of the `find` command.
 
 ### Clearing all entries: `clear`
 
@@ -176,30 +186,30 @@ Furthermore, certain edits can cause the AddressBook to behave in unexpected way
 
 _Details coming soon ..._
 
---------------------------------------------------------------------------------------------------------------------
+---
 
 ## FAQ
 
 **Q**: How do I transfer my data to another computer?<br>
 **A**: Install the app on the other computer and overwrite the data file it creates with the data file from your previous AddressBook home folder.
 
---------------------------------------------------------------------------------------------------------------------
+---
 
 ## Known issues
 
 1. **When using multiple screens**, if you move the application to a secondary screen, and later switch to using only the primary screen, the GUI will open off-screen. The remedy is to delete the `preferences.json` file created by the application before running the application again.
 2. **If you minimize the Help Window** and then run the `help` command (or use the `Help` menu, or the keyboard shortcut `F1`) again, the original Help Window will remain minimized, and no new Help Window will appear. The remedy is to manually restore the minimized Help Window.
 
---------------------------------------------------------------------------------------------------------------------
+---
 
 ## Command summary
 
-Action     | Format, Examples
------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-**Add**    | `add n/NAME p/PHONE_NUMBER e/EMAIL a/ADDRESS [t/TAG]... ` <br> e.g., `add n/James Ho p/22224444 e/jamesho@example.com a/123, Clementi Rd, 1234665 t/friend t/colleague`
-**Clear**  | `clear`
-**Delete** | `delete INDEX`<br> e.g., `delete 3`
-**Edit**   | `edit INDEX [n/NAME] [p/PHONE_NUMBER] [e/EMAIL] [a/ADDRESS] [t/TAG]... `<br> e.g.,`edit 2 n/James Lee e/jameslee@example.com`
-**Find**   | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find James Jake`
-**List**   | `list`
-**Help**   | `help`
+| Action     | Format, Examples                                                                                                                                                        |
+| ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| **Add**    | `add n/NAME p/PHONE_NUMBER e/EMAIL a/ADDRESS [t/TAG]... ` <br> e.g., `add n/James Ho p/22224444 e/jamesho@example.com a/123, Clementi Rd, 1234665 t/friend t/colleague` |
+| **Clear**  | `clear`                                                                                                                                                                 |
+| **Delete** | `delete INDEX`<br> e.g., `delete 3`                                                                                                                                     |
+| **Edit**   | `edit INDEX [n/NAME] [p/PHONE_NUMBER] [e/EMAIL] [a/ADDRESS] [t/TAG]... `<br> e.g.,`edit 2 n/James Lee e/jameslee@example.com`                                           |
+| **Find**   | `find [KEYWORD ...                                                                                                                                                      | "PHRASE"] [s/SUBJECT] [g/GROUP]`<br> e.g., `find James Jake`, `find g/T11`, `find "John" s/CS3434` |
+| **List**   | `list`                                                                                                                                                                  |
+| **Help**   | `help`                                                                                                                                                                  |
