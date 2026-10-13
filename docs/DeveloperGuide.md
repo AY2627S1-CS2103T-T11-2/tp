@@ -457,6 +457,23 @@ testers are expected to do more *exploratory* testing.
 
 1. _{ more test cases … }_
 
+### Finding persons
+
+1. Finding contacts with keywords and phrases
+
+   1. Prerequisites: Launch the application with the sample contacts.
+
+   1. Test case: `find "Alice Pauline" Kurz`<br>
+      Expected: `Alice Pauline` and `Carl Kurz` are displayed because each matches at least one search term.
+
+   1. Test case: `find "Alice Pauline" "Carl Kurz"`<br>
+      Expected: `Alice Pauline` and `Carl Kurz` are displayed.
+
+   1. Incorrect command: `find Alice "Pauline`<br>
+      Expected: The displayed list remains unchanged. The status message shows the `find` command usage.
+
+   1. Incorrect command: `" "`<br>
+      Expected: The displayed list remains unchanged. The status message shows the `find` command usage.
 ### Saving data
 
 1. Dealing with missing/corrupted data files
