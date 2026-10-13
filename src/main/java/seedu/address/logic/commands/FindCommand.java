@@ -20,10 +20,11 @@ public class FindCommand extends Command {
     public static final String MESSAGE_USAGE = COMMAND_WORD + ": Finds all persons whose names contain any of "
             + "the specified keywords or a quoted phrase (case-insensitive) and displays them as a list with "
             + "index numbers.\n"
-            + "Parameters: KEYWORD [MORE_KEYWORDS]... | \"PHRASE\"\n"
+            + "Parameters: [KEYWORD ... | \"PHRASE\"] [s/SUBJECT] [g/GROUP]\n"
             + "Examples:\n"
             + "  " + COMMAND_WORD + " alice bob\n"
-            + "  " + COMMAND_WORD + " \"Alice Pauline\"";
+            + "  " + COMMAND_WORD + " \"Alice Pauline\"\n"
+            + "  " + COMMAND_WORD + " \"John\" s/Mathematics g/G01";
 
     private final Predicate<Person> predicate;
 
