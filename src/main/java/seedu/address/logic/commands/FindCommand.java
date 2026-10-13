@@ -10,8 +10,8 @@ import seedu.address.model.Model;
 import seedu.address.model.person.Person;
 
 /**
- * Finds and lists all persons in the address book whose name contains any argument keyword or quoted phrase.
- * Keyword and phrase matching are case insensitive.
+ * Finds and lists all persons in the address book whose name match any argument keyword or quoted phrase.
+ * and who match all the supplised subject and group filters.
  */
 public class FindCommand extends Command {
 

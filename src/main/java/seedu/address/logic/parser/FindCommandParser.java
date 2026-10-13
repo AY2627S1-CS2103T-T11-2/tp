@@ -53,7 +53,7 @@ public class FindCommandParser implements Parser<FindCommand> {
     }
 
     /**
-     * Parses a name keyword search or quoted phrase search.
+     * Parses name terms consisting of keywords and quoted phrases.
      */
     private Predicate<Person> parseNamePredicate(String nameInput) throws ParseException {
         List<String> keywords = new ArrayList<>();
