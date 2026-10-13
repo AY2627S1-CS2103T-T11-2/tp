@@ -1,5 +1,6 @@
 package seedu.address.model.person;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.testutil.Assert.assertThrows;
@@ -24,7 +25,7 @@ public class FindPredicateTest {
     public void test_allCriteriaMatch_returnsTrue() {
         Person person = new PersonBuilder().withName("John Doe")
                 .withSubject("CS3434").withGroup("T11").build();
-        Predicate<Person> namePredicate = new NameContainsPhrasePredicate("john");
+        Predicate<Person> namePredicate = new NameContainsSearchTermsPredicate(List.of("John"), List.of());
 
         FindPredicate predicate = new FindPredicate(Optional.of(namePredicate),
                 Optional.of(new Subject("cs3434")), Optional.of(new Group("t11")));
@@ -38,7 +39,7 @@ public class FindPredicateTest {
                 .withSubject("CS3434").withGroup("T11").build();
 
         assertFalse(new FindPredicate(
-                Optional.of(new NameContainsKeywordsPredicate(List.of("Jane"))),
+                Optional.of(new NameContainsSearchTermsPredicate(List.of("Jane"), List.of())),
                 Optional.of(new Subject("CS3434")), Optional.of(new Group("T11"))).test(person));
         assertFalse(new FindPredicate(Optional.empty(),
                 Optional.of(new Subject("CS2103T")), Optional.of(new Group("T11"))).test(person));
@@ -49,17 +50,17 @@ public class FindPredicateTest {
     @Test
     public void equals() {
         FindPredicate predicate = new FindPredicate(
-                Optional.of(new NameContainsPhrasePredicate("john")),
+                Optional.of(new NameContainsSearchTermsPredicate(List.of("John"), List.of())),
                 Optional.of(new Subject("CS3434")), Optional.of(new Group("T11")));
 
-        assertTrue(predicate.equals(predicate));
-        assertTrue(predicate.equals(new FindPredicate(
-                Optional.of(new NameContainsPhrasePredicate("john")),
-                Optional.of(new Subject("CS3434")), Optional.of(new Group("T11")))));
+        assertEquals(predicate, predicate);
+        assertEquals(predicate, new FindPredicate(
+                Optional.of(new NameContainsSearchTermsPredicate(List.of("John"), List.of())),
+                Optional.of(new Subject("CS3434")), Optional.of(new Group("T11"))));
         assertFalse(predicate.equals(null));
         assertFalse(predicate.equals("not a predicate"));
         assertFalse(predicate.equals(new FindPredicate(
-                Optional.of(new NameContainsPhrasePredicate("jane")),
+                Optional.of(new NameContainsSearchTermsPredicate(List.of("Jane"), List.of())),
                 Optional.of(new Subject("CS3434")), Optional.of(new Group("T11")))));
     }
 }

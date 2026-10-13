@@ -141,30 +141,30 @@ Examples:
 
 ### Locating persons: `find`
 
-Finds persons by name, subject, group, or a combination of these criteria.
+Finds persons by name, containing any of the given keywords or quoted phrases, subject, group or a combination of these criteria.
 
 Formats:
 
-- `find KEYWORD [MORE_KEYWORDS] [s/SUBJECT] [g/GROUP]`
-- `find "PHRASE" [s/SUBJECT] [g/GROUP]`
+- `find SEARCH_TERM [MORE_SEARCH_TERMS] [s/SUBJECT] [g/GROUP]`, where a search term is a `KEYWORD` or `"PHRASE"`
 
 - All searches are case-insensitive; for example, `hans` matches `Hans` and `g/t11` matches `T11`.
 - Keyword order does not matter; for example, `Hans Bo` matches `Bo Hans`.
 - Only full words match; for example, `Han` does not match `Hans`.
 - Persons matching at least one keyword are returned (an `OR` search); for example, `Hans Bo` returns `Hans Gruber` and `Bo Yang`.
+- A quoted phrase matches names containing the phrase, ignoring case.
 - Subject and group filters require an exact match, ignoring letter case.
 - When name, subject, or group criteria are combined, a person must match every supplied criterion (an `AND` search).
 
 Examples:
-
-- `find John` returns `john` and `John Doe`
-- `find alex david` returns `Alex Yeoh`, `David Li`<br>
+* `find John` returns `john` and `John Doe`
+* `find alex david` returns `Alex Yeoh`, `David Li`<br>
+* `find "Alex Yeoh"` returns names containing the phrase `Alex Yeoh`, ignoring case.
+* `find "Alex Yeoh" David` returns names containing either the phrase `Alex Yeoh` or the keyword `David`.
+* `find s/CS2103T` returns persons whose subject is `CS2103T`.
+* `find g/T11` returns persons whose group is `T11`.
+* `find s/CS2103T g/T11` returns persons in group `T11` whose subject is `CS2103T`.
+* `find "John" s/CS3434` returns persons whose names contain `John` and whose subject is `CS3434`.
   ![result for 'find alex david'](images/findAlexDavidResult.png)
-- `find "Alex Yeoh"` returns names containing the phrase `Alex Yeoh`, ignoring case.
-- `find s/CS2103T` returns persons whose subject is `CS2103T`.
-- `find g/T11` returns persons whose group is `T11`.
-- `find s/CS2103T g/T11` returns persons in group `T11` whose subject is `CS2103T`.
-- `find "John" s/CS3434` returns persons whose names contain `John` and whose subject is `CS3434`.
 
 ### Deleting contacts: `delete`
 

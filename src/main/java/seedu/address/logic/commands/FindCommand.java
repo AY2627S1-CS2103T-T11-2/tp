@@ -10,20 +10,22 @@ import seedu.address.model.Model;
 import seedu.address.model.person.Person;
 
 /**
- * Finds and lists all persons in the address book whose name contains any argument keyword or quoted phrase.
- * Keyword and phrase matching are case insensitive.
+ * Finds and lists all persons in the address book whose name match any argument keyword or quoted phrase.
+ * and who match all the supplised subject and group filters.
  */
 public class FindCommand extends Command {
 
     public static final String COMMAND_WORD = "find";
 
-    public static final String MESSAGE_USAGE = COMMAND_WORD + ": Finds all persons whose names contain any of "
-            + "the specified keywords or a quoted phrase (case-insensitive) and displays them as a list with "
-            + "index numbers.\n"
-            + "Parameters: [KEYWORD ... | \"PHRASE\"] [s/SUBJECT] [g/GROUP]\n"
-            + "Examples:\n"
-            + "  " + COMMAND_WORD + " alice bob\n"
-            + "  " + COMMAND_WORD + " \"Alice Pauline\"\n"
+    public static final String MESSAGE_USAGE = COMMAND_WORD + ": Finds all persons whose names match any search term "
+            + "(case-insensitive) and match any supplied subject or group filters.\\n"
+            + "Parameters: [SEARCH_TERM [MORE_SEARCH_TERMS]...] [s/SUBJECT] [g/GROUP]\\n"
+            + "A search term is either a KEYWORD (one word without quotation marks) or a \"PHRASE\" "
+            + "(one or more words enclosed in quotation marks).\\n"
+            + "Examples:\\n"
+            + "  " + COMMAND_WORD + " alice bob\\n"
+            + "  " + COMMAND_WORD + " \"Alice Pauline\"\\n"
+            + "  " + COMMAND_WORD + " alice \"Bob Chen\"\\n"
             + "  " + COMMAND_WORD + " \"John\" s/Mathematics g/G01";
 
     private final Predicate<Person> predicate;

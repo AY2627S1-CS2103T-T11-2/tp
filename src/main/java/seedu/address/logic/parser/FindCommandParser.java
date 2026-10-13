@@ -4,16 +4,18 @@ import static seedu.address.logic.Messages.MESSAGE_INVALID_COMMAND_FORMAT;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_GROUP;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_SUBJECT;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import seedu.address.logic.commands.FindCommand;
 import seedu.address.logic.parser.exceptions.ParseException;
 import seedu.address.model.person.FindPredicate;
 import seedu.address.model.person.Group;
-import seedu.address.model.person.NameContainsKeywordsPredicate;
-import seedu.address.model.person.NameContainsPhrasePredicate;
+import seedu.address.model.person.NameContainsSearchTermsPredicate;
 import seedu.address.model.person.Person;
 import seedu.address.model.person.Subject;
 
@@ -21,10 +23,12 @@ import seedu.address.model.person.Subject;
  * Parses input arguments and creates a new FindCommand object
  */
 public class FindCommandParser implements Parser<FindCommand> {
+    private static final Pattern SEARCH_TERM_PATTERN = Pattern.compile("\\\"([^\\\"]*)\\\"|([^\\s\\\"]+)");
 
     /**
      * Parses the given {@code String} of arguments in the context of the FindCommand
      * and returns a FindCommand object for execution.
+     *
      * @throws ParseException if the user input does not conform to the expected format
      */
     public FindCommand parse(String args) throws ParseException {
@@ -49,39 +53,43 @@ public class FindCommandParser implements Parser<FindCommand> {
     }
 
     /**
-     * Parses a name keyword search or quoted phrase search.
+     * Parses name terms consisting of keywords and quoted phrases.
      */
     private Predicate<Person> parseNamePredicate(String nameInput) throws ParseException {
+        List<String> keywords = new ArrayList<>();
+        List<String> phrases = new ArrayList<>();
         String trimmedNameInput = nameInput.trim();
-        if (trimmedNameInput.isEmpty()) {
-            throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, FindCommand.MESSAGE_USAGE));
-        }
+        Matcher matcher = SEARCH_TERM_PATTERN.matcher(trimmedNameInput);
+        int previousMatchEnd = 0;
 
-        boolean startsWithQuote = trimmedNameInput.startsWith("\"");
-        boolean endsWithQuote = trimmedNameInput.endsWith("\"");
-
-        if (startsWithQuote != endsWithQuote
-                || (startsWithQuote && trimmedNameInput.length() < 2)) {
-            throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, FindCommand.MESSAGE_USAGE));
-        }
-
-        if (startsWithQuote) {
-            String phrase = trimmedNameInput.substring(1, trimmedNameInput.length() - 1).trim();
-            if (phrase.isEmpty()) {
+        while (matcher.find()) {
+            if (!trimmedNameInput.substring(previousMatchEnd, matcher.start()).isBlank()) {
                 throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, FindCommand.MESSAGE_USAGE));
             }
-            return new NameContainsPhrasePredicate(phrase);
+
+            String phrase = matcher.group(1);
+            if (phrase != null) {
+                if (phrase.isBlank()) {
+                    throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, FindCommand.MESSAGE_USAGE));
+                }
+                phrases.add(phrase);
+            } else {
+                keywords.add(matcher.group(2));
+            }
+            previousMatchEnd = matcher.end();
+        }
+        if (!trimmedNameInput.substring(previousMatchEnd).isBlank()) {
+            throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, FindCommand.MESSAGE_USAGE));
         }
 
-        String[] nameKeywords = trimmedNameInput.split("\\s+");
-        return new NameContainsKeywordsPredicate(List.of(nameKeywords));
+        return new NameContainsSearchTermsPredicate(keywords, phrases);
     }
 
     /**
      * Parses optional name, subject, and group filters. A person must match every supplied criterion.
      */
     private FindCommand parseCriteria(ArgumentMultimap argMultimap, Optional<String> subjectValue,
-            Optional<String> groupValue) throws ParseException {
+                                      Optional<String> groupValue) throws ParseException {
         argMultimap.verifyNoDuplicatePrefixesFor(PREFIX_SUBJECT, PREFIX_GROUP);
 
         Optional<Predicate<Person>> namePredicate = Optional.empty();
@@ -101,5 +109,4 @@ public class FindCommandParser implements Parser<FindCommand> {
 
         return new FindCommand(new FindPredicate(namePredicate, subject, group));
     }
-
 }
