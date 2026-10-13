@@ -14,20 +14,28 @@ import org.junit.jupiter.api.Test;
 import seedu.address.commons.exceptions.IllegalValueException;
 import seedu.address.model.person.Address;
 import seedu.address.model.person.Email;
+import seedu.address.model.person.Group;
 import seedu.address.model.person.Name;
+import seedu.address.model.person.Person;
 import seedu.address.model.person.Phone;
+import seedu.address.model.person.Subject;
+import seedu.address.testutil.PersonBuilder;
 
 public class JsonAdaptedPersonTest {
     private static final String INVALID_NAME = "R@chel";
     private static final String INVALID_PHONE = "+651234";
     private static final String INVALID_ADDRESS = " ";
     private static final String INVALID_EMAIL = "example.com";
+    private static final String INVALID_GROUP = " ";
     private static final String INVALID_TAG = "#friend";
+    private static final String INVALID_SUBJECT = "CS2103T!";
 
     private static final String VALID_NAME = BENSON.getName().toString();
     private static final String VALID_PHONE = BENSON.getPhone().toString();
     private static final String VALID_EMAIL = BENSON.getEmail().toString();
+    private static final String VALID_GROUP = "T11";
     private static final String VALID_ADDRESS = BENSON.getAddress().toString();
+    private static final String VALID_SUBJECT = "CS2103T";
     private static final List<JsonAdaptedTag> VALID_TAGS = BENSON.getTags().stream()
             .map(JsonAdaptedTag::new)
             .collect(Collectors.toList());
@@ -36,6 +44,46 @@ public class JsonAdaptedPersonTest {
     public void toModelType_validPersonDetails_returnsPerson() throws Exception {
         JsonAdaptedPerson person = new JsonAdaptedPerson(BENSON);
         assertEquals(BENSON, person.toModelType());
+    }
+
+    @Test
+    public void constructorAndToModelType_nonDefaultSubjectAndGroup_preservesValues() throws Exception {
+        Person student = new PersonBuilder(BENSON)
+                .withSubject(VALID_SUBJECT)
+                .withGroup(VALID_GROUP)
+                .build();
+
+        JsonAdaptedPerson jsonStudent = new JsonAdaptedPerson(student);
+
+        assertEquals(student, jsonStudent.toModelType());
+    }
+
+    @Test
+    public void toModelType_legacyPersonWithoutSubjectAndGroup_usesDefaults() throws Exception {
+        JsonAdaptedPerson legacyPerson = new JsonAdaptedPerson(
+                VALID_NAME, VALID_PHONE, VALID_EMAIL, VALID_ADDRESS, null, null, VALID_TAGS);
+        Person expectedPerson = new PersonBuilder(BENSON)
+                .withSubject("General")
+                .withGroup("General")
+                .build();
+
+        assertEquals(expectedPerson, legacyPerson.toModelType());
+    }
+
+    @Test
+    public void toModelType_invalidSubject_throwsIllegalValueException() {
+        JsonAdaptedPerson person = new JsonAdaptedPerson(
+                VALID_NAME, VALID_PHONE, VALID_EMAIL, VALID_ADDRESS, INVALID_SUBJECT, VALID_GROUP, VALID_TAGS);
+
+        assertThrows(IllegalValueException.class, Subject.MESSAGE_CONSTRAINTS, person::toModelType);
+    }
+
+    @Test
+    public void toModelType_invalidGroup_throwsIllegalValueException() {
+        JsonAdaptedPerson person = new JsonAdaptedPerson(
+                VALID_NAME, VALID_PHONE, VALID_EMAIL, VALID_ADDRESS, VALID_SUBJECT, INVALID_GROUP, VALID_TAGS);
+
+        assertThrows(IllegalValueException.class, Group.MESSAGE_CONSTRAINTS, person::toModelType);
     }
 
     @Test
