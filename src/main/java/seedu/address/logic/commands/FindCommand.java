@@ -18,14 +18,15 @@ public class FindCommand extends Command {
     public static final String COMMAND_WORD = "find";
 
     public static final String MESSAGE_USAGE = COMMAND_WORD + ": Finds all persons whose names match any search term "
-            + "(case-insensitive) and displays them as a list with index numbers.\n"
-            + "Parameters: SEARCH_TERM [MORE_SEARCH_TERMS]...\n"
+            + "(case-insensitive) and match any supplied subject or group filters.\\n"
+            + "Parameters: [SEARCH_TERM [MORE_SEARCH_TERMS]...] [s/SUBJECT] [g/GROUP]\\n"
             + "A search term is either a KEYWORD (one word without quotation marks) or a \"PHRASE\" "
-            + "(one or more words enclosed in quotation marks).\n"
-            + "Examples:\n"
-            + "  " + COMMAND_WORD + " alice bob\n"
-            + "  " + COMMAND_WORD + " \"Alice Pauline\"\n"
-            + "  " + COMMAND_WORD + " alice \"Bob Chen\"";
+            + "(one or more words enclosed in quotation marks).\\n"
+            + "Examples:\\n"
+            + "  " + COMMAND_WORD + " alice bob\\n"
+            + "  " + COMMAND_WORD + " \"Alice Pauline\"\\n"
+            + "  " + COMMAND_WORD + " alice \"Bob Chen\"\\n"
+            + "  " + COMMAND_WORD + " \"John\" s/Mathematics g/G01";
 
     private final Predicate<Person> predicate;
 
