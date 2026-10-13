@@ -16,6 +16,9 @@ import seedu.address.model.tag.Tag;
  */
 public class Person {
 
+    private static final Subject DEFAULT_SUBJECT = new Subject("General");
+    private static final Group DEFAULT_GROUP = new Group("General");
+
     // Identity fields
     private final Name name;
     private final Phone phone;
@@ -24,17 +27,29 @@ public class Person {
     // Data fields
     private final Address address;
     private final Set<Tag> tags = new HashSet<>();
+    private final Subject subject;
+    private final Group group;
 
     /**
-     * Every field must be present and not null.
+     * Creates a person with default subject and group values.
+     * This constructor keeps existing commands compatible with the expanded person model.
      */
     public Person(Name name, Phone phone, Email email, Address address, Set<Tag> tags) {
-        requireAllNonNull(name, phone, email, address, tags);
+        this(name, phone, email, address, tags, DEFAULT_SUBJECT, DEFAULT_GROUP);
+    }
+
+    /**
+     * Creates a person with all fields. Every field must be present and not null.
+     */
+    public Person(Name name, Phone phone, Email email, Address address, Set<Tag> tags, Subject subject, Group group) {
+        requireAllNonNull(name, phone, email, address, tags, subject, group);
         this.name = name;
         this.phone = phone;
         this.email = email;
         this.address = address;
         this.tags.addAll(tags);
+        this.subject = subject;
+        this.group = group;
     }
 
     public Name getName() {
@@ -51,6 +66,14 @@ public class Person {
 
     public Address getAddress() {
         return address;
+    }
+
+    public Subject getSubject() {
+        return subject;
+    }
+
+    public Group getGroup() {
+        return group;
     }
 
     /**
@@ -93,13 +116,15 @@ public class Person {
                 && phone.equals(otherPerson.phone)
                 && email.equals(otherPerson.email)
                 && address.equals(otherPerson.address)
+                && subject.equals(otherPerson.subject)
+                && group.equals(otherPerson.group)
                 && tags.equals(otherPerson.tags);
     }
 
     @Override
     public int hashCode() {
         // use this method for custom fields hashing instead of implementing your own
-        return Objects.hash(name, phone, email, address, tags);
+        return Objects.hash(name, phone, email, address, tags, subject, group);
     }
 
     @Override
@@ -109,6 +134,8 @@ public class Person {
                 .add("phone", phone)
                 .add("email", email)
                 .add("address", address)
+                .add("subject", subject)
+                .add("group", group)
                 .add("tags", tags)
                 .toString();
     }

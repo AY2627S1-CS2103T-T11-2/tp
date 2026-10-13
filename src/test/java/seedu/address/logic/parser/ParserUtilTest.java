@@ -14,8 +14,10 @@ import org.junit.jupiter.api.Test;
 import seedu.address.logic.parser.exceptions.ParseException;
 import seedu.address.model.person.Address;
 import seedu.address.model.person.Email;
+import seedu.address.model.person.Group;
 import seedu.address.model.person.Name;
 import seedu.address.model.person.Phone;
+import seedu.address.model.person.Subject;
 import seedu.address.model.tag.Tag;
 
 public class ParserUtilTest {
@@ -24,6 +26,8 @@ public class ParserUtilTest {
     private static final String INVALID_ADDRESS = " ";
     private static final String INVALID_EMAIL = "example.com";
     private static final String INVALID_TAG = "#friend";
+    private static final String INVALID_SUBJECT = "CS2103T!";
+    private static final String INVALID_GROUP = " ";
 
     private static final String VALID_NAME = "Rachel Walker";
     private static final String VALID_PHONE = "123456";
@@ -31,6 +35,8 @@ public class ParserUtilTest {
     private static final String VALID_EMAIL = "rachel@example.com";
     private static final String VALID_TAG_1 = "friend";
     private static final String VALID_TAG_2 = "neighbour";
+    private static final String VALID_SUBJECT = "CS2103T";
+    private static final String VALID_GROUP = "T11";
 
     private static final String WHITESPACE = " \t\r\n";
 
@@ -144,6 +150,28 @@ public class ParserUtilTest {
         String emailWithWhitespace = WHITESPACE + VALID_EMAIL + WHITESPACE;
         Email expectedEmail = new Email(VALID_EMAIL);
         assertEquals(expectedEmail, ParserUtil.parseEmail(emailWithWhitespace));
+    }
+
+    @Test
+    public void parseSubject_invalidValue_throwsParseException() {
+        assertThrows(ParseException.class, () -> ParserUtil.parseSubject(INVALID_SUBJECT));
+    }
+
+    @Test
+    public void parseSubject_validValueWithWhitespace_returnsTrimmedSubject() throws Exception {
+        Subject expectedSubject = new Subject(VALID_SUBJECT);
+        assertEquals(expectedSubject, ParserUtil.parseSubject(WHITESPACE + VALID_SUBJECT + WHITESPACE));
+    }
+
+    @Test
+    public void parseGroup_invalidValue_throwsParseException() {
+        assertThrows(ParseException.class, () -> ParserUtil.parseGroup(INVALID_GROUP));
+    }
+
+    @Test
+    public void parseGroup_validValueWithWhitespace_returnsTrimmedGroup() throws Exception {
+        Group expectedGroup = new Group(VALID_GROUP);
+        assertEquals(expectedGroup, ParserUtil.parseGroup(WHITESPACE + VALID_GROUP + WHITESPACE));
     }
 
     @Test
