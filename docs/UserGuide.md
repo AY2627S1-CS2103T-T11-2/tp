@@ -147,6 +147,7 @@ Formats:
 
 - `find [SEARCH_TERM [MORE_SEARCH_TERMS]] [s/SUBJECT] [g/GROUP] [t/TAG]...`, where a search term is a `KEYWORD` or `"PHRASE"`
 
+- At least one name, subject, group, or tag criterion must be provided.
 - All searches are case-insensitive; for example, `hans` matches `Hans`, `g/t11` matches `T11`, and
   `t/needshelp` matches `needsHelp`.
 - Keyword order does not matter; for example, `Hans Bo` matches `Bo Hans`.
