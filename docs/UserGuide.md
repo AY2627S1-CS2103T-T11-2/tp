@@ -129,15 +129,17 @@ Edits an existing person in the address book.
 Format: `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [s/SUBJECT] [g/GROUP] [t/TAG]... `
 
 - Edits the person at the specified `INDEX`. The index refers to the index number shown in the displayed person list. The index **must be a positive integer** 1, 2, 3, ...
-- At least one of the optional fields must be provided.
+- At least one of the fields must be provided.
 - Existing values will be updated to the input values.
 - When editing tags, all of the person's existing tags are removed; adding tags is not cumulative.
+- When editing tags, the compulsory fields (Name, Email, Subject, Group) cannot be edited to be empty
 - To remove all of a person's tags, enter `t/` without a tag after it.
 
 Examples:
 
 - `edit 1 p/91234567 e/johndoe@example.com` Edits the phone number and email address of the 1st person to be `91234567` and `johndoe@example.com` respectively.
 - `edit 2 n/Betsy Crower t/` Edits the name of the 2nd person to be `Betsy Crower` and clears all existing tags.
+- `edit 1 n/` Attempts to remove the name of the 1st person and creates an error.
 
 ### Locating persons: `find`
 
