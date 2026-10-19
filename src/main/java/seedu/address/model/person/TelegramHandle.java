@@ -4,10 +4,10 @@ import static java.util.Objects.requireNonNull;
 import static seedu.address.commons.util.AppUtil.checkArgument;
 
 /**
- * Represents an optional Telegram handle, retaining the legacy Address name for storage compatibility.
- * Guarantees: immutable; is valid as declared in {@link #isValidAddress(String)}
+ * Represents an optional Telegram handle.
+ * Guarantees: immutable; is valid as declared in {@link #isValidTelegramHandle(String)}
  */
-public class Address {
+public class TelegramHandle {
 
     public static final String MESSAGE_CONSTRAINTS = "Telegram handles must be empty or begin with '@'.";
 
@@ -16,20 +16,20 @@ public class Address {
     public final String value;
 
     /**
-     * Constructs an {@code Address}.
+     * Constructs an {@code TelegramHandle}.
      *
-     * @param address A valid Telegram handle.
+     * @param telegramHandle A valid Telegram handle.
      */
-    public Address(String address) {
-        requireNonNull(address);
-        checkArgument(isValidAddress(address), MESSAGE_CONSTRAINTS);
-        value = address;
+    public TelegramHandle(String telegramHandle) {
+        requireNonNull(telegramHandle);
+        checkArgument(isValidTelegramHandle(telegramHandle), MESSAGE_CONSTRAINTS);
+        value = telegramHandle;
     }
 
     /**
      * Returns true if the given string is empty or begins with {@code @}.
      */
-    public static boolean isValidAddress(String test) {
+    public static boolean isValidTelegramHandle(String test) {
         return test.matches(VALIDATION_REGEX);
     }
 
@@ -45,11 +45,11 @@ public class Address {
         }
 
         // instanceof handles nulls
-        if (!(other instanceof Address otherAddress)) {
+        if (!(other instanceof TelegramHandle otherTelegramHandle)) {
             return false;
         }
 
-        return value.equals(otherAddress.value);
+        return value.equals(otherTelegramHandle.value);
     }
 
     @Override
