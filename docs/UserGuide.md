@@ -122,15 +122,23 @@ Shows a list of all persons in the address book.
 
 Format: `list`
 
-### Editing a person: `edit`
+### Editing persons: `edit`
 
-Edits an existing person in the address book.
+Edits one or more persons in the currently displayed list.
 
-Format: `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [s/SUBJECT] [g/GROUP] [t/TAG]... `
+Format: `edit INDEX_OR_RANGE[,INDEX_OR_RANGE]... [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [s/SUBJECT] [g/GROUP] [t/TAG]...`
 
-- Edits the person at the specified `INDEX`. The index refers to the index number shown in the displayed person list. The index **must be a positive integer** 1, 2, 3, ...
+- `INDEX_OR_RANGE` is either an individual `INDEX` or an inclusive range written as `START_INDEX-END_INDEX`.
+- The indexes refer to the index numbers in the currently displayed person list. Each index must be a positive integer: 1, 2, 3, ...
+- Commas can combine individual indexes and ranges, for example `1,3-5,7`.
+- Spaces are not allowed inside the index expression. For example, use `1,3-5`, not `1, 3 - 5`.
+- Duplicate and overlapping indexes select each person only once.
+- All indexes are validated before any person is edited. If any index is invalid, nobody is edited.
 - At least one of the optional fields must be provided.
 - Existing values will be updated to the input values.
+- When exactly one person is selected, all fields can be edited.
+- When multiple persons are selected, only subject, group, and tags can be edited.
+- Only one subject and one group can be supplied in each command.
 - When editing tags, all of the person's existing tags are removed; adding tags is not cumulative.
 - To remove all of a person's tags, enter `t/` without a tag after it.
 
@@ -138,6 +146,7 @@ Examples:
 
 - `edit 1 p/91234567 e/johndoe@example.com` Edits the phone number and email address of the 1st person to be `91234567` and `johndoe@example.com` respectively.
 - `edit 2 n/Betsy Crower t/` Edits the name of the 2nd person to be `Betsy Crower` and clears all existing tags.
+- `edit 1-3 t/student t/online` replaces the tags of the first three displayed person with `student` and `online`.
 
 ### Locating persons: `find`
 
@@ -241,7 +250,7 @@ _Details coming soon ..._
 | **Add** | `add n/NAME p/PHONE e/EMAIL a/ADDRESS [s/SUBJECT] [g/GROUP] [t/TAG]...` |
 | **Clear** | `clear` |
 | **Delete** | `delete INDEX_OR_RANGE[,INDEX_OR_RANGE]...`<br> e.g., `delete 1,3-5,7` |
-| **Edit** | `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [s/SUBJECT] [g/GROUP] [t/TAG]...` |
+| **Edit** | `edit INDEX_OR_RANGE[,INDEX_OR_RANGE]... [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [s/SUBJECT] [g/GROUP] [t/TAG]...`<br>e.g., `edit 1,3-5 s/CS3240 g/T11 t/student` |
 | **Find** | `find KEYWORD [MORE_KEYWORDS] [s/SUBJECT] [g/GROUP]` or `find "PHRASE" [s/SUBJECT] [g/GROUP]` |
 | **List** | `list` |
 | **Help** | `help` |

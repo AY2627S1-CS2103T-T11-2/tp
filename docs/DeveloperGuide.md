@@ -358,7 +358,7 @@ Use case ends.
     * Use case ends.
 
 
-**Use case: Edit a student's particulars**
+**Use case: Edit a single student's particulars**
 
 **MSS**
 
@@ -384,6 +384,36 @@ Use case ends.
     * 3b1. TutorTrack shows an error message.
     * Use case ends.
 
+**Use case: Edit multiple students' common particulars**
+
+**MSS**
+
+1. TA requests to edit students identified by displayed indexes or index ranges.
+2. TutorTrack validates the index expression and supplied particulars.
+3. TutorTrack resolves the indexes against the currently displayed student list.
+4. TutorTrack updates the supplied subject, group, or tags for every selected student.
+5. TutorTrack confirms which student records were updated.
+
+Use case ends.
+
+**Extensions**
+
+* 2a. The index expression or a supplied particular is invalid.
+    * 2a1. TutorTrack shows the corresponding error message.
+    * Use case ends.
+
+* 2b. No field to edit is supplied.
+    * 2b1. TutorTrack informs the TA that at least one field must be provided.
+    * Use case ends.
+
+* 2c. A name, phone number, email address, or address is supplied.
+    * 2c1. TutorTrack informs the TA that only subject, group, and tags can be edited
+      for multiple students.
+    * Use case ends.
+
+* 3a. One or more indexes do not exist in the currently displayed list.
+    * 3a1. TutorTrack shows an error message without editing any student.
+    * Use case ends.
 
 **Use case: List students from a tutorial group**
 
@@ -490,6 +520,41 @@ testers are expected to do more *exploratory* testing.
       Expected: Similar to previous.
 
 1. _{ more test cases … }_
+
+### Edit command
+
+`EditCommandParser` delegates parsing of the index expression to `IndexRangeParser`. This
+gives `edit` the same comma-separated index and inclusive-range syntax as other commands
+that operate on displayed persons.
+
+For backward compatibility, an index expression that selects exactly one index produces
+an `EditCommand` using the existing index-based constructor. This preserves the original
+single-person edit workflow and allows name, phone, email, address, subject, group, and
+tags to be edited.
+
+When multiple indexes are selected, `EditCommandParser` constructs an `IndexPersonTarget`. `IndexPersonTarget` implements the `PersonTarget` interface and
+resolves its ranges against the currently displayed person list when the command is
+executed.
+
+`IndexPersonTarget` normalizes duplicate, overlapping, and adjacent ranges. It validates
+all selected indexes against a snapshot of the displayed list before returning any
+persons. Consequently, an invalid command such as `edit 1,999 t/student` fails without
+editing person 1.
+
+Bulk edits are restricted to subject, group, and tags. Name, phone, email, and address
+remain available only when exactly one person is selected. This policy is checked by both
+`EditCommandParser` and `EditCommand`. The parser provides early feedback for user input,
+while the command protects callers that construct commands directly.
+
+The edit descriptor represents fields that were not supplied using `null`. A supplied
+subject or group replaces the corresponding value for every selected person. A supplied
+tag set replaces each selected person's complete tag set. Tags are stored in a `Set`, so
+duplicate tags are retained only once. An explicitly empty tag set, produced by `t/`,
+removes all tags from every selected person.
+
+All edited `Person` objects and the success result are prepared before the model is
+updated. The command then replaces each selected person and restores the unfiltered
+person list.
 
 ### Finding persons
 

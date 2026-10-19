@@ -16,6 +16,7 @@ import static seedu.address.logic.commands.CommandTestUtil.NAME_DESC_AMY;
 import static seedu.address.logic.commands.CommandTestUtil.PHONE_DESC_AMY;
 import static seedu.address.logic.commands.CommandTestUtil.PHONE_DESC_BOB;
 import static seedu.address.logic.commands.CommandTestUtil.SUBJECT_DESC_AMY;
+import static seedu.address.logic.commands.CommandTestUtil.SUBJECT_DESC_BOB;
 import static seedu.address.logic.commands.CommandTestUtil.TAG_DESC_FRIEND;
 import static seedu.address.logic.commands.CommandTestUtil.TAG_DESC_HUSBAND;
 import static seedu.address.logic.commands.CommandTestUtil.VALID_ADDRESS_AMY;
@@ -30,7 +31,9 @@ import static seedu.address.logic.commands.CommandTestUtil.VALID_TAG_FRIEND;
 import static seedu.address.logic.commands.CommandTestUtil.VALID_TAG_HUSBAND;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_ADDRESS;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_EMAIL;
+import static seedu.address.logic.parser.CliSyntax.PREFIX_GROUP;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_PHONE;
+import static seedu.address.logic.parser.CliSyntax.PREFIX_SUBJECT;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_TAG;
 import static seedu.address.logic.parser.CommandParserTestUtil.assertParseFailure;
 import static seedu.address.logic.parser.CommandParserTestUtil.assertParseSuccess;
@@ -38,12 +41,16 @@ import static seedu.address.testutil.TypicalIndexes.INDEX_FIRST_PERSON;
 import static seedu.address.testutil.TypicalIndexes.INDEX_SECOND_PERSON;
 import static seedu.address.testutil.TypicalIndexes.INDEX_THIRD_PERSON;
 
+import java.util.List;
+
 import org.junit.jupiter.api.Test;
 
 import seedu.address.commons.core.index.Index;
 import seedu.address.logic.Messages;
 import seedu.address.logic.commands.EditCommand;
 import seedu.address.logic.commands.EditCommand.EditPersonDescriptor;
+import seedu.address.logic.commands.IndexPersonTarget;
+import seedu.address.logic.commands.IndexRange;
 import seedu.address.model.person.Address;
 import seedu.address.model.person.Email;
 import seedu.address.model.person.Name;
@@ -225,5 +232,70 @@ public class EditCommandParserTest {
         EditCommand expectedCommand = new EditCommand(targetIndex, descriptor);
 
         assertParseSuccess(parser, userInput, expectedCommand);
+    }
+
+    @Test
+    public void parse_multipleIndexesAllowedFields_success() {
+        String userInput = "1-3"
+                + SUBJECT_DESC_AMY
+                + GROUP_DESC_AMY
+                + TAG_DESC_FRIEND
+                + TAG_DESC_FRIEND
+                + TAG_DESC_HUSBAND;
+
+        EditPersonDescriptor descriptor = new EditPersonDescriptorBuilder()
+                .withSubject(VALID_SUBJECT_AMY)
+                .withGroup(VALID_GROUP_AMY)
+                .withTags(VALID_TAG_FRIEND, VALID_TAG_HUSBAND)
+                .build();
+
+        IndexPersonTarget target = new IndexPersonTarget(List.of(
+                new IndexRange(INDEX_FIRST_PERSON, INDEX_THIRD_PERSON)));
+        EditCommand expectedCommand = new EditCommand(target, descriptor);
+
+        assertParseSuccess(parser, userInput, expectedCommand);
+    }
+
+    @Test
+    public void parse_multipleIndexesDisallowedFields_failure() {
+        List<String> disallowedFields = List.of(
+                NAME_DESC_AMY,
+                PHONE_DESC_AMY,
+                EMAIL_DESC_AMY,
+                ADDRESS_DESC_AMY);
+
+        for (String field : disallowedFields) {
+            assertParseFailure(
+                    parser,
+                    "1-2" + field,
+                    EditCommand.MESSAGE_INVALID_BULK_EDIT);
+        }
+    }
+
+    @Test
+    public void parse_multipleIndexesResetTags_success() {
+        EditPersonDescriptor descriptor =
+                new EditPersonDescriptorBuilder().withTags().build();
+
+        IndexPersonTarget target = new IndexPersonTarget(List.of(
+                new IndexRange(INDEX_FIRST_PERSON, INDEX_THIRD_PERSON)));
+
+        assertParseSuccess(
+                parser,
+                "1-3" + TAG_EMPTY,
+                new EditCommand(target, descriptor));
+    }
+
+    @Test
+    public void parse_multipleGroupsOrSubjects_failure() {
+        assertParseFailure(
+                parser,
+                "1-2" + GROUP_DESC_AMY + GROUP_DESC_BOB,
+                Messages.getErrorMessageForDuplicatePrefixes(PREFIX_GROUP));
+
+        assertParseFailure(
+                parser,
+                "1-2" + SUBJECT_DESC_AMY + SUBJECT_DESC_BOB,
+                Messages.getErrorMessageForDuplicatePrefixes(PREFIX_SUBJECT));
     }
 }
