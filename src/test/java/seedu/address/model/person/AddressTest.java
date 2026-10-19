@@ -24,23 +24,25 @@ public class AddressTest {
         // null address
         assertThrows(NullPointerException.class, () -> Address.isValidAddress(null));
 
-        // Telegram handles are unrestricted strings, including empty and whitespace-only values
+        // Empty Telegram handles are valid
         assertTrue(Address.isValidAddress(""));
-        assertTrue(Address.isValidAddress(" "));
-        assertTrue(Address.isValidAddress("@alice_123 / ! Unicode: 用户\nsecond line"));
 
-        // valid addresses
-        assertTrue(Address.isValidAddress("Blk 456, Den Road, #01-355"));
-        assertTrue(Address.isValidAddress("-")); // one character
-        assertTrue(Address.isValidAddress("Leng Inc; 1234 Market St; San Francisco CA 2349879; USA")); // long address
+        // Non-empty Telegram handles must begin with @; remaining text is unrestricted
+        assertTrue(Address.isValidAddress("@alice_123 / ! Unicode: 用户\nsecond line"));
+        assertTrue(Address.isValidAddress("@"));
+
+        // Invalid Telegram handles
+        assertFalse(Address.isValidAddress(" "));
+        assertFalse(Address.isValidAddress("alice_123"));
+        assertFalse(Address.isValidAddress("Blk 456, Den Road, #01-355"));
     }
 
     @Test
     public void equals() {
-        Address address = new Address("Valid Address");
+        Address address = new Address("@valid_handle");
 
         // same values -> returns true
-        assertTrue(address.equals(new Address("Valid Address")));
+        assertTrue(address.equals(new Address("@valid_handle")));
 
         // same object -> returns true
         assertTrue(address.equals(address));
@@ -52,6 +54,6 @@ public class AddressTest {
         assertFalse(address.equals(5.0f));
 
         // different values -> returns false
-        assertFalse(address.equals(new Address("Other Valid Address")));
+        assertFalse(address.equals(new Address("@other_valid_handle")));
     }
 }

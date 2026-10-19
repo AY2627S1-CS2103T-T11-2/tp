@@ -139,6 +139,13 @@ public class JsonAdaptedPersonTest {
     }
 
     @Test
+    public void toModelType_telegramHandleWithoutAt_throwsIllegalValueException() {
+        JsonAdaptedPerson person =
+                new JsonAdaptedPerson(VALID_NAME, VALID_PHONE, VALID_EMAIL, "alice_tan", VALID_TAGS);
+        assertThrows(IllegalValueException.class, Address.MESSAGE_CONSTRAINTS, person::toModelType);
+    }
+
+    @Test
     public void toModelType_clearedOptionalFields_returnsPerson() throws Exception {
         Person clearedPerson = new PersonBuilder(BENSON).withPhone("").withAddress("").withTags().build();
         assertEquals(clearedPerson, new JsonAdaptedPerson(clearedPerson).toModelType());

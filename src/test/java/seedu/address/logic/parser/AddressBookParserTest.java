@@ -45,7 +45,7 @@ public class AddressBookParserTest {
                 .withName("Alice Tan")
                 .withPhone("91234567")
                 .withEmail("alice@example.com")
-                .withAddress("Clementi")
+                .withAddress("@alice_tan")
                 .withSubject("Mathematics")
                 .withGroup("Sec 3A")
                 .build();

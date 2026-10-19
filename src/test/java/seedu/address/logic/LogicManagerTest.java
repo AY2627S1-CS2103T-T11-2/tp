@@ -72,6 +72,32 @@ public class LogicManagerTest {
     }
 
     @Test
+    public void execute_addWithTelegramHandleThenEdit_savesChanges() throws Exception {
+        Person addedPerson = new PersonBuilder()
+                .withName("Alice Tan")
+                .withPhone("91234567")
+                .withEmail("alice@example.com")
+                .withAddress("@alice_tan")
+                .build();
+        Model expectedModel = new ModelManager();
+        expectedModel.addPerson(addedPerson);
+
+        assertCommandSuccess("add n/Alice Tan p/91234567 e/alice@example.com a/@alice_tan",
+                "New person added: Alice Tan; Phone: 91234567; Email: alice@example.com; "
+                        + "Telegram: @alice_tan; Subject: General; Group: General; Tags: ",
+                expectedModel);
+
+        JsonAddressBookStorage storage = new JsonAddressBookStorage(temporaryFolder.resolve("addressBook.json"));
+        assertEquals(expectedModel.getAddressBook(), storage.readAddressBook().get());
+
+        Person editedPerson = new PersonBuilder(addedPerson).withAddress("@alice_updated").build();
+        expectedModel.setPerson(addedPerson, editedPerson);
+        assertCommandSuccess("edit 1 a/@alice_updated",
+                String.format(EditCommand.MESSAGE_EDIT_PERSON_SUCCESS, Messages.format(editedPerson)), expectedModel);
+        assertEquals(expectedModel.getAddressBook(), storage.readAddressBook().get());
+    }
+
+    @Test
     public void execute_clearAndRestoreOptionalFields_savesChanges() throws Exception {
         model.addPerson(AMY);
         Person clearedPerson = new PersonBuilder(AMY).withPhone("").withAddress("").withTags().build();

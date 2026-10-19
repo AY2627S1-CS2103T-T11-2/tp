@@ -39,6 +39,7 @@ import org.junit.jupiter.api.Test;
 
 import seedu.address.logic.Messages;
 import seedu.address.logic.commands.AddCommand;
+import seedu.address.model.person.Address;
 import seedu.address.model.person.Email;
 import seedu.address.model.person.Group;
 import seedu.address.model.person.Name;
@@ -154,8 +155,12 @@ public class AddCommandParserTest {
 
     @Test
     public void parse_optionalFieldsMissing_success() {
-        // zero tags, subject and group default to General
-        Person expectedPerson = new PersonBuilder(AMY).withTags().build();
+        // zero tags, empty Telegram handle, and subject and group default to General
+        Person expectedPerson = new PersonBuilder(AMY).withAddress("").withTags().build();
+        assertParseSuccess(parser, NAME_DESC_AMY + PHONE_DESC_AMY + EMAIL_DESC_AMY,
+                new AddCommand(expectedPerson));
+
+        expectedPerson = new PersonBuilder(AMY).withTags().build();
         assertParseSuccess(parser, NAME_DESC_AMY + PHONE_DESC_AMY + EMAIL_DESC_AMY + ADDRESS_DESC_AMY,
                 new AddCommand(expectedPerson));
     }
@@ -176,10 +181,6 @@ public class AddCommandParserTest {
         assertParseFailure(parser, NAME_DESC_BOB + PHONE_DESC_BOB + VALID_EMAIL_BOB + ADDRESS_DESC_BOB,
                 expectedMessage);
 
-        // missing address prefix
-        assertParseFailure(parser, NAME_DESC_BOB + PHONE_DESC_BOB + EMAIL_DESC_BOB + VALID_ADDRESS_BOB,
-                expectedMessage);
-
         // all prefixes missing
         assertParseFailure(parser, VALID_NAME_BOB + VALID_PHONE_BOB + VALID_EMAIL_BOB + VALID_ADDRESS_BOB,
                 expectedMessage);
@@ -198,6 +199,10 @@ public class AddCommandParserTest {
         // invalid email
         assertParseFailure(parser, NAME_DESC_BOB + PHONE_DESC_BOB + INVALID_EMAIL_DESC + ADDRESS_DESC_BOB
                 + TAG_DESC_HUSBAND + TAG_DESC_FRIEND, Email.MESSAGE_CONSTRAINTS);
+
+        // Telegram handle without leading @
+        assertParseFailure(parser, NAME_DESC_BOB + PHONE_DESC_BOB + EMAIL_DESC_BOB + " a/alice_tan",
+                Address.MESSAGE_CONSTRAINTS);
 
         // invalid tag
         assertParseFailure(parser, NAME_DESC_BOB + PHONE_DESC_BOB + EMAIL_DESC_BOB + ADDRESS_DESC_BOB
@@ -225,6 +230,13 @@ public class AddCommandParserTest {
     public void parse_emptyPhoneAndTelegramHandle_success() {
         Person expectedPerson = new PersonBuilder(BOB).withPhone("").withAddress("").withTags().build();
         assertParseSuccess(parser, NAME_DESC_BOB + " p/" + EMAIL_DESC_BOB + EMPTY_TELEGRAM_DESC,
+                new AddCommand(expectedPerson));
+    }
+
+    @Test
+    public void parse_telegramHandlePresent_success() {
+        Person expectedPerson = new PersonBuilder(BOB).withAddress("@alice_tan").withTags().build();
+        assertParseSuccess(parser, NAME_DESC_BOB + PHONE_DESC_BOB + EMAIL_DESC_BOB + " a/@alice_tan",
                 new AddCommand(expectedPerson));
     }
 }

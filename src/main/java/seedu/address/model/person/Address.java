@@ -9,16 +9,16 @@ import static seedu.address.commons.util.AppUtil.checkArgument;
  */
 public class Address {
 
-    public static final String MESSAGE_CONSTRAINTS = "Telegram handles can be any string, including an empty string";
+    public static final String MESSAGE_CONSTRAINTS = "Telegram handles must be empty or begin with '@'.";
 
-    public static final String VALIDATION_REGEX = "(?s).*";
+    public static final String VALIDATION_REGEX = "(?s)^$|^@.*$";
 
     public final String value;
 
     /**
      * Constructs an {@code Address}.
      *
-     * @param address A valid address.
+     * @param address A valid Telegram handle.
      */
     public Address(String address) {
         requireNonNull(address);
@@ -27,7 +27,7 @@ public class Address {
     }
 
     /**
-     * Returns true if a given string is a valid address.
+     * Returns true if the given string is empty or begins with {@code @}.
      */
     public static boolean isValidAddress(String test) {
         return test.matches(VALIDATION_REGEX);
