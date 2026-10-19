@@ -83,7 +83,7 @@ Format: `help`
 
 Adds a student to TutorTrack.
 
-Format: `add n/NAME e/EMAIL s/SUBJECT g/GROUP [p/PHONE] [h/TELEGRAM_HANDLE] [t/TAG]...`
+Format: `add n/NAME [p/PHONE] e/EMAIL [h/TELEGRAM_HANDLE] s/SUBJECT g/GROUP [t/TAG]...`
 
 * `n/NAME`, `e/EMAIL`, `s/SUBJECT`, and `g/GROUP` are required.
 * `p/PHONE`, `h/TELEGRAM_HANDLE`, and `t/TAG` are optional.
@@ -270,7 +270,7 @@ _Details coming soon ..._
 
 | Action | Format / Example |
 | ------ | ---------------- |
-| **Add** | `add n/NAME e/EMAIL s/SUBJECT g/GROUP [p/PHONE] [h/TELEGRAM_HANDLE] [t/TAG]...` |
+| **Add** | `add n/NAME [p/PHONE] e/EMAIL [h/TELEGRAM_HANDLE] s/SUBJECT g/GROUP [t/TAG]...` |
 | **Clear** | `clear` |
 | **Delete** | `delete INDEX_OR_RANGE[,INDEX_OR_RANGE]...`<br> e.g., `delete 1,3-5,7` |
 | **Edit** | `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [h/TELEGRAM_HANDLE] [s/SUBJECT] [g/GROUP] [t/TAG]...` |
