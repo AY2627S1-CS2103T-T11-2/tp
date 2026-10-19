@@ -24,7 +24,6 @@ import seedu.address.testutil.PersonBuilder;
 public class JsonAdaptedPersonTest {
     private static final String INVALID_NAME = "R@chel";
     private static final String INVALID_PHONE = "+651234";
-    private static final String INVALID_ADDRESS = " ";
     private static final String INVALID_EMAIL = "example.com";
     private static final String INVALID_GROUP = " ";
     private static final String INVALID_TAG = "#friend";
@@ -132,11 +131,17 @@ public class JsonAdaptedPersonTest {
     }
 
     @Test
-    public void toModelType_invalidAddress_throwsIllegalValueException() {
+    public void toModelType_unrestrictedTelegramHandle_returnsPerson() throws Exception {
+        String telegramHandle = "@alice / ! 用户\nsecond line";
         JsonAdaptedPerson person =
-                new JsonAdaptedPerson(VALID_NAME, VALID_PHONE, VALID_EMAIL, INVALID_ADDRESS, VALID_TAGS);
-        String expectedMessage = Address.MESSAGE_CONSTRAINTS;
-        assertThrows(IllegalValueException.class, expectedMessage, person::toModelType);
+                new JsonAdaptedPerson(VALID_NAME, VALID_PHONE, VALID_EMAIL, telegramHandle, VALID_TAGS);
+        assertEquals(new PersonBuilder(BENSON).withAddress(telegramHandle).build(), person.toModelType());
+    }
+
+    @Test
+    public void toModelType_clearedOptionalFields_returnsPerson() throws Exception {
+        Person clearedPerson = new PersonBuilder(BENSON).withPhone("").withAddress("").withTags().build();
+        assertEquals(clearedPerson, new JsonAdaptedPerson(clearedPerson).toModelType());
     }
 
     @Test
