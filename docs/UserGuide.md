@@ -120,18 +120,36 @@ Format: `list`
 
 Edits an existing person in the address book.
 
-Format: `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [s/SUBJECT] [g/GROUP] [t/TAG]... `
+Format: `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/TELEGRAM_HANDLE] [s/SUBJECT] [g/GROUP] [t/TAG]... `
 
 - Edits the person at the specified `INDEX`. The index refers to the index number shown in the displayed person list. The index **must be a positive integer** 1, 2, 3, ...
-- At least one of the optional fields must be provided.
-- Existing values will be updated to the input values.
-- When editing tags, all of the person's existing tags are removed; adding tags is not cumulative.
-- To remove all of a person's tags, enter `t/` without a tag after it.
+- At least one field must be supplied. Supplying an empty optional field to clear it also counts.
+- Supplied values replace the existing values. Omitted fields remain unchanged.
+- Name, Email, Subject, and Group cannot be cleared. Their supplied values must satisfy the validation rules.
+- Phone, Telegram handle, and tags are optional:
+    - Enter `p/` without a value to clear the phone number.
+    - Enter `a/` without a value to clear the Telegram handle.
+    - Enter `t/` without a value to clear all tags.
+- A non-empty phone number must contain only digits and be at least 3 digits long.
+- The Telegram handle accepts unrestricted text; no particular format or `@` prefix is required.
+- Leading and trailing whitespace around values is ignored. Whitespace-only Phone or Telegram values clear those fields.
+- Supplying tags replaces the entire existing tag set. Repeat `t/TAG` to supply multiple tags.
+- An empty `t/` cannot be combined with non-empty tags in the same command.
 
 Examples:
 
-- `edit 1 p/91234567 e/johndoe@example.com` Edits the phone number and email address of the 1st person to be `91234567` and `johndoe@example.com` respectively.
-- `edit 2 n/Betsy Crower t/` Edits the name of the 2nd person to be `Betsy Crower` and clears all existing tags.
+- `edit 1 p/91234567 e/johndoe@example.com`
+  Updates the first person's phone number and email, keeping all other details unchanged.
+- `edit 1 a/@johndoe`
+  Updates the first person's Telegram handle.
+- `edit 1 p/ a/ t/`
+  Clears the first person's phone number, Telegram handle, and tags.
+- `edit 2 t/Student t/Online`
+  Replaces the second person's tags with `Student` and `Online`.
+- `edit 2 n/Betsy Crower t/`
+  Updates the second person's name and clears their tags.
+- `edit 1 n/`
+  Is rejected because Name cannot be empty.
 
 ### Locating persons: `find`
 

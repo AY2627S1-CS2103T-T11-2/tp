@@ -5,6 +5,7 @@ import static seedu.address.logic.commands.CommandTestUtil.ADDRESS_DESC_AMY;
 import static seedu.address.logic.commands.CommandTestUtil.ADDRESS_DESC_BOB;
 import static seedu.address.logic.commands.CommandTestUtil.EMAIL_DESC_AMY;
 import static seedu.address.logic.commands.CommandTestUtil.EMAIL_DESC_BOB;
+import static seedu.address.logic.commands.CommandTestUtil.EMPTY_TELEGRAM_DESC;
 import static seedu.address.logic.commands.CommandTestUtil.INVALID_EMAIL_DESC;
 import static seedu.address.logic.commands.CommandTestUtil.INVALID_NAME_DESC;
 import static seedu.address.logic.commands.CommandTestUtil.INVALID_PHONE_DESC;
@@ -129,6 +130,10 @@ public class AddCommandParserTest {
         assertParseFailure(parser, INVALID_PHONE_DESC + validExpectedPersonString,
                 Messages.getErrorMessageForDuplicatePrefixes(PREFIX_PHONE));
 
+        // empty Telegram handle repeated before another value
+        assertParseFailure(parser, EMPTY_TELEGRAM_DESC + validExpectedPersonString,
+                Messages.getErrorMessageForDuplicatePrefixes(PREFIX_ADDRESS));
+
         // valid value followed by invalid value
 
         // invalid name
@@ -142,6 +147,10 @@ public class AddCommandParserTest {
         // invalid phone
         assertParseFailure(parser, validExpectedPersonString + INVALID_PHONE_DESC,
                 Messages.getErrorMessageForDuplicatePrefixes(PREFIX_PHONE));
+
+        // empty Telegram handle repeated after another value
+        assertParseFailure(parser, validExpectedPersonString + EMPTY_TELEGRAM_DESC,
+                Messages.getErrorMessageForDuplicatePrefixes(PREFIX_ADDRESS));
     }
 
     @Test
@@ -208,11 +217,25 @@ public class AddCommandParserTest {
 
         // two invalid values, only first invalid value reported
         assertParseFailure(parser, INVALID_NAME_DESC + PHONE_DESC_BOB + EMAIL_DESC_BOB + SUBJECT_DESC_CS2103T
-                + GROUP_DESC_T11, Name.MESSAGE_CONSTRAINTS);
+                + GROUP_DESC_T11 + EMPTY_TELEGRAM_DESC, Name.MESSAGE_CONSTRAINTS);
 
         // non-empty preamble
         assertParseFailure(parser, PREAMBLE_NON_EMPTY + NAME_DESC_BOB + PHONE_DESC_BOB + EMAIL_DESC_BOB
                 + ADDRESS_DESC_BOB + SUBJECT_DESC_CS2103T + GROUP_DESC_T11 + TAG_DESC_HUSBAND + TAG_DESC_FRIEND,
                 String.format(MESSAGE_INVALID_COMMAND_FORMAT, AddCommand.MESSAGE_USAGE));
+    }
+
+    @Test
+    public void parse_emptyPhoneAndTelegramHandle_success() {
+        Person expectedPerson = new PersonBuilder(BOB)
+                .withPhone("")
+                .withAddress("")
+                .withSubject("CS2103T")
+                .withGroup("T11")
+                .withTags()
+                .build();
+        assertParseSuccess(parser, NAME_DESC_BOB + " p/" + EMAIL_DESC_BOB
+                        + SUBJECT_DESC_CS2103T + GROUP_DESC_T11 + EMPTY_TELEGRAM_DESC,
+                new AddCommand(expectedPerson));
     }
 }

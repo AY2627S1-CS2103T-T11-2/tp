@@ -4,17 +4,14 @@ import static java.util.Objects.requireNonNull;
 import static seedu.address.commons.util.AppUtil.checkArgument;
 
 /**
- * Represents a Person's address in the address book.
+ * Represents an optional Telegram handle, retaining the legacy Address name for storage compatibility.
  * Guarantees: immutable; is valid as declared in {@link #isValidAddress(String)}
  */
 public class Address {
 
-    public static final String MESSAGE_CONSTRAINTS = "Addresses can take any values when provided";
+    public static final String MESSAGE_CONSTRAINTS = "Telegram handles can be any string, including an empty string";
 
-    /*
-     * The first character of a non-empty address must not be a whitespace.
-     */
-    public static final String VALIDATION_REGEX = "(?:[^\\s].*)?";
+    public static final String VALIDATION_REGEX = "(?s).*";
 
     public final String value;
 

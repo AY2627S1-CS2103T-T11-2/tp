@@ -111,6 +111,18 @@ public class ParserUtilTest {
     }
 
     @Test
+    public void parseAddress_emptyOrWhitespace_returnsEmptyTelegramHandle() throws Exception {
+        assertEquals(new Address(""), ParserUtil.parseAddress(""));
+        assertEquals(new Address(""), ParserUtil.parseAddress(WHITESPACE));
+    }
+
+    @Test
+    public void parsePhone_emptyOrWhitespace_returnsEmptyPhone() throws Exception {
+        assertEquals(new Phone(""), ParserUtil.parsePhone(""));
+        assertEquals(new Phone(""), ParserUtil.parsePhone(WHITESPACE));
+    }
+
+    @Test
     public void parseAddress_validValueWithoutWhitespace_returnsAddress() throws Exception {
         Address expectedAddress = new Address(VALID_ADDRESS);
         assertEquals(expectedAddress, ParserUtil.parseAddress(VALID_ADDRESS));
