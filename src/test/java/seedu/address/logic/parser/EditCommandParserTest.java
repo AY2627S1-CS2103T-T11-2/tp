@@ -298,6 +298,9 @@ public class EditCommandParserTest {
                 parser,
                 "1-2" + SUBJECT_DESC_AMY + SUBJECT_DESC_BOB,
                 Messages.getErrorMessageForDuplicatePrefixes(PREFIX_SUBJECT));
+    }
+
+    @Test
     public void parse_clearPhone_success() {
         EditPersonDescriptor descriptor = new EditPersonDescriptorBuilder().withPhone("").build();
         EditCommand expectedCommand = new EditCommand(INDEX_FIRST_PERSON, descriptor);
