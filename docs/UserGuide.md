@@ -31,7 +31,7 @@ TutorTrack is a **desktop application for tutors to manage student contacts, opt
 
    - `list` : Lists all students.
 
-   - `add n/John Doe p/98765432 e/johnd@example.com a/@john_doe s/Mathematics g/Sec 3A` : Adds a student named `John Doe` to TutorTrack.
+   - `add n/John Doe p/98765432 e/johnd@example.com h/@john_doe s/Mathematics g/Sec 3A` : Adds a student named `John Doe` to TutorTrack.
 
    * `delete 2,4-6` : Deletes the 2nd, 4th, 5th and 6th contacts shown in the current list.
 
@@ -80,11 +80,11 @@ Format: `help`
 
 Adds a student to TutorTrack.
 
-Format: `add n/NAME p/PHONE e/EMAIL [a/TELEGRAM_HANDLE] [s/SUBJECT] [g/GROUP] [t/TAG]...`
+Format: `add n/NAME p/PHONE e/EMAIL [h/TELEGRAM_HANDLE] [s/SUBJECT] [g/GROUP] [t/TAG]...`
 
 * `n/NAME`, `p/PHONE`, and `e/EMAIL` are required.
-* `a/TELEGRAM_HANDLE`, `s/SUBJECT`, `g/GROUP`, and `t/TAG` are optional.
-* If `a/TELEGRAM_HANDLE` is omitted or supplied without a value, the student has no Telegram handle.
+* `h/TELEGRAM_HANDLE`, `s/SUBJECT`, `g/GROUP`, and `t/TAG` are optional.
+* If `h/TELEGRAM_HANDLE` is omitted or supplied without a value, the student has no Telegram handle.
 * If `s/SUBJECT` is omitted, the subject is set to `General`.
 * If `g/GROUP` is omitted, the group is set to `General`.
 * A student can have zero or more tags. To add multiple tags, repeat the `t/TAG` parameter.
@@ -108,13 +108,13 @@ the other details are different.
 
 <box type="tip" seamless>
 
-**Tip:** Use `a/`, `s/`, and `g/` when the Telegram handle, subject, or group is known. Otherwise, the details can be
+**Tip:** Use `h/`, `s/`, and `g/` when the Telegram handle, subject, or group is known. Otherwise, the details can be
 updated later using the `edit` command; omitted subjects and groups are recorded as `General`.
 </box>
 
 Examples:
-* `add n/Alice Tan p/91234567 e/alice@example.com a/@alice_tan s/Mathematics g/Sec 3A t/Student`
-* `add n/Bob Lee p/92345678 e/bob@example.com a/@bob_lee s/Physics g/J1A t/Student t/Online`
+* `add n/Alice Tan p/91234567 e/alice@example.com h/@alice_tan s/Mathematics g/Sec 3A t/Student`
+* `add n/Bob Lee p/92345678 e/bob@example.com h/@bob_lee s/Physics g/J1A t/Student t/Online`
 * `add n/Charlie Lim p/93456789 e/charlie@example.com` adds a student with no Telegram handle, whose subject and group
   are both `General`, and who has no tags.
 
@@ -128,7 +128,7 @@ Format: `list`
 
 Edits an existing person in the address book.
 
-Format: `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/TELEGRAM_HANDLE] [s/SUBJECT] [g/GROUP] [t/TAG]...`
+Format: `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [h/TELEGRAM_HANDLE] [s/SUBJECT] [g/GROUP] [t/TAG]...`
 
 - Edits the person at the specified `INDEX`. The index refers to the index number shown in the displayed person list. The index **must be a positive integer** 1, 2, 3, ...
 - At least one field must be supplied. Supplying an empty optional field to clear it also counts.
@@ -136,7 +136,7 @@ Format: `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/TELEGRAM_HANDLE] [s/SUBJECT]
 - Name, Email, Subject, and Group cannot be cleared. Their supplied values must satisfy the validation rules.
 - Phone, Telegram handle, and tags are optional:
     - Enter `p/` without a value to clear the phone number.
-    - Enter `a/` without a value to clear the Telegram handle.
+    - Enter `h/` without a value to clear the Telegram handle.
     - Enter `t/` without a value to clear all tags.
 - A non-empty phone number must contain only digits and be at least 3 digits long.
 - A non-empty Telegram handle must begin with `@`. No other Telegram username rules are checked.
@@ -148,9 +148,9 @@ Examples:
 
 - `edit 1 p/91234567 e/johndoe@example.com`
   Updates the first person's phone number and email, keeping all other details unchanged.
-- `edit 1 a/@alice_tan`
+- `edit 1 h/@alice_tan`
   Updates the first person's Telegram handle.
-- `edit 1 p/ a/ t/`
+- `edit 1 p/ h/ t/`
   Clears the first person's phone number, Telegram handle, and tags.
 - `edit 2 t/Student t/Online`
   Replaces the second person's tags with `Student` and `Online`.
@@ -259,10 +259,10 @@ _Details coming soon ..._
 
 | Action | Format / Example |
 | ------ | ---------------- |
-| **Add** | `add n/NAME p/PHONE e/EMAIL [a/TELEGRAM_HANDLE] [s/SUBJECT] [g/GROUP] [t/TAG]...` |
+| **Add** | `add n/NAME p/PHONE e/EMAIL [h/TELEGRAM_HANDLE] [s/SUBJECT] [g/GROUP] [t/TAG]...` |
 | **Clear** | `clear` |
 | **Delete** | `delete INDEX_OR_RANGE[,INDEX_OR_RANGE]...`<br> e.g., `delete 1,3-5,7` |
-| **Edit** | `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/TELEGRAM_HANDLE] [s/SUBJECT] [g/GROUP] [t/TAG]...` |
+| **Edit** | `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [h/TELEGRAM_HANDLE] [s/SUBJECT] [g/GROUP] [t/TAG]...` |
 | **Find** | `find KEYWORD [MORE_KEYWORDS] [s/SUBJECT] [g/GROUP]` or `find "PHRASE" [s/SUBJECT] [g/GROUP]` |
 | **List** | `list` |
 | **Help** | `help` |
