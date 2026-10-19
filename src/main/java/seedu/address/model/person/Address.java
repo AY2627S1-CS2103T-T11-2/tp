@@ -9,13 +9,12 @@ import static seedu.address.commons.util.AppUtil.checkArgument;
  */
 public class Address {
 
-    public static final String MESSAGE_CONSTRAINTS = "Addresses can take any values, and should not be blank";
+    public static final String MESSAGE_CONSTRAINTS = "Addresses can take any values when provided";
 
     /*
-     * The first character of the address must not be a whitespace,
-     * otherwise " " (a blank string) becomes a valid input.
+     * The first character of a non-empty address must not be a whitespace.
      */
-    public static final String VALIDATION_REGEX = "[^\\s].*";
+    public static final String VALIDATION_REGEX = "(?:[^\\s].*)?";
 
     public final String value;
 
@@ -35,6 +34,13 @@ public class Address {
      */
     public static boolean isValidAddress(String test) {
         return test.matches(VALIDATION_REGEX);
+    }
+
+    /**
+     * Returns true if this address is absent.
+     */
+    public boolean isEmpty() {
+        return value.isEmpty();
     }
 
     @Override

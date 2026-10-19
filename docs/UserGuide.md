@@ -80,23 +80,21 @@ Format: `help`
 
 Adds a student to TutorTrack.
 
-Format: `add n/NAME p/PHONE e/EMAIL a/ADDRESS [s/SUBJECT] [g/GROUP] [t/TAG]...`
+Format: `add n/NAME e/EMAIL s/SUBJECT g/GROUP [p/PHONE] [a/ADDRESS] [t/TAG]...`
 
-* `n/NAME`, `p/PHONE`, `e/EMAIL`, and `a/ADDRESS` are required.
-* `s/SUBJECT`, `g/GROUP`, and `t/TAG` are optional.
-* If `s/SUBJECT` is omitted, the subject is set to `General`.
-* If `g/GROUP` is omitted, the group is set to `General`.
+* `n/NAME`, `e/EMAIL`, `s/SUBJECT`, and `g/GROUP` are required.
+* `p/PHONE`, `a/ADDRESS`, and `t/TAG` are optional.
 * A student can have zero or more tags. To add multiple tags, repeat the `t/TAG` parameter.
 * Parameters can be supplied in any order.
 
 The following validation rules apply:
 
 * Names and subjects must be non-blank and contain only alphanumeric characters and spaces.
-* Phone numbers must contain only digits and be at least 3 digits long.
+* Phone numbers, when provided, must contain only digits and be at least 3 digits long.
 * Emails must use the `local-part@domain` format. The local part must start and end with an alphanumeric character;
   `+`, `_`, `.`, and `-` are allowed only between alphanumeric characters. Domain labels may be separated by periods,
   may contain hyphens only between alphanumeric characters, and the final label must be at least 2 characters long.
-* Addresses and groups can contain any characters but must not be blank.
+* Addresses, when provided, and groups can contain any characters but must not be blank.
 * Tags must be non-blank and contain only alphanumeric characters.
 * Leading and trailing whitespace around each value is ignored.
 
@@ -106,15 +104,11 @@ the other details are different.
 
 <box type="tip" seamless>
 
-**Tip:** Use `s/` and `g/` when the subject or group is known. Otherwise, TutorTrack records `General`, and the details can
-be updated later using the `edit` command.
-</box>
-
 Examples:
 * `add n/Alice Tan p/91234567 e/alice@example.com a/Clementi s/Mathematics g/Sec 3A t/Student`
 * `add n/Bob Lee p/92345678 e/bob@example.com a/Tampines s/Physics g/J1A t/Student t/Online`
-* `add n/Charlie Lim p/93456789 e/charlie@example.com a/Bishan` adds a student whose subject and group are both
-  `General` and who has no tags.
+* `add n/Charlie Lim e/charlie@example.com s/Mathematics g/Sec 3A` adds a student without a phone number, address,
+  or tags.
 
 ### Listing all persons: `list`
 
