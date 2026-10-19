@@ -27,7 +27,7 @@ public class AddCommand extends Command {
             + PREFIX_NAME + "NAME "
             + PREFIX_PHONE + "PHONE "
             + PREFIX_EMAIL + "EMAIL "
-            + PREFIX_ADDRESS + "ADDRESS "
+            + PREFIX_ADDRESS + "TELEGRAM_HANDLE "
             + "[" + PREFIX_SUBJECT + "SUBJECT] "
             + "[" + PREFIX_GROUP + "GROUP] "
             + "[" + PREFIX_TAG + "TAG]...\n"
@@ -35,7 +35,7 @@ public class AddCommand extends Command {
             + PREFIX_NAME + "Alice Tan "
             + PREFIX_PHONE + "91234567 "
             + PREFIX_EMAIL + "alice@gmail.com "
-            + PREFIX_ADDRESS + "NA "
+            + PREFIX_ADDRESS + "@alice "
             + PREFIX_SUBJECT + "CS2103T "
             + PREFIX_GROUP + "T11 "
             + PREFIX_TAG + "Student";
