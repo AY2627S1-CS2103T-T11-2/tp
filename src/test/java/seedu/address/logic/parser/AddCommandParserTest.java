@@ -84,6 +84,7 @@ public class AddCommandParserTest {
     public void parse_repeatedNonTagValue_failure() {
         String validExpectedPersonString = NAME_DESC_BOB + PHONE_DESC_BOB + EMAIL_DESC_BOB
                 + ADDRESS_DESC_BOB + SUBJECT_DESC_CS2103T + GROUP_DESC_T11 + TAG_DESC_FRIEND;
+        String requiredFieldsString = NAME_DESC_BOB + EMAIL_DESC_BOB + SUBJECT_DESC_CS2103T + GROUP_DESC_T11;
 
         // multiple names
         assertParseFailure(parser, NAME_DESC_AMY + validExpectedPersonString,
@@ -150,6 +151,12 @@ public class AddCommandParserTest {
 
         // empty Telegram handle repeated after another value
         assertParseFailure(parser, validExpectedPersonString + EMPTY_TELEGRAM_DESC,
+                Messages.getErrorMessageForDuplicatePrefixes(PREFIX_ADDRESS));
+
+        // repeated empty optional values
+        assertParseFailure(parser, requiredFieldsString + " p/ p/",
+                Messages.getErrorMessageForDuplicatePrefixes(PREFIX_PHONE));
+        assertParseFailure(parser, requiredFieldsString + EMPTY_TELEGRAM_DESC + EMPTY_TELEGRAM_DESC,
                 Messages.getErrorMessageForDuplicatePrefixes(PREFIX_ADDRESS));
     }
 
@@ -226,7 +233,19 @@ public class AddCommandParserTest {
     }
 
     @Test
-    public void parse_emptyPhoneAndTelegramHandle_success() {
+    public void parse_emptyRequiredValue_failure() {
+        assertParseFailure(parser, " n/" + EMAIL_DESC_BOB + SUBJECT_DESC_CS2103T + GROUP_DESC_T11,
+                Name.MESSAGE_CONSTRAINTS);
+        assertParseFailure(parser, NAME_DESC_BOB + " e/" + SUBJECT_DESC_CS2103T + GROUP_DESC_T11,
+                Email.MESSAGE_CONSTRAINTS);
+        assertParseFailure(parser, NAME_DESC_BOB + EMAIL_DESC_BOB + " s/" + GROUP_DESC_T11,
+                Subject.MESSAGE_CONSTRAINTS);
+        assertParseFailure(parser, NAME_DESC_BOB + EMAIL_DESC_BOB + SUBJECT_DESC_CS2103T + " g/",
+                Group.MESSAGE_CONSTRAINTS);
+    }
+
+    @Test
+    public void parse_emptyOptionalFields_success() {
         Person expectedPerson = new PersonBuilder(BOB)
                 .withPhone("")
                 .withAddress("")
@@ -234,8 +253,14 @@ public class AddCommandParserTest {
                 .withGroup("T11")
                 .withTags()
                 .build();
+        // Explicitly blank optional prefixes are equivalent to omitting them.
         assertParseSuccess(parser, NAME_DESC_BOB + " p/" + EMAIL_DESC_BOB
                         + SUBJECT_DESC_CS2103T + GROUP_DESC_T11 + EMPTY_TELEGRAM_DESC,
+                new AddCommand(expectedPerson));
+
+        // The tokenizer trims whitespace-only optional values to empty values.
+        assertParseSuccess(parser, NAME_DESC_BOB + " p/    " + EMAIL_DESC_BOB
+                        + SUBJECT_DESC_CS2103T + GROUP_DESC_T11 + " a/    ",
                 new AddCommand(expectedPerson));
     }
 }
