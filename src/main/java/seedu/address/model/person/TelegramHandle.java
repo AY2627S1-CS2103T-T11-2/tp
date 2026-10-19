@@ -33,6 +33,13 @@ public class TelegramHandle {
         return test.matches(VALIDATION_REGEX);
     }
 
+    /**
+     * Returns true if this Telegram handle is absent.
+     */
+    public boolean isEmpty() {
+        return value.isEmpty();
+    }
+
     @Override
     public String toString() {
         return value;

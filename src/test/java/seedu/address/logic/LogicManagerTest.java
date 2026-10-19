@@ -4,8 +4,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static seedu.address.logic.Messages.MESSAGE_INVALID_PERSON_DISPLAYED_INDEX;
 import static seedu.address.logic.Messages.MESSAGE_UNKNOWN_COMMAND;
 import static seedu.address.logic.commands.CommandTestUtil.EMAIL_DESC_AMY;
+import static seedu.address.logic.commands.CommandTestUtil.GROUP_DESC_AMY;
 import static seedu.address.logic.commands.CommandTestUtil.NAME_DESC_AMY;
 import static seedu.address.logic.commands.CommandTestUtil.PHONE_DESC_AMY;
+import static seedu.address.logic.commands.CommandTestUtil.SUBJECT_DESC_AMY;
 import static seedu.address.logic.commands.CommandTestUtil.TELEGRAM_HANDLE_DESC_AMY;
 import static seedu.address.testutil.Assert.assertThrows;
 import static seedu.address.testutil.TypicalPersons.AMY;
@@ -78,13 +80,16 @@ public class LogicManagerTest {
                 .withPhone("91234567")
                 .withEmail("alice@example.com")
                 .withTelegramHandle("@alice_tan")
+                .withSubject("Mathematics")
+                .withGroup("T11")
                 .build();
         Model expectedModel = new ModelManager();
         expectedModel.addPerson(addedPerson);
 
-        assertCommandSuccess("add n/Alice Tan p/91234567 e/alice@example.com h/@alice_tan",
+        assertCommandSuccess("add n/Alice Tan p/91234567 e/alice@example.com h/@alice_tan "
+                        + "s/Mathematics g/T11",
                 "New person added: Alice Tan; Phone: 91234567; Email: alice@example.com; "
-                        + "Telegram: @alice_tan; Subject: General; Group: General; Tags: ",
+                        + "Telegram: @alice_tan; Subject: Mathematics; Group: T11; Tags: ",
                 expectedModel);
 
         JsonAddressBookStorage storage = new JsonAddressBookStorage(temporaryFolder.resolve("addressBook.json"));
@@ -215,8 +220,12 @@ public class LogicManagerTest {
 
         // Triggers the saveAddressBook method by executing an add command
         String addCommand = AddCommand.COMMAND_WORD + NAME_DESC_AMY + PHONE_DESC_AMY
-                + EMAIL_DESC_AMY + TELEGRAM_HANDLE_DESC_AMY;
-        Person expectedPerson = new PersonBuilder(AMY).withTags().build();
+                + EMAIL_DESC_AMY + TELEGRAM_HANDLE_DESC_AMY + SUBJECT_DESC_AMY + GROUP_DESC_AMY;
+        Person expectedPerson = new PersonBuilder(AMY)
+                .withSubject("CS2100")
+                .withGroup("T35")
+                .withTags()
+                .build();
         ModelManager expectedModel = new ModelManager();
         expectedModel.addPerson(expectedPerson);
         assertCommandFailure(addCommand, CommandException.class, expectedMessage, expectedModel);

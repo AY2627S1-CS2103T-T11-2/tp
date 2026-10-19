@@ -113,6 +113,14 @@ public class EditCommandParserTest {
     }
 
     @Test
+    public void parse_legacyAddressPrefix_failure() {
+        assertParseFailure(parser, "1 a/Clementi",
+                String.format(MESSAGE_INVALID_COMMAND_FORMAT, EditCommand.MESSAGE_USAGE));
+        assertParseFailure(parser, "1 a/",
+                String.format(MESSAGE_INVALID_COMMAND_FORMAT, EditCommand.MESSAGE_USAGE));
+    }
+
+    @Test
     public void parse_allFieldsSpecified_success() {
         Index targetIndex = INDEX_SECOND_PERSON;
         String userInput = targetIndex.getOneBased() + PHONE_DESC_BOB + TAG_DESC_HUSBAND

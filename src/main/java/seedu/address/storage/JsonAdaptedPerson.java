@@ -118,10 +118,10 @@ class JsonAdaptedPerson {
             throw new IllegalValueException(
                     String.format(MISSING_FIELD_MESSAGE_FORMAT, TelegramHandle.class.getSimpleName()));
         }
-        if (!TelegramHandle.isValidTelegramHandle(telegramHandle)) {
-            throw new IllegalValueException(TelegramHandle.MESSAGE_CONSTRAINTS);
-        }
-        final TelegramHandle modelTelegramHandle = new TelegramHandle(telegramHandle);
+        // The persisted "address" property stored physical addresses before it was repurposed for Telegram handles.
+        // Clear an incompatible legacy value so the rest of the person's data can still be loaded safely.
+        String telegramHandleValue = TelegramHandle.isValidTelegramHandle(telegramHandle) ? telegramHandle : "";
+        final TelegramHandle modelTelegramHandle = new TelegramHandle(telegramHandleValue);
 
         String subjectValue = subject == null ? DEFAULT_SUBJECT : subject;
         if (!Subject.isValidSubject(subjectValue)) {

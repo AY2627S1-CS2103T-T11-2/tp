@@ -58,8 +58,18 @@ public class PersonCard extends UiPart<Region> {
         email.setText(person.getEmail().value);
         subject.setText(person.getSubject().subject);
         group.setText(person.getGroup().group);
+        setVisibleAndManaged(phone, !person.getPhone().isEmpty());
+        setVisibleAndManaged(telegramHandle, !person.getTelegramHandle().isEmpty());
         person.getTags().stream()
                 .sorted(Comparator.comparing(tag -> tag.tagName))
                 .forEach(tag -> tags.getChildren().add(new Label(tag.tagName)));
+    }
+
+    /**
+     * Shows a label only when its corresponding field has a value.
+     */
+    private void setVisibleAndManaged(Label label, boolean isVisible) {
+        label.setVisible(isVisible);
+        label.setManaged(isVisible);
     }
 }

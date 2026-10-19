@@ -3,6 +3,7 @@ package seedu.address.logic.parser;
 import static seedu.address.logic.Messages.MESSAGE_INVALID_COMMAND_FORMAT;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_EMAIL;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_GROUP;
+import static seedu.address.logic.parser.CliSyntax.PREFIX_LEGACY_ADDRESS;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_NAME;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_PHONE;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_SUBJECT;
@@ -28,9 +29,6 @@ import seedu.address.model.tag.Tag;
  */
 public class AddCommandParser implements Parser<AddCommand> {
 
-    private static final String DEFAULT_SUBJECT = "General";
-    private static final String DEFAULT_GROUP = "General";
-
     /**
      * Parses the given {@code String} of arguments in the context of the AddCommand
      * and returns an AddCommand object for execution.
@@ -39,9 +37,10 @@ public class AddCommandParser implements Parser<AddCommand> {
     public AddCommand parse(String args) throws ParseException {
         ArgumentMultimap argMultimap =
                 ArgumentTokenizer.tokenize(args, PREFIX_NAME, PREFIX_PHONE, PREFIX_EMAIL, PREFIX_TELEGRAM_HANDLE,
-                        PREFIX_SUBJECT, PREFIX_GROUP, PREFIX_TAG);
+                        PREFIX_SUBJECT, PREFIX_GROUP, PREFIX_TAG, PREFIX_LEGACY_ADDRESS);
 
-        if (!arePrefixesPresent(argMultimap, PREFIX_NAME, PREFIX_PHONE, PREFIX_EMAIL)
+        if (!arePrefixesPresent(argMultimap, PREFIX_NAME, PREFIX_EMAIL, PREFIX_SUBJECT, PREFIX_GROUP)
+                || argMultimap.getValue(PREFIX_LEGACY_ADDRESS).isPresent()
                 || !argMultimap.getPreamble().isEmpty()) {
             throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, AddCommand.MESSAGE_USAGE));
         }
@@ -49,12 +48,12 @@ public class AddCommandParser implements Parser<AddCommand> {
         argMultimap.verifyNoDuplicatePrefixesFor(PREFIX_NAME, PREFIX_PHONE, PREFIX_EMAIL, PREFIX_TELEGRAM_HANDLE,
                 PREFIX_SUBJECT, PREFIX_GROUP);
         Name name = ParserUtil.parseName(argMultimap.getValue(PREFIX_NAME).get());
-        Phone phone = ParserUtil.parsePhone(argMultimap.getValue(PREFIX_PHONE).get());
+        Phone phone = ParserUtil.parsePhone(argMultimap.getValue(PREFIX_PHONE).orElse(""));
         Email email = ParserUtil.parseEmail(argMultimap.getValue(PREFIX_EMAIL).get());
         TelegramHandle telegramHandle = ParserUtil.parseTelegramHandle(
                 argMultimap.getValue(PREFIX_TELEGRAM_HANDLE).orElse(""));
-        Subject subject = ParserUtil.parseSubject(argMultimap.getValue(PREFIX_SUBJECT).orElse(DEFAULT_SUBJECT));
-        Group group = ParserUtil.parseGroup(argMultimap.getValue(PREFIX_GROUP).orElse(DEFAULT_GROUP));
+        Subject subject = ParserUtil.parseSubject(argMultimap.getValue(PREFIX_SUBJECT).get());
+        Group group = ParserUtil.parseGroup(argMultimap.getValue(PREFIX_GROUP).get());
         Set<Tag> tagList = ParserUtil.parseTags(argMultimap.getAllValues(PREFIX_TAG));
 
         Person person = new Person(name, phone, email, telegramHandle, tagList, subject, group);

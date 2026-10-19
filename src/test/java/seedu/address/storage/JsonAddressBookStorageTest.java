@@ -63,6 +63,15 @@ public class JsonAddressBookStorageTest {
     }
 
     @Test
+    public void readAddressBook_legacyPhysicalAddress_preservesPersonAndClearsTelegramHandle() throws Exception {
+        ReadOnlyAddressBook addressBook = readAddressBook("legacyPhysicalAddressBook.json").orElseThrow();
+
+        assertEquals(1, addressBook.getPersonList().size());
+        assertEquals("Legacy Person", addressBook.getPersonList().getFirst().getName().toString());
+        assertEquals("", addressBook.getPersonList().getFirst().getTelegramHandle().toString());
+    }
+
+    @Test
     public void readAndSaveAddressBook_allInOrder_success() throws Exception {
         Path filePath = testFolder.resolve("TempAddressBook.json");
         AddressBook original = getTypicalAddressBook();

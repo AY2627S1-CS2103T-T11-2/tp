@@ -142,10 +142,12 @@ public class JsonAdaptedPersonTest {
     }
 
     @Test
-    public void toModelType_telegramHandleWithoutAt_throwsIllegalValueException() {
+    public void toModelType_legacyPhysicalAddress_clearsTelegramHandle() throws Exception {
         JsonAdaptedPerson person =
-                new JsonAdaptedPerson(VALID_NAME, VALID_PHONE, VALID_EMAIL, "alice_tan", VALID_TAGS);
-        assertThrows(IllegalValueException.class, TelegramHandle.MESSAGE_CONSTRAINTS, person::toModelType);
+                new JsonAdaptedPerson(VALID_NAME, VALID_PHONE, VALID_EMAIL, "123 Clementi Road", VALID_TAGS);
+        Person expectedPerson = new PersonBuilder(BENSON).withTelegramHandle("").build();
+
+        assertEquals(expectedPerson, person.toModelType());
     }
 
     @Test
