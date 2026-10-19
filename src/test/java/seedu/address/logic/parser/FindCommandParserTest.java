@@ -6,6 +6,7 @@ import static seedu.address.logic.parser.CommandParserTestUtil.assertParseSucces
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 
@@ -14,6 +15,7 @@ import seedu.address.model.person.FindPredicate;
 import seedu.address.model.person.Group;
 import seedu.address.model.person.NameContainsSearchTermsPredicate;
 import seedu.address.model.person.Subject;
+import seedu.address.model.tag.Tag;
 
 public class FindCommandParserTest {
 
@@ -65,32 +67,52 @@ public class FindCommandParserTest {
     @Test
     public void parse_subjectAndGroupFilters_returnsFindCommand() {
         FindCommand subjectCommand = new FindCommand(new FindPredicate(
-                Optional.empty(), Optional.of(new Subject("Mathematics")), Optional.empty()));
+                Optional.empty(), Optional.of(new Subject("Mathematics")), Optional.empty(), Set.of()));
         assertParseSuccess(parser, "s/Mathematics", subjectCommand);
 
         FindCommand groupCommand = new FindCommand(new FindPredicate(
-                Optional.empty(), Optional.empty(), Optional.of(new Group("G01"))));
+                Optional.empty(), Optional.empty(), Optional.of(new Group("G01")), Set.of()));
         assertParseSuccess(parser, "g/G01", groupCommand);
 
         FindCommand combinedCommand = new FindCommand(new FindPredicate(
-                Optional.empty(), Optional.of(new Subject("Computer Science")), Optional.of(new Group("G02"))));
+                Optional.empty(), Optional.of(new Subject("Computer Science")), Optional.of(new Group("G02")),
+                Set.of()));
         assertParseSuccess(parser, "s/Computer Science g/G02", combinedCommand);
 
         FindCommand phraseAndSubjectCommand = new FindCommand(new FindPredicate(
                 Optional.of(new NameContainsSearchTermsPredicate(List.of(), List.of("john"))),
-                Optional.of(new Subject("CS3434")), Optional.empty()));
+                Optional.of(new Subject("CS3434")), Optional.empty(), Set.of()));
         assertParseSuccess(parser, "\"john\" s/CS3434", phraseAndSubjectCommand);
 
         FindCommand keywordsAndAllFiltersCommand = new FindCommand(new FindPredicate(
                 Optional.of(new NameContainsSearchTermsPredicate(List.of("John", "Jane"), List.of())),
-                Optional.of(new Subject("CS3434")), Optional.of(new Group("T11"))));
+                Optional.of(new Subject("CS3434")), Optional.of(new Group("T11")), Set.of()));
         assertParseSuccess(parser, "John Jane s/CS3434 g/T11", keywordsAndAllFiltersCommand);
     }
 
     @Test
-    public void parse_invalidSubjectAndGroupFilters_throwsParseException() {
+    public void parse_tagFilters_returnsFindCommand() {
+        FindCommand tagCommand = new FindCommand(new FindPredicate(
+                Optional.empty(), Optional.empty(), Optional.empty(), Set.of(new Tag("highParticipation"))));
+        assertParseSuccess(parser, "t/highParticipation", tagCommand);
+
+        FindCommand multipleTagsCommand = new FindCommand(new FindPredicate(
+                Optional.empty(), Optional.empty(), Optional.empty(),
+                Set.of(new Tag("lowAttendance"), new Tag("needsHelp"))));
+        assertParseSuccess(parser, "t/lowAttendance t/needsHelp", multipleTagsCommand);
+
+        FindCommand allFiltersCommand = new FindCommand(new FindPredicate(
+                Optional.of(new NameContainsSearchTermsPredicate(List.of("John"), List.of())),
+                Optional.of(new Subject("CS3434")), Optional.of(new Group("T11")),
+                Set.of(new Tag("consultation"))));
+        assertParseSuccess(parser, "John s/CS3434 g/T11 t/consultation", allFiltersCommand);
+    }
+
+    @Test
+    public void parse_invalidSubjectGroupAndTagFilters_throwsParseException() {
         assertParseFailure(parser, "s/", Subject.MESSAGE_CONSTRAINTS);
         assertParseFailure(parser, "g/", Group.MESSAGE_CONSTRAINTS);
+        assertParseFailure(parser, "t/", Tag.MESSAGE_CONSTRAINTS);
     }
 
     @Test

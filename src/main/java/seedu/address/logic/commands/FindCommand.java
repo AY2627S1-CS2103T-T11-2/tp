@@ -1,6 +1,9 @@
 package seedu.address.logic.commands;
 
 import static java.util.Objects.requireNonNull;
+import static seedu.address.logic.parser.CliSyntax.PREFIX_GROUP;
+import static seedu.address.logic.parser.CliSyntax.PREFIX_SUBJECT;
+import static seedu.address.logic.parser.CliSyntax.PREFIX_TAG;
 
 import java.util.function.Predicate;
 
@@ -10,23 +13,23 @@ import seedu.address.model.Model;
 import seedu.address.model.person.Person;
 
 /**
- * Finds and lists all persons in the address book whose name match any argument keyword or quoted phrase.
- * and who match all the supplised subject and group filters.
+ * Finds and lists persons who match the supplied name, subject, group, and tag criteria.
  */
 public class FindCommand extends Command {
 
     public static final String COMMAND_WORD = "find";
 
-    public static final String MESSAGE_USAGE = COMMAND_WORD + ": Finds all persons whose names match any search term "
-            + "(case-insensitive) and match any supplied subject or group filters.\\n"
-            + "Parameters: [SEARCH_TERM [MORE_SEARCH_TERMS]...] [s/SUBJECT] [g/GROUP]\\n"
+    public static final String MESSAGE_USAGE = COMMAND_WORD + ": Finds persons matching the supplied name, subject, "
+            + "group, and tag criteria (case-insensitive).\n"
+            + "Parameters: [SEARCH_TERM [MORE_SEARCH_TERMS]...] "
+            + "[" + PREFIX_SUBJECT + "SUBJECT] [" + PREFIX_GROUP + "GROUP] [" + PREFIX_TAG + "TAG]...\n"
             + "A search term is either a KEYWORD (one word without quotation marks) or a \"PHRASE\" "
-            + "(one or more words enclosed in quotation marks).\\n"
-            + "Examples:\\n"
-            + "  " + COMMAND_WORD + " alice bob\\n"
-            + "  " + COMMAND_WORD + " \"Alice Pauline\"\\n"
-            + "  " + COMMAND_WORD + " alice \"Bob Chen\"\\n"
-            + "  " + COMMAND_WORD + " \"John\" s/Mathematics g/G01";
+            + "(one or more words enclosed in quotation marks). Multiple tag filters use OR.\n"
+            + "Examples:\n"
+            + "  " + COMMAND_WORD + " alice bob\n"
+            + "  " + COMMAND_WORD + " \"Alice Pauline\"\n"
+            + "  " + COMMAND_WORD + " t/needsHelp\n"
+            + "  " + COMMAND_WORD + " \"John\" s/Mathematics g/G01 t/highParticipation";
 
     private final Predicate<Person> predicate;
 
