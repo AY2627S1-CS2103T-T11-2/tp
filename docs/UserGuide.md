@@ -61,6 +61,9 @@ TutorTrack is a **desktop application for tutors to manage student contacts, opt
 - Parameters can be in any order.<br>
   For example, if the command specifies `n/NAME p/PHONE_NUMBER`, `p/PHONE_NUMBER n/NAME` is also acceptable.
 
+- The old `a/` address prefix is no longer supported and is rejected by `add` and `edit`. Use
+  `h/TELEGRAM_HANDLE` for Telegram handles.
+
 - Extraneous parameters for commands that take no parameters, such as `help`, `list`, `exit`, and `clear`, are ignored.<br>
   For example, `help 123` is interpreted as `help`.
 
@@ -130,7 +133,8 @@ Format: `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [h/TELEGRAM_HANDLE] [s/SUBJECT]
 
 - Edits the person at the specified `INDEX`. The index refers to the index number shown in the displayed person list. The index **must be a positive integer** 1, 2, 3, ...
 - At least one field must be supplied. Supplying an empty optional field to clear it also counts.
-- Supplied values replace the existing values. Omitted fields remain unchanged.
+- Supplied values replace the existing values. Omitted fields remain unchanged; in particular, omitting `h/` preserves
+  the existing Telegram handle.
 - Name, Email, Subject, and Group cannot be cleared. Their supplied values must satisfy the validation rules.
 - Phone, Telegram handle, and tags are optional:
     - Enter `p/` without a value to clear the phone number.
@@ -235,7 +239,10 @@ AddressBook data is saved automatically as a JSON file `[JAR file location]/data
 
 **Caution:**
 If your changes make the data file invalid, AddressBook starts with an empty address book at the next run. The invalid file remains on disk until you run a command (AddressBook saves after every command). Still, we recommend backing up the file before editing it.<br>
-Saved physical addresses from an older version may fail the Telegram handle validation because non-empty values must begin with `@`.<br>
+For data saved by older versions, a non-empty physical address in the JSON `"address"` field does not cause the
+student record to be rejected. TutorTrack loads the record with an empty Telegram handle instead. It does not create a
+migration or backup; the file remains unchanged until the next successful command saves the loaded data, replacing
+that physical address with an empty value.<br>
 Furthermore, certain edits can cause the AddressBook to behave in unexpected ways (e.g., if a value entered is outside of the acceptable range). Therefore, edit the data file only if you are confident that you can update it correctly.
 </box>
 

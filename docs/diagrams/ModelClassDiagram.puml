@@ -18,6 +18,8 @@ Class TelegramHandle
 Class Email
 Class Name
 Class Phone
+Class Subject
+Class Group
 Class Tag
 
 Class I #FFFFFF
@@ -41,6 +43,8 @@ Person *--> Name
 Person *--> Phone
 Person *--> Email
 Person *--> TelegramHandle
+Person *--> Subject
+Person *--> Group
 Person *--> "*" Tag
 
 note right of TelegramHandle

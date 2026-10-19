@@ -13,8 +13,6 @@
 
 ## **Acknowledgements**
 
-* _{List the sources of reused or adapted ideas, code, documentation, and third-party libraries here, with links to the originals.}
-
 --------------------------------------------------------------------------------------------------------------------
 
 ## **Setting up, getting started**
@@ -81,6 +79,7 @@ The `UI` component,
 * listens for changes to `Model` data so that the UI can be updated with the modified data.
 * keeps a reference to the `Logic` component, because the `UI` relies on the `Logic` to execute commands.
 * depends on some classes in the `Model` component because it displays `Person` objects from the model.
+* uses `PersonCard` to hide empty Phone and Telegram handle labels; a person with no tags has no tag labels.
 
 ### Logic component
 
@@ -116,9 +115,10 @@ How the parsing works:
 * When called upon to parse a user command, the `AddressBookParser` class creates an `XYZCommandParser` (`XYZ` is a placeholder for the specific command name, e.g., `AddCommandParser`). The parser uses the other classes shown above to parse the user command and create an `XYZCommand` object (e.g., `AddCommand`). The `AddressBookParser` returns that object as a `Command` object.
 * All `XYZCommandParser` classes, such as `AddCommandParser` and `DeleteCommandParser`, implement the `Parser` interface so they can be treated similarly where appropriate, for example during testing.
 
-`AddCommandParser` treats `h/TELEGRAM_HANDLE` as optional. Add and Edit use the same `TelegramHandle` validation:
-an empty `TelegramHandle` represents no Telegram handle, while every non-empty value must begin with `@`. Storage
-retains the JSON `"address"` property for compatibility, so saved physical addresses may fail the new validation.
+`AddCommandParser` treats `h/TELEGRAM_HANDLE` as optional, while `EditCommandParser` distinguishes an omitted `h/`
+(preserve the current value) from an empty `h/` (clear it). Both parsers call `ParserUtil#parseTelegramHandle`, which
+trims the input and applies `TelegramHandle#isValidTelegramHandle`: an empty value represents no Telegram handle, and
+every non-empty value must begin with `@`. Both parsers explicitly reject the legacy `a/` prefix.
 
 #### Delete command
 `DeleteCommandParser` parses the argument as a comma-separated sequence of individual indexes and inclusive index
@@ -148,6 +148,7 @@ workflow.
 The `Model` component,
 
 * stores the address book data i.e., all `Person` objects (which are contained in a `UniquePersonList` object).
+* represents a person's Telegram contact using `TelegramHandle`; an empty value represents an omitted handle.
 * stores the `Person` objects selected by the current filter, such as search results, in a separate _filtered_ list. It exposes this list as an unmodifiable `ObservableList<Person>` that the UI can observe and bind to, so the UI updates when the list changes.
 * stores a `UserPrefs` object that represents the user’s preferences (currently, just the GUI settings). This is exposed to the outside as a `ReadOnlyUserPrefs` object.
 * does not depend on any of the other three components (as the `Model` represents data entities of the domain, they should make sense on their own without depending on other components)
@@ -171,6 +172,13 @@ The `Storage` component,
 * can save both address book data and user preference data in JSON format, and read them back into corresponding objects.
 * is implemented by `StorageManager`, which delegates the actual JSON file access to `JsonAddressBookStorage` and `JsonUserPrefsStorage` (one class per data file).
 * depends on some classes in the `Model` component (because the `Storage` component's job is to save/retrieve objects that belong to the `Model`)
+
+`JsonAdaptedPerson` deliberately reads and writes a person's `TelegramHandle` using the existing JSON `"address"`
+property; it does not introduce a `"telegramHandle"` property. When loading an older record, it replaces a non-empty
+physical address that does not begin with `@` with an empty `TelegramHandle` in memory, while preserving the rest of
+the person. This is not a migration and no backup is created. The original JSON remains unchanged until the next
+successfully executed command causes `LogicManager` to save the in-memory data, at which point the old physical
+address is overwritten with an empty `"address"` value.
 
 ### Common classes
 
