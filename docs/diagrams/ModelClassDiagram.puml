@@ -43,6 +43,11 @@ Person *--> Email
 Person *--> Address
 Person *--> "*" Tag
 
+note right of Address
+  Stores an optional Telegram handle.
+  Non-empty values begin with @.
+end note
+
 Person -[hidden]up--> I
 UniquePersonList -[hidden]right-> I
 

@@ -15,6 +15,7 @@
 
 * _{List the sources of reused or adapted ideas, code, documentation, and third-party libraries here, with links to the originals.}_
 
+
 --------------------------------------------------------------------------------------------------------------------
 
 ## **Setting up, getting started**
@@ -115,6 +116,11 @@ Here are the other classes in `Logic` (omitted from the class diagram above) tha
 How the parsing works:
 * When called upon to parse a user command, the `AddressBookParser` class creates an `XYZCommandParser` (`XYZ` is a placeholder for the specific command name, e.g., `AddCommandParser`). The parser uses the other classes shown above to parse the user command and create an `XYZCommand` object (e.g., `AddCommand`). The `AddressBookParser` returns that object as a `Command` object.
 * All `XYZCommandParser` classes, such as `AddCommandParser` and `DeleteCommandParser`, implement the `Parser` interface so they can be treated similarly where appropriate, for example during testing.
+
+`AddCommandParser` treats `a/TELEGRAM_HANDLE` as optional and uses the shared `Address` validation also used by Edit.
+An empty `Address` represents no Telegram handle; every non-empty value must begin with `@`. The internal `Address`
+class and JSON `"address"` property are retained, so no data migration is performed and saved physical addresses may
+fail the new validation.
 
 #### Delete command
 `DeleteCommandParser` parses the argument as a comma-separated sequence of individual indexes and inclusive index
