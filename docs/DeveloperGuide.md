@@ -13,10 +13,7 @@
 
 ## **Acknowledgements**
 
-* _{List the sources of reused or adapted ideas, code, documentation, and third-party libraries here, with links to the originals.}_
-* OpenAI Codex was used by @jessclouds to assist with drafting and reviewing the Telegram handle UG/DG updates and
-  UML changes. The contributor reviewed and validated the final content.
-
+* _{List the sources of reused or adapted ideas, code, documentation, and third-party libraries here, with links to the originals.}
 
 --------------------------------------------------------------------------------------------------------------------
 
