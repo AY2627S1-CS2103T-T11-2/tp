@@ -33,6 +33,13 @@ public class Phone {
         return test.isEmpty() || test.matches(VALIDATION_REGEX);
     }
 
+    /**
+     * Returns true if this phone number is absent.
+     */
+    public boolean isEmpty() {
+        return value.isEmpty();
+    }
+
     @Override
     public String toString() {
         return value;
