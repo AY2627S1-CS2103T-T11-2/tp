@@ -1,6 +1,5 @@
 package seedu.address.model.person;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.testutil.Assert.assertThrows;
@@ -40,8 +39,9 @@ public class PhoneTest {
     }
 
     @Test
-    public void constructor_emptyPhone_success() {
-        assertEquals("", new Phone("").value);
+    public void isEmpty() {
+        assertTrue(new Phone("").isEmpty());
+        assertFalse(new Phone("999").isEmpty());
     }
 
     @Test

@@ -3,10 +3,12 @@ package seedu.address.logic.parser;
 import static seedu.address.logic.Messages.MESSAGE_INVALID_COMMAND_FORMAT;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_GROUP;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_SUBJECT;
+import static seedu.address.logic.parser.CliSyntax.PREFIX_TAG;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -18,6 +20,7 @@ import seedu.address.model.person.Group;
 import seedu.address.model.person.NameContainsSearchTermsPredicate;
 import seedu.address.model.person.Person;
 import seedu.address.model.person.Subject;
+import seedu.address.model.tag.Tag;
 
 /**
  * Parses input arguments and creates a new FindCommand object
@@ -33,7 +36,8 @@ public class FindCommandParser implements Parser<FindCommand> {
      */
     public FindCommand parse(String args) throws ParseException {
         String trimmedArgs = args.trim();
-        ArgumentMultimap argMultimap = ArgumentTokenizer.tokenize(" " + trimmedArgs, PREFIX_SUBJECT, PREFIX_GROUP);
+        ArgumentMultimap argMultimap = ArgumentTokenizer.tokenize(
+                " " + trimmedArgs, PREFIX_SUBJECT, PREFIX_GROUP, PREFIX_TAG);
 
         if (trimmedArgs.isEmpty()) {
             throw new ParseException(
@@ -44,8 +48,9 @@ public class FindCommandParser implements Parser<FindCommand> {
         Optional<String> groupValue = argMultimap.getValue(PREFIX_GROUP);
         boolean hasSubject = subjectValue.isPresent();
         boolean hasGroup = groupValue.isPresent();
+        boolean hasTag = !argMultimap.getAllValues(PREFIX_TAG).isEmpty();
 
-        if (hasSubject || hasGroup) {
+        if (hasSubject || hasGroup || hasTag) {
             return parseCriteria(argMultimap, subjectValue, groupValue);
         }
 
@@ -86,7 +91,8 @@ public class FindCommandParser implements Parser<FindCommand> {
     }
 
     /**
-     * Parses optional name, subject, and group filters. A person must match every supplied criterion.
+     * Parses optional name, subject, group, and tag filters.
+     * A person must match every supplied criterion type; multiple tag filters use OR.
      */
     private FindCommand parseCriteria(ArgumentMultimap argMultimap, Optional<String> subjectValue,
                                       Optional<String> groupValue) throws ParseException {
@@ -107,6 +113,9 @@ public class FindCommandParser implements Parser<FindCommand> {
             group = Optional.of(ParserUtil.parseGroup(groupValue.get()));
         }
 
-        return new FindCommand(new FindPredicate(namePredicate, subject, group));
+        List<String> tagValues = argMultimap.getAllValues(PREFIX_TAG);
+        Set<Tag> tags = ParserUtil.parseTags(tagValues);
+
+        return new FindCommand(new FindPredicate(namePredicate, subject, group, tags));
     }
 }

@@ -36,6 +36,12 @@ public class AddressTest {
     }
 
     @Test
+    public void isEmpty() {
+        assertTrue(new Address("").isEmpty());
+        assertFalse(new Address("Valid Address").isEmpty());
+    }
+
+    @Test
     public void equals() {
         Address address = new Address("Valid Address");
 

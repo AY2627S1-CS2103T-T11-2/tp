@@ -80,20 +80,18 @@ Format: `help`
 
 Adds a student to TutorTrack.
 
-Format: `add n/NAME p/PHONE e/EMAIL [h/TELEGRAM_HANDLE] [s/SUBJECT] [g/GROUP] [t/TAG]...`
+Format: `add n/NAME e/EMAIL s/SUBJECT g/GROUP [p/PHONE] [h/TELEGRAM_HANDLE] [t/TAG]...`
 
-* `n/NAME`, `p/PHONE`, and `e/EMAIL` are required.
-* `h/TELEGRAM_HANDLE`, `s/SUBJECT`, `g/GROUP`, and `t/TAG` are optional.
+* `n/NAME`, `e/EMAIL`, `s/SUBJECT`, and `g/GROUP` are required.
+* `p/PHONE`, `h/TELEGRAM_HANDLE`, and `t/TAG` are optional.
 * If `h/TELEGRAM_HANDLE` is omitted or supplied without a value, the student has no Telegram handle.
-* If `s/SUBJECT` is omitted, the subject is set to `General`.
-* If `g/GROUP` is omitted, the group is set to `General`.
 * A student can have zero or more tags. To add multiple tags, repeat the `t/TAG` parameter.
 * Parameters can be supplied in any order.
 
 The following validation rules apply:
 
 * Names and subjects must be non-blank and contain only alphanumeric characters and spaces.
-* Phone numbers must contain only digits and be at least 3 digits long.
+* Phone numbers, when provided, must contain only digits and be at least 3 digits long.
 * Emails must use the `local-part@domain` format. The local part must start and end with an alphanumeric character;
   `+`, `_`, `.`, and `-` are allowed only between alphanumeric characters. Domain labels may be separated by periods,
   may contain hyphens only between alphanumeric characters, and the final label must be at least 2 characters long.
@@ -108,15 +106,15 @@ the other details are different.
 
 <box type="tip" seamless>
 
-**Tip:** Use `h/`, `s/`, and `g/` when the Telegram handle, subject, or group is known. Otherwise, the details can be
-updated later using the `edit` command; omitted subjects and groups are recorded as `General`.
+**Tip:** The Telegram handle is optional. If it is not known when adding a student, it can be added later using the
+`edit` command.
 </box>
 
 Examples:
 * `add n/Alice Tan p/91234567 e/alice@example.com h/@alice_tan s/Mathematics g/Sec 3A t/Student`
 * `add n/Bob Lee p/92345678 e/bob@example.com h/@bob_lee s/Physics g/J1A t/Student t/Online`
-* `add n/Charlie Lim p/93456789 e/charlie@example.com` adds a student with no Telegram handle, whose subject and group
-  are both `General`, and who has no tags.
+* `add n/Charlie Lim e/charlie@example.com s/Mathematics g/Sec 3A` adds a student without a phone number, Telegram
+  handle, or tags.
 
 ### Listing all persons: `list`
 
@@ -161,19 +159,23 @@ Examples:
 
 ### Locating persons: `find`
 
-Finds persons by name, containing any of the given keywords or quoted phrases, subject, group or a combination of these criteria.
+Finds persons by name, subject, group, tag, or a combination of these criteria.
 
 Formats:
 
-- `find SEARCH_TERM [MORE_SEARCH_TERMS] [s/SUBJECT] [g/GROUP]`, where a search term is a `KEYWORD` or `"PHRASE"`
+- `find [SEARCH_TERM [MORE_SEARCH_TERMS]] [s/SUBJECT] [g/GROUP] [t/TAG]...`, where a search term is a `KEYWORD` or `"PHRASE"`
 
-- All searches are case-insensitive; for example, `hans` matches `Hans` and `g/t11` matches `T11`.
+- At least one name, subject, group, or tag criterion must be provided.
+- All searches are case-insensitive; for example, `hans` matches `Hans`, `g/t11` matches `T11`, and
+  `t/needshelp` matches `needsHelp`.
 - Keyword order does not matter; for example, `Hans Bo` matches `Bo Hans`.
 - Only full words match; for example, `Han` does not match `Hans`.
 - Persons matching at least one keyword are returned (an `OR` search); for example, `Hans Bo` returns `Hans Gruber` and `Bo Yang`.
 - A quoted phrase matches names containing the phrase, ignoring case.
-- Subject and group filters require an exact match, ignoring letter case.
-- When name, subject, or group criteria are combined, a person must match every supplied criterion (an `AND` search).
+- Subject, group, and tag filters require an exact match, ignoring letter case.
+- Multiple tag filters use `OR`; for example, `t/lowAttendance t/needsHelp` matches a person with either tag.
+- When name, subject, group, or tag criteria are combined, a person must match every supplied criterion type
+  (an `AND` search).
 
 Examples:
 * `find John` returns `john` and `John Doe`
@@ -184,6 +186,8 @@ Examples:
 * `find g/T11` returns persons whose group is `T11`.
 * `find s/CS2103T g/T11` returns persons in group `T11` whose subject is `CS2103T`.
 * `find "John" s/CS3434` returns persons whose names contain `John` and whose subject is `CS3434`.
+* `find t/needsHelp` returns persons tagged `needsHelp`.
+* `find "John" s/CS3434 g/T11 t/highParticipation` returns persons matching all four criterion types.
   ![result for 'find alex david'](images/findAlexDavidResult.png)
 
 ### Deleting contacts: `delete`
@@ -259,11 +263,11 @@ _Details coming soon ..._
 
 | Action | Format / Example |
 | ------ | ---------------- |
-| **Add** | `add n/NAME p/PHONE e/EMAIL [h/TELEGRAM_HANDLE] [s/SUBJECT] [g/GROUP] [t/TAG]...` |
+| **Add** | `add n/NAME e/EMAIL s/SUBJECT g/GROUP [p/PHONE] [h/TELEGRAM_HANDLE] [t/TAG]...` |
 | **Clear** | `clear` |
 | **Delete** | `delete INDEX_OR_RANGE[,INDEX_OR_RANGE]...`<br> e.g., `delete 1,3-5,7` |
 | **Edit** | `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [h/TELEGRAM_HANDLE] [s/SUBJECT] [g/GROUP] [t/TAG]...` |
-| **Find** | `find KEYWORD [MORE_KEYWORDS] [s/SUBJECT] [g/GROUP]` or `find "PHRASE" [s/SUBJECT] [g/GROUP]` |
+| **Find** | `find [SEARCH_TERM [MORE_SEARCH_TERMS]] [s/SUBJECT] [g/GROUP] [t/TAG]...` |
 | **List** | `list` |
 | **Help** | `help` |
 | **Exit** | `exit` |
