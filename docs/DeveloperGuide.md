@@ -116,9 +116,20 @@ How the parsing works:
 * When called upon to parse a user command, the `AddressBookParser` class creates an `XYZCommandParser` (`XYZ` is a placeholder for the specific command name, e.g., `AddCommandParser`). The parser uses the other classes shown above to parse the user command and create an `XYZCommand` object (e.g., `AddCommand`). The `AddressBookParser` returns that object as a `Command` object.
 * All `XYZCommandParser` classes, such as `AddCommandParser` and `DeleteCommandParser`, implement the `Parser` interface so they can be treated similarly where appropriate, for example during testing.
 
+#### Shared index and range parsing
+
+Commands that operate on displayed persons can use `IndexRangeParser` to parse comma-separated indexes and inclusive index ranges.
+
+For example, `1,3-5,7` represents displayed indexes 1, 3, 4, 5, and 7.
+
+`IndexRangeParser` validates the expression, parses its indexes, sorts the result, and merges duplicate, overlapping, and adjacent ranges. It returns the canonical ranges in an immutable list. For example, `3-4,1,2-3,1,6,5` is canonicalized to `1-6`.
+
+The parser does not check whether the selected indexes exist in the currently displayed person list. That list depends on the current model state and active filter, so bounds validation is performed when the resulting command executes.
+
+Command-specific parsers remain responsible for wrapping parsing failures in their own usage messages. This allows commands such as `delete`, `edit`, and future selection commands to share the same index-expression syntax while retaining command-specific feedback.
+
 #### Delete command
-`DeleteCommandParser` parses the argument as a comma-separated sequence of individual indexes and inclusive index
-ranges. For example, `1,3-5,7` represents indexes 1, 3, 4, 5, and 7.
+`DeleteCommandParser` delegates its index-expression parsing to the shared `IndexRangeParser`, then constructs an `IndexDeleteTarget` from the canonical ranges.
 
 Each parsed component is represented by an `IndexRange`. An individual index is represented as a range whose start
 and end are equal.
