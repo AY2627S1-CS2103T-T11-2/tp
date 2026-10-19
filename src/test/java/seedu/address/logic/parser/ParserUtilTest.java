@@ -23,7 +23,6 @@ import seedu.address.model.tag.Tag;
 public class ParserUtilTest {
     private static final String INVALID_NAME = "R@chel";
     private static final String INVALID_PHONE = "+651234";
-    private static final String INVALID_ADDRESS = " ";
     private static final String INVALID_EMAIL = "example.com";
     private static final String INVALID_TAG = "#friend";
     private static final String INVALID_SUBJECT = "CS2103T!";
@@ -112,8 +111,15 @@ public class ParserUtilTest {
     }
 
     @Test
-    public void parseAddress_invalidValue_throwsParseException() {
-        assertThrows(ParseException.class, () -> ParserUtil.parseAddress(INVALID_ADDRESS));
+    public void parseAddress_emptyOrWhitespace_returnsEmptyTelegramHandle() throws Exception {
+        assertEquals(new Address(""), ParserUtil.parseAddress(""));
+        assertEquals(new Address(""), ParserUtil.parseAddress(WHITESPACE));
+    }
+
+    @Test
+    public void parsePhone_emptyOrWhitespace_returnsEmptyPhone() throws Exception {
+        assertEquals(new Phone(""), ParserUtil.parsePhone(""));
+        assertEquals(new Phone(""), ParserUtil.parsePhone(WHITESPACE));
     }
 
     @Test

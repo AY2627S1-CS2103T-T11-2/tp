@@ -91,6 +91,55 @@ public class EditCommandTest {
     }
 
     @Test
+    public void execute_clearPhone_preservesOtherFields() {
+        Person originalPerson = model.getFilteredPersonList().get(0);
+        Person editedPerson = new PersonBuilder(originalPerson).withPhone("").build();
+        EditPersonDescriptor descriptor = new EditPersonDescriptorBuilder().withPhone("").build();
+
+        assertOptionalFieldsEdited(descriptor, editedPerson);
+    }
+
+    @Test
+    public void execute_clearTelegramHandle_preservesOtherFields() {
+        Person originalPerson = model.getFilteredPersonList().get(0);
+        Person editedPerson = new PersonBuilder(originalPerson).withAddress("").build();
+        EditPersonDescriptor descriptor = new EditPersonDescriptorBuilder().withAddress("").build();
+
+        assertOptionalFieldsEdited(descriptor, editedPerson);
+    }
+
+    @Test
+    public void execute_clearTags_preservesOtherFields() {
+        Person originalPerson = model.getFilteredPersonList().get(0);
+        Person editedPerson = new PersonBuilder(originalPerson).withTags().build();
+        EditPersonDescriptor descriptor = new EditPersonDescriptorBuilder().withTags().build();
+
+        assertOptionalFieldsEdited(descriptor, editedPerson);
+    }
+
+    @Test
+    public void execute_clearAllOptionalFields_preservesCompulsoryFields() {
+        Person originalPerson = model.getFilteredPersonList().get(0);
+        Person editedPerson = new PersonBuilder(originalPerson).withPhone("").withAddress("").withTags().build();
+        EditPersonDescriptor descriptor = new EditPersonDescriptorBuilder()
+                .withPhone("").withAddress("").withTags().build();
+
+        assertOptionalFieldsEdited(descriptor, editedPerson);
+    }
+
+    /**
+     * Verifies an optional-field edit against the complete expected person and model.
+     */
+    private void assertOptionalFieldsEdited(EditPersonDescriptor descriptor, Person editedPerson) {
+        EditCommand editCommand = new EditCommand(INDEX_FIRST_PERSON, descriptor);
+        String expectedMessage = String.format(EditCommand.MESSAGE_EDIT_PERSON_SUCCESS, Messages.format(editedPerson));
+        Model expectedModel = new ModelManager(new AddressBook(model.getAddressBook()), new UserPrefs());
+        expectedModel.setPerson(model.getFilteredPersonList().get(0), editedPerson);
+
+        assertCommandSuccess(editCommand, model, expectedMessage, expectedModel);
+    }
+
+    @Test
     public void execute_filteredList_success() {
         showPersonAtIndex(model, INDEX_FIRST_PERSON);
 

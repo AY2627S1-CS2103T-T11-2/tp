@@ -1,5 +1,6 @@
 package seedu.address.model.person;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.testutil.Assert.assertThrows;
@@ -14,9 +15,8 @@ public class AddressTest {
     }
 
     @Test
-    public void constructor_invalidAddress_throwsIllegalArgumentException() {
-        String invalidAddress = "";
-        assertThrows(IllegalArgumentException.class, () -> new Address(invalidAddress));
+    public void constructor_emptyTelegramHandle_success() {
+        assertEquals("", new Address("").value);
     }
 
     @Test
@@ -24,14 +24,21 @@ public class AddressTest {
         // null address
         assertThrows(NullPointerException.class, () -> Address.isValidAddress(null));
 
-        // invalid addresses
-        assertFalse(Address.isValidAddress("")); // empty string
-        assertFalse(Address.isValidAddress(" ")); // spaces only
+        // Telegram handles are unrestricted strings, including empty and whitespace-only values
+        assertTrue(Address.isValidAddress(""));
+        assertTrue(Address.isValidAddress(" "));
+        assertTrue(Address.isValidAddress("@alice_123 / ! Unicode: 用户\nsecond line"));
 
         // valid addresses
         assertTrue(Address.isValidAddress("Blk 456, Den Road, #01-355"));
         assertTrue(Address.isValidAddress("-")); // one character
         assertTrue(Address.isValidAddress("Leng Inc; 1234 Market St; San Francisco CA 2349879; USA")); // long address
+    }
+
+    @Test
+    public void isEmpty() {
+        assertTrue(new Address("").isEmpty());
+        assertFalse(new Address("Valid Address").isEmpty());
     }
 
     @Test

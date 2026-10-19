@@ -5,8 +5,10 @@ import static seedu.address.logic.Messages.MESSAGE_INVALID_PERSON_DISPLAYED_INDE
 import static seedu.address.logic.Messages.MESSAGE_UNKNOWN_COMMAND;
 import static seedu.address.logic.commands.CommandTestUtil.ADDRESS_DESC_AMY;
 import static seedu.address.logic.commands.CommandTestUtil.EMAIL_DESC_AMY;
+import static seedu.address.logic.commands.CommandTestUtil.GROUP_DESC_AMY;
 import static seedu.address.logic.commands.CommandTestUtil.NAME_DESC_AMY;
 import static seedu.address.logic.commands.CommandTestUtil.PHONE_DESC_AMY;
+import static seedu.address.logic.commands.CommandTestUtil.SUBJECT_DESC_AMY;
 import static seedu.address.testutil.Assert.assertThrows;
 import static seedu.address.testutil.TypicalPersons.AMY;
 
@@ -20,6 +22,7 @@ import org.junit.jupiter.api.io.TempDir;
 
 import seedu.address.logic.commands.AddCommand;
 import seedu.address.logic.commands.CommandResult;
+import seedu.address.logic.commands.EditCommand;
 import seedu.address.logic.commands.ListCommand;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.logic.parser.exceptions.ParseException;
@@ -68,6 +71,29 @@ public class LogicManagerTest {
     public void execute_validCommand_success() throws Exception {
         String listCommand = ListCommand.COMMAND_WORD;
         assertCommandSuccess(listCommand, ListCommand.MESSAGE_SUCCESS, model);
+    }
+
+    @Test
+    public void execute_clearAndRestoreOptionalFields_savesChanges() throws Exception {
+        model.addPerson(AMY);
+        Person clearedPerson = new PersonBuilder(AMY).withPhone("").withAddress("").withTags().build();
+        Model expectedModel = new ModelManager();
+        expectedModel.addPerson(clearedPerson);
+
+        assertCommandSuccess("edit 1 p/ a/ t/",
+                String.format(EditCommand.MESSAGE_EDIT_PERSON_SUCCESS, Messages.format(clearedPerson)), expectedModel);
+
+        JsonAddressBookStorage storage = new JsonAddressBookStorage(temporaryFolder.resolve("addressBook.json"));
+        assertEquals(expectedModel.getAddressBook(), storage.readAddressBook().get());
+
+        String telegramHandle = "@alice_123 / ! 用户\nsecond line";
+        Person restoredPerson = new PersonBuilder(clearedPerson)
+                .withPhone("91234567").withAddress(telegramHandle).withTags("Student", "Online").build();
+        expectedModel.setPerson(clearedPerson, restoredPerson);
+
+        assertCommandSuccess("edit 1 p/91234567 a/" + telegramHandle + " t/Student t/Online",
+                String.format(EditCommand.MESSAGE_EDIT_PERSON_SUCCESS, Messages.format(restoredPerson)), expectedModel);
+        assertEquals(expectedModel.getAddressBook(), storage.readAddressBook().get());
     }
 
     @Test
@@ -165,8 +191,12 @@ public class LogicManagerTest {
 
         // Triggers the saveAddressBook method by executing an add command
         String addCommand = AddCommand.COMMAND_WORD + NAME_DESC_AMY + PHONE_DESC_AMY
-                + EMAIL_DESC_AMY + ADDRESS_DESC_AMY;
-        Person expectedPerson = new PersonBuilder(AMY).withTags().build();
+                + EMAIL_DESC_AMY + ADDRESS_DESC_AMY + SUBJECT_DESC_AMY + GROUP_DESC_AMY;
+        Person expectedPerson = new PersonBuilder(AMY)
+                .withSubject("CS2100")
+                .withGroup("T35")
+                .withTags()
+                .build();
         ModelManager expectedModel = new ModelManager();
         expectedModel.addPerson(expectedPerson);
         assertCommandFailure(addCommand, CommandException.class, expectedMessage, expectedModel);
