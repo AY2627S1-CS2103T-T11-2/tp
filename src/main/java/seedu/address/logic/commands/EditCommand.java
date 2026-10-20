@@ -90,7 +90,13 @@ public class EditCommand extends Command {
             throw new CommandException(MESSAGE_DUPLICATE_PERSON);
         }
 
+        int personCountBeforeEdit = model.getAddressBook().getPersonList().size();
+
         model.setPerson(personToEdit, editedPerson);
+
+        assert model.getAddressBook().getPersonList().size() == personCountBeforeEdit
+                : "Editing a person must preserve the number of people";
+
         model.updateFilteredPersonList(PREDICATE_SHOW_ALL_PERSONS);
         return new CommandResult(String.format(MESSAGE_EDIT_PERSON_SUCCESS, Messages.format(editedPerson)));
     }
@@ -100,8 +106,7 @@ public class EditCommand extends Command {
      * edited with {@code editPersonDescriptor}.
      */
     private static Person createEditedPerson(Person personToEdit, EditPersonDescriptor editPersonDescriptor) {
-        assert personToEdit != null : "Person to edit must not be null";
-        assert editPersonDescriptor != null : "Edit descriptor must not be null";
+        assert personToEdit != null;
 
         Name updatedName = editPersonDescriptor.getName().orElse(personToEdit.getName());
         Phone updatedPhone = editPersonDescriptor.getPhone().orElse(personToEdit.getPhone());
