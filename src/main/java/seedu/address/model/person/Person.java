@@ -25,7 +25,7 @@ public class Person {
     private final Email email;
 
     // Data fields
-    private final Address address;
+    private final TelegramHandle telegramHandle;
     private final Set<Tag> tags = new HashSet<>();
     private final Subject subject;
     private final Group group;
@@ -34,19 +34,20 @@ public class Person {
      * Creates a person with default subject and group values.
      * This constructor keeps existing commands compatible with the expanded person model.
      */
-    public Person(Name name, Phone phone, Email email, Address address, Set<Tag> tags) {
-        this(name, phone, email, address, tags, DEFAULT_SUBJECT, DEFAULT_GROUP);
+    public Person(Name name, Phone phone, Email email, TelegramHandle telegramHandle, Set<Tag> tags) {
+        this(name, phone, email, telegramHandle, tags, DEFAULT_SUBJECT, DEFAULT_GROUP);
     }
 
     /**
      * Creates a person with all fields. Every field must be present and not null.
      */
-    public Person(Name name, Phone phone, Email email, Address address, Set<Tag> tags, Subject subject, Group group) {
-        requireAllNonNull(name, phone, email, address, tags, subject, group);
+    public Person(Name name, Phone phone, Email email, TelegramHandle telegramHandle, Set<Tag> tags,
+            Subject subject, Group group) {
+        requireAllNonNull(name, phone, email, telegramHandle, tags, subject, group);
         this.name = name;
         this.phone = phone;
         this.email = email;
-        this.address = address;
+        this.telegramHandle = telegramHandle;
         this.tags.addAll(tags);
         this.subject = subject;
         this.group = group;
@@ -64,8 +65,8 @@ public class Person {
         return email;
     }
 
-    public Address getAddress() {
-        return address;
+    public TelegramHandle getTelegramHandle() {
+        return telegramHandle;
     }
 
     public Subject getSubject() {
@@ -115,7 +116,7 @@ public class Person {
         return name.equals(otherPerson.name)
                 && phone.equals(otherPerson.phone)
                 && email.equals(otherPerson.email)
-                && address.equals(otherPerson.address)
+                && telegramHandle.equals(otherPerson.telegramHandle)
                 && subject.equals(otherPerson.subject)
                 && group.equals(otherPerson.group)
                 && tags.equals(otherPerson.tags);
@@ -124,7 +125,7 @@ public class Person {
     @Override
     public int hashCode() {
         // use this method for custom fields hashing instead of implementing your own
-        return Objects.hash(name, phone, email, address, tags, subject, group);
+        return Objects.hash(name, phone, email, telegramHandle, tags, subject, group);
     }
 
     @Override
@@ -133,7 +134,7 @@ public class Person {
                 .add("name", name)
                 .add("phone", phone)
                 .add("email", email)
-                .add("address", address)
+                .add("telegramHandle", telegramHandle)
                 .add("subject", subject)
                 .add("group", group)
                 .add("tags", tags)

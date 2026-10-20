@@ -3,12 +3,12 @@ package seedu.address.logic;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static seedu.address.logic.Messages.MESSAGE_INVALID_PERSON_DISPLAYED_INDEX;
 import static seedu.address.logic.Messages.MESSAGE_UNKNOWN_COMMAND;
-import static seedu.address.logic.commands.CommandTestUtil.ADDRESS_DESC_AMY;
 import static seedu.address.logic.commands.CommandTestUtil.EMAIL_DESC_AMY;
 import static seedu.address.logic.commands.CommandTestUtil.GROUP_DESC_AMY;
 import static seedu.address.logic.commands.CommandTestUtil.NAME_DESC_AMY;
 import static seedu.address.logic.commands.CommandTestUtil.PHONE_DESC_AMY;
 import static seedu.address.logic.commands.CommandTestUtil.SUBJECT_DESC_AMY;
+import static seedu.address.logic.commands.CommandTestUtil.TELEGRAM_HANDLE_DESC_AMY;
 import static seedu.address.testutil.Assert.assertThrows;
 import static seedu.address.testutil.TypicalPersons.AMY;
 
@@ -74,13 +74,42 @@ public class LogicManagerTest {
     }
 
     @Test
+    public void execute_addWithTelegramHandleThenEdit_savesChanges() throws Exception {
+        Person addedPerson = new PersonBuilder()
+                .withName("Alice Tan")
+                .withPhone("91234567")
+                .withEmail("alice@example.com")
+                .withTelegramHandle("@alice_tan")
+                .withSubject("Mathematics")
+                .withGroup("T11")
+                .build();
+        Model expectedModel = new ModelManager();
+        expectedModel.addPerson(addedPerson);
+
+        assertCommandSuccess("add n/Alice Tan p/91234567 e/alice@example.com h/@alice_tan "
+                        + "s/Mathematics g/T11",
+                "New person added: Alice Tan; Phone: 91234567; Email: alice@example.com; "
+                        + "Telegram: @alice_tan; Subject: Mathematics; Group: T11; Tags: ",
+                expectedModel);
+
+        JsonAddressBookStorage storage = new JsonAddressBookStorage(temporaryFolder.resolve("addressBook.json"));
+        assertEquals(expectedModel.getAddressBook(), storage.readAddressBook().get());
+
+        Person editedPerson = new PersonBuilder(addedPerson).withTelegramHandle("@alice_updated").build();
+        expectedModel.setPerson(addedPerson, editedPerson);
+        assertCommandSuccess("edit 1 h/@alice_updated",
+                String.format(EditCommand.MESSAGE_EDIT_PERSON_SUCCESS, Messages.format(editedPerson)), expectedModel);
+        assertEquals(expectedModel.getAddressBook(), storage.readAddressBook().get());
+    }
+
+    @Test
     public void execute_clearAndRestoreOptionalFields_savesChanges() throws Exception {
         model.addPerson(AMY);
-        Person clearedPerson = new PersonBuilder(AMY).withPhone("").withAddress("").withTags().build();
+        Person clearedPerson = new PersonBuilder(AMY).withPhone("").withTelegramHandle("").withTags().build();
         Model expectedModel = new ModelManager();
         expectedModel.addPerson(clearedPerson);
 
-        assertCommandSuccess("edit 1 p/ a/ t/",
+        assertCommandSuccess("edit 1 p/ h/ t/",
                 String.format(EditCommand.MESSAGE_EDIT_PERSON_SUCCESS, Messages.format(clearedPerson)), expectedModel);
 
         JsonAddressBookStorage storage = new JsonAddressBookStorage(temporaryFolder.resolve("addressBook.json"));
@@ -88,10 +117,10 @@ public class LogicManagerTest {
 
         String telegramHandle = "@alice_123 / ! 用户\nsecond line";
         Person restoredPerson = new PersonBuilder(clearedPerson)
-                .withPhone("91234567").withAddress(telegramHandle).withTags("Student", "Online").build();
+                .withPhone("91234567").withTelegramHandle(telegramHandle).withTags("Student", "Online").build();
         expectedModel.setPerson(clearedPerson, restoredPerson);
 
-        assertCommandSuccess("edit 1 p/91234567 a/" + telegramHandle + " t/Student t/Online",
+        assertCommandSuccess("edit 1 p/91234567 h/" + telegramHandle + " t/Student t/Online",
                 String.format(EditCommand.MESSAGE_EDIT_PERSON_SUCCESS, Messages.format(restoredPerson)), expectedModel);
         assertEquals(expectedModel.getAddressBook(), storage.readAddressBook().get());
     }
@@ -191,7 +220,7 @@ public class LogicManagerTest {
 
         // Triggers the saveAddressBook method by executing an add command
         String addCommand = AddCommand.COMMAND_WORD + NAME_DESC_AMY + PHONE_DESC_AMY
-                + EMAIL_DESC_AMY + ADDRESS_DESC_AMY + SUBJECT_DESC_AMY + GROUP_DESC_AMY;
+                + EMAIL_DESC_AMY + TELEGRAM_HANDLE_DESC_AMY + SUBJECT_DESC_AMY + GROUP_DESC_AMY;
         Person expectedPerson = new PersonBuilder(AMY)
                 .withSubject("CS2100")
                 .withGroup("T35")

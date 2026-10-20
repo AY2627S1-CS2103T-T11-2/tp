@@ -102,8 +102,8 @@ public class EditCommandTest {
     @Test
     public void execute_clearTelegramHandle_preservesOtherFields() {
         Person originalPerson = model.getFilteredPersonList().get(0);
-        Person editedPerson = new PersonBuilder(originalPerson).withAddress("").build();
-        EditPersonDescriptor descriptor = new EditPersonDescriptorBuilder().withAddress("").build();
+        Person editedPerson = new PersonBuilder(originalPerson).withTelegramHandle("").build();
+        EditPersonDescriptor descriptor = new EditPersonDescriptorBuilder().withTelegramHandle("").build();
 
         assertOptionalFieldsEdited(descriptor, editedPerson);
     }
@@ -120,9 +120,9 @@ public class EditCommandTest {
     @Test
     public void execute_clearAllOptionalFields_preservesCompulsoryFields() {
         Person originalPerson = model.getFilteredPersonList().get(0);
-        Person editedPerson = new PersonBuilder(originalPerson).withPhone("").withAddress("").withTags().build();
+        Person editedPerson = new PersonBuilder(originalPerson).withPhone("").withTelegramHandle("").withTags().build();
         EditPersonDescriptor descriptor = new EditPersonDescriptorBuilder()
-                .withPhone("").withAddress("").withTags().build();
+                .withPhone("").withTelegramHandle("").withTags().build();
 
         assertOptionalFieldsEdited(descriptor, editedPerson);
     }

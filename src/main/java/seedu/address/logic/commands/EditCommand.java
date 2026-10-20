@@ -1,13 +1,13 @@
 package seedu.address.logic.commands;
 
 import static java.util.Objects.requireNonNull;
-import static seedu.address.logic.parser.CliSyntax.PREFIX_ADDRESS;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_EMAIL;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_GROUP;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_NAME;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_PHONE;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_SUBJECT;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_TAG;
+import static seedu.address.logic.parser.CliSyntax.PREFIX_TELEGRAM_HANDLE;
 import static seedu.address.model.Model.PREDICATE_SHOW_ALL_PERSONS;
 
 import java.util.Collections;
@@ -24,13 +24,13 @@ import seedu.address.commons.util.ToStringBuilder;
 import seedu.address.logic.Messages;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.model.Model;
-import seedu.address.model.person.Address;
 import seedu.address.model.person.Email;
 import seedu.address.model.person.Group;
 import seedu.address.model.person.Name;
 import seedu.address.model.person.Person;
 import seedu.address.model.person.Phone;
 import seedu.address.model.person.Subject;
+import seedu.address.model.person.TelegramHandle;
 import seedu.address.model.tag.Tag;
 
 /**
@@ -45,11 +45,11 @@ public class EditCommand extends Command {
             + "Name, phone, email, and address can only be edited when one person is selected.\n"
             + "Existing values will be overwritten by the input values.\n"
             + "Parameters: INDEX_OR_RANGE[,INDEX_OR_RANGE]... "
-            + "Omitted fields stay unchanged. Use p/, a/, or t/ alone to clear phone, Telegram handle, or tags.\n"
+            + "Omitted fields stay unchanged. Use p/, h/, or t/ alone to clear phone, Telegram handle, or tags.\n"
             + "[" + PREFIX_NAME + "NAME] "
             + "[" + PREFIX_PHONE + "PHONE] "
             + "[" + PREFIX_EMAIL + "EMAIL] "
-            + "[" + PREFIX_ADDRESS + "TELEGRAM_HANDLE] "
+            + "[" + PREFIX_TELEGRAM_HANDLE + "TELEGRAM_HANDLE] "
             + "[" + PREFIX_SUBJECT + "SUBJECT] "
             + "[" + PREFIX_GROUP + "GROUP] "
             + "[" + PREFIX_TAG + "TAG]...\n"
@@ -191,12 +191,13 @@ public class EditCommand extends Command {
         Name updatedName = editPersonDescriptor.getName().orElse(personToEdit.getName());
         Phone updatedPhone = editPersonDescriptor.getPhone().orElse(personToEdit.getPhone());
         Email updatedEmail = editPersonDescriptor.getEmail().orElse(personToEdit.getEmail());
-        Address updatedAddress = editPersonDescriptor.getAddress().orElse(personToEdit.getAddress());
+        TelegramHandle updatedTelegramHandle = editPersonDescriptor.getTelegramHandle()
+                .orElse(personToEdit.getTelegramHandle());
         Subject updatedSubject = editPersonDescriptor.getSubject().orElse(personToEdit.getSubject());
         Group updatedGroup = editPersonDescriptor.getGroup().orElse(personToEdit.getGroup());
         Set<Tag> updatedTags = editPersonDescriptor.getTags().orElse(personToEdit.getTags());
 
-        return new Person(updatedName, updatedPhone, updatedEmail, updatedAddress, updatedTags,
+        return new Person(updatedName, updatedPhone, updatedEmail, updatedTelegramHandle, updatedTags,
                 updatedSubject, updatedGroup);
     }
 
@@ -239,7 +240,7 @@ public class EditCommand extends Command {
         private Email email;
         private Subject subject;
         private Group group;
-        private Address address;
+        private TelegramHandle telegramHandle;
         private Set<Tag> tags;
 
         public EditPersonDescriptor() {}
@@ -254,7 +255,7 @@ public class EditCommand extends Command {
             setEmail(toCopy.email);
             setSubject(toCopy.subject);
             setGroup(toCopy.group);
-            setAddress(toCopy.address);
+            setTelegramHandle(toCopy.telegramHandle);
             setTags(toCopy.tags);
         }
 
@@ -262,7 +263,7 @@ public class EditCommand extends Command {
          * Returns true if at least one field is edited.
          */
         public boolean isAnyFieldEdited() {
-            return CollectionUtil.isAnyNonNull(name, phone, email, subject, group, address, tags);
+            return CollectionUtil.isAnyNonNull(name, phone, email, subject, group, telegramHandle, tags);
         }
 
         /**
@@ -300,12 +301,12 @@ public class EditCommand extends Command {
             return Optional.ofNullable(email);
         }
 
-        public void setAddress(Address address) {
-            this.address = address;
+        public void setTelegramHandle(TelegramHandle telegramHandle) {
+            this.telegramHandle = telegramHandle;
         }
 
-        public Optional<Address> getAddress() {
-            return Optional.ofNullable(address);
+        public Optional<TelegramHandle> getTelegramHandle() {
+            return Optional.ofNullable(telegramHandle);
         }
 
         public void setSubject(Subject subject) {
@@ -358,7 +359,7 @@ public class EditCommand extends Command {
                     && Objects.equals(email, otherEditPersonDescriptor.email)
                     && Objects.equals(subject, otherEditPersonDescriptor.subject)
                     && Objects.equals(group, otherEditPersonDescriptor.group)
-                    && Objects.equals(address, otherEditPersonDescriptor.address)
+                    && Objects.equals(telegramHandle, otherEditPersonDescriptor.telegramHandle)
                     && Objects.equals(tags, otherEditPersonDescriptor.tags);
         }
 
@@ -368,7 +369,7 @@ public class EditCommand extends Command {
                     .add("name", name)
                     .add("phone", phone)
                     .add("email", email)
-                    .add("address", address)
+                    .add("telegramHandle", telegramHandle)
                     .add("subject", subject)
                     .add("group", group)
                     .add("tags", tags)

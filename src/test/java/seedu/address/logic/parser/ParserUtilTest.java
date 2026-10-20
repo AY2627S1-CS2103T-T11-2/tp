@@ -12,12 +12,12 @@ import java.util.Set;
 import org.junit.jupiter.api.Test;
 
 import seedu.address.logic.parser.exceptions.ParseException;
-import seedu.address.model.person.Address;
 import seedu.address.model.person.Email;
 import seedu.address.model.person.Group;
 import seedu.address.model.person.Name;
 import seedu.address.model.person.Phone;
 import seedu.address.model.person.Subject;
+import seedu.address.model.person.TelegramHandle;
 import seedu.address.model.tag.Tag;
 
 public class ParserUtilTest {
@@ -30,7 +30,7 @@ public class ParserUtilTest {
 
     private static final String VALID_NAME = "Rachel Walker";
     private static final String VALID_PHONE = "123456";
-    private static final String VALID_ADDRESS = "123 Main Street #0505";
+    private static final String VALID_TELEGRAM_HANDLE = "@rachel_walker";
     private static final String VALID_EMAIL = "rachel@example.com";
     private static final String VALID_TAG_1 = "friend";
     private static final String VALID_TAG_2 = "neighbour";
@@ -106,14 +106,20 @@ public class ParserUtilTest {
     }
 
     @Test
-    public void parseAddress_null_throwsNullPointerException() {
-        assertThrows(NullPointerException.class, () -> ParserUtil.parseAddress((String) null));
+    public void parseTelegramHandle_null_throwsNullPointerException() {
+        assertThrows(NullPointerException.class, () -> ParserUtil.parseTelegramHandle((String) null));
     }
 
     @Test
-    public void parseAddress_emptyOrWhitespace_returnsEmptyTelegramHandle() throws Exception {
-        assertEquals(new Address(""), ParserUtil.parseAddress(""));
-        assertEquals(new Address(""), ParserUtil.parseAddress(WHITESPACE));
+    public void parseTelegramHandle_emptyOrWhitespace_returnsEmptyTelegramHandle() throws Exception {
+        assertEquals(new TelegramHandle(""), ParserUtil.parseTelegramHandle(""));
+        assertEquals(new TelegramHandle(""), ParserUtil.parseTelegramHandle(WHITESPACE));
+    }
+
+    @Test
+    public void parseTelegramHandle_handleWithoutAt_throwsParseException() {
+        assertThrows(ParseException.class, TelegramHandle.MESSAGE_CONSTRAINTS, () ->
+                ParserUtil.parseTelegramHandle("rachel_walker"));
     }
 
     @Test
@@ -123,16 +129,16 @@ public class ParserUtilTest {
     }
 
     @Test
-    public void parseAddress_validValueWithoutWhitespace_returnsAddress() throws Exception {
-        Address expectedAddress = new Address(VALID_ADDRESS);
-        assertEquals(expectedAddress, ParserUtil.parseAddress(VALID_ADDRESS));
+    public void parseTelegramHandle_validValueWithoutWhitespace_returnsTelegramHandle() throws Exception {
+        TelegramHandle expectedTelegramHandle = new TelegramHandle(VALID_TELEGRAM_HANDLE);
+        assertEquals(expectedTelegramHandle, ParserUtil.parseTelegramHandle(VALID_TELEGRAM_HANDLE));
     }
 
     @Test
-    public void parseAddress_validValueWithWhitespace_returnsTrimmedAddress() throws Exception {
-        String addressWithWhitespace = WHITESPACE + VALID_ADDRESS + WHITESPACE;
-        Address expectedAddress = new Address(VALID_ADDRESS);
-        assertEquals(expectedAddress, ParserUtil.parseAddress(addressWithWhitespace));
+    public void parseTelegramHandle_validValueWithWhitespace_returnsTrimmedTelegramHandle() throws Exception {
+        String telegramHandleWithWhitespace = WHITESPACE + VALID_TELEGRAM_HANDLE + WHITESPACE;
+        TelegramHandle expectedTelegramHandle = new TelegramHandle(VALID_TELEGRAM_HANDLE);
+        assertEquals(expectedTelegramHandle, ParserUtil.parseTelegramHandle(telegramHandleWithWhitespace));
     }
 
     @Test

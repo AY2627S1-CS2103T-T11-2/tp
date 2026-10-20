@@ -31,7 +31,7 @@ TutorTrack is a **desktop application for tutors to manage student contacts, opt
 
    - `list` : Lists all students.
 
-   - `add n/John Doe p/98765432 e/johnd@example.com a/Clementi s/Mathematics g/Sec 3A` : Adds a student named `John Doe` to TutorTrack.
+   - `add n/John Doe p/98765432 e/johnd@example.com h/@john_doe s/Mathematics g/Sec 3A` : Adds a student named `John Doe` to TutorTrack.
 
    * `delete 2,4-6` : Deletes the 2nd, 4th, 5th and 6th contacts shown in the current list.
 
@@ -61,6 +61,9 @@ TutorTrack is a **desktop application for tutors to manage student contacts, opt
 - Parameters can be in any order.<br>
   For example, if the command specifies `n/NAME p/PHONE_NUMBER`, `p/PHONE_NUMBER n/NAME` is also acceptable.
 
+- The old `a/` address prefix is no longer supported and is rejected by `add` and `edit`. Use
+  `h/TELEGRAM_HANDLE` for Telegram handles.
+
 - Extraneous parameters for commands that take no parameters, such as `help`, `list`, `exit`, and `clear`, are ignored.<br>
   For example, `help 123` is interpreted as `help`.
 
@@ -80,10 +83,11 @@ Format: `help`
 
 Adds a student to TutorTrack.
 
-Format: `add n/NAME e/EMAIL s/SUBJECT g/GROUP [p/PHONE] [a/ADDRESS] [t/TAG]...`
+Format: `add n/NAME [p/PHONE] e/EMAIL [h/TELEGRAM_HANDLE] s/SUBJECT g/GROUP [t/TAG]...`
 
 * `n/NAME`, `e/EMAIL`, `s/SUBJECT`, and `g/GROUP` are required.
-* `p/PHONE`, `a/ADDRESS`, and `t/TAG` are optional.
+* `p/PHONE`, `h/TELEGRAM_HANDLE`, and `t/TAG` are optional.
+* If `h/TELEGRAM_HANDLE` is omitted or supplied without a value, the student has no Telegram handle.
 * A student can have zero or more tags. To add multiple tags, repeat the `t/TAG` parameter.
 * Parameters can be supplied in any order.
 
@@ -94,9 +98,10 @@ The following validation rules apply:
 * Emails must use the `local-part@domain` format. The local part must start and end with an alphanumeric character;
   `+`, `_`, `.`, and `-` are allowed only between alphanumeric characters. Domain labels may be separated by periods,
   may contain hyphens only between alphanumeric characters, and the final label must be at least 2 characters long.
-* Addresses, when provided, and groups can contain any characters but must not be blank.
+* A non-empty Telegram handle must begin with `@`. No other Telegram username rules are checked.
+* Groups can contain any characters but must not be blank.
 * Tags must be non-blank and contain only alphanumeric characters.
-* Leading and trailing whitespace around each value is ignored.
+* Leading and trailing whitespace around each value is ignored. A whitespace-only Telegram handle is treated as empty.
 
 After leading and trailing whitespace is removed, TutorTrack considers two students duplicates when their names are
 exactly the same, including letter case. If an existing student has the same name, the new student is rejected even if
@@ -104,11 +109,15 @@ the other details are different.
 
 <box type="tip" seamless>
 
+**Tip:** The Telegram handle is optional. If it is not known when adding a student, it can be added later using the
+`edit` command.
+</box>
+
 Examples:
-* `add n/Alice Tan p/91234567 e/alice@example.com a/Clementi s/Mathematics g/Sec 3A t/Student`
-* `add n/Bob Lee p/92345678 e/bob@example.com a/Tampines s/Physics g/J1A t/Student t/Online`
-* `add n/Charlie Lim e/charlie@example.com s/Mathematics g/Sec 3A` adds a student without a phone number, address,
-  or tags.
+* `add n/Alice Tan p/91234567 e/alice@example.com h/@alice_tan s/Mathematics g/Sec 3A t/Student`
+* `add n/Bob Lee p/92345678 e/bob@example.com h/@bob_lee s/Physics g/J1A t/Student t/Online`
+* `add n/Charlie Lim e/charlie@example.com s/Mathematics g/Sec 3A` adds a student without a phone number, Telegram
+  handle, or tags.
 
 ### Listing all persons: `list`
 
@@ -120,7 +129,7 @@ Format: `list`
 
 Edits one or more persons in the currently displayed list.
 
-Format: `edit INDEX_OR_RANGE[,INDEX_OR_RANGE]... [n/NAME] [p/PHONE] [e/EMAIL] [a/TELEGRAM_HANDLE] [s/SUBJECT] [g/GROUP] [t/TAG]...`
+Format: `edit INDEX_OR_RANGE[,INDEX_OR_RANGE]... [n/NAME] [p/PHONE] [e/EMAIL] [h/TELEGRAM_HANDLE] [s/SUBJECT] [g/GROUP] [t/TAG]...`
 
 - `INDEX_OR_RANGE` is either an individual `INDEX` or an inclusive range written as `START_INDEX-END_INDEX`.
 - The indexes refer to the index numbers in the currently displayed person list. Each index must be a positive integer: 1, 2, 3, ...
@@ -138,10 +147,10 @@ Format: `edit INDEX_OR_RANGE[,INDEX_OR_RANGE]... [n/NAME] [p/PHONE] [e/EMAIL] [a
 - To remove all of a person's tags, enter `t/` without a tag after it.
 - Phone, Telegram handle, and tags are optional:
     - Enter `p/` without a value to clear the phone number.
-    - Enter `a/` without a value to clear the Telegram handle.
+    - Enter `h/` without a value to clear the Telegram handle.
     - Enter `t/` without a value to clear all tags.
 - A non-empty phone number must contain only digits and be at least 3 digits long.
-- The Telegram handle accepts unrestricted text; no particular format or `@` prefix is required.
+- A non-empty Telegram handle must begin with `@`. No other Telegram username rules are checked.
 - Leading and trailing whitespace around values is ignored. Whitespace-only Phone or Telegram values clear those fields.
 
 Examples:
@@ -149,8 +158,8 @@ Examples:
 * `edit 1 p/91234567 e/johndoe@example.com` Edits the phone number and email address of the 1st person to be `91234567` and `johndoe@example.com` respectively.
 * `edit 2 n/Betsy Crower t/` Edits the name of the 2nd person to be `Betsy Crower` and clears all existing tags.
 * `edit 1-3 t/student t/online` Replaces the tags of the first three displayed person with `student` and `online`.
-* `edit 1 a/@johndoe` Updates the first person's Telegram handle.
-* `edit 1 p/ a/ t/` Clears the first person's phone number, Telegram handle, and tags.
+* `edit 1 h/@johndoe` Updates the first person's Telegram handle.
+* `edit 1 p/ h/ t/` Clears the first person's phone number, Telegram handle, and tags.
 * `edit 2 t/Student t/Online` Replaces the second person's tags with `Student` and `Online`.
 * `edit 2 n/Betsy Crower t/` Updates the second person's name and clears their tags.
 * `edit 1 n/` Is rejected because Name cannot be empty.
@@ -233,6 +242,10 @@ AddressBook data is saved automatically as a JSON file `[JAR file location]/data
 
 **Caution:**
 If your changes make the data file invalid, AddressBook starts with an empty address book at the next run. The invalid file remains on disk until you run a command (AddressBook saves after every command). Still, we recommend backing up the file before editing it.<br>
+For data saved by older versions, a non-empty physical address in the JSON `"address"` field does not cause the
+student record to be rejected. TutorTrack loads the record with an empty Telegram handle instead. It does not create a
+migration or backup; the file remains unchanged until the next successful command saves the loaded data, replacing
+that physical address with an empty value.<br>
 Furthermore, certain edits can cause the AddressBook to behave in unexpected ways (e.g., if a value entered is outside of the acceptable range). Therefore, edit the data file only if you are confident that you can update it correctly.
 </box>
 
@@ -260,10 +273,10 @@ _Details coming soon ..._
 
 | Action | Format / Example |
 | ------ | ---------------- |
-| **Add** | `add n/NAME p/PHONE e/EMAIL a/ADDRESS [s/SUBJECT] [g/GROUP] [t/TAG]...` |
+| **Add** | `add n/NAME [p/PHONE] e/EMAIL [h/TELEGRAM_HANDLE] s/SUBJECT g/GROUP [t/TAG]...` |
 | **Clear** | `clear` |
 | **Delete** | `delete INDEX_OR_RANGE[,INDEX_OR_RANGE]...`<br> e.g., `delete 1,3-5,7` |
-| **Edit** | `edit INDEX_OR_RANGE[,INDEX_OR_RANGE]... [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [s/SUBJECT] [g/GROUP] [t/TAG]...`<br>e.g., `edit 1,3-5 s/CS3240 g/T11 t/student` |
+| **Edit** | `edit INDEX_OR_RANGE[,INDEX_OR_RANGE]... [n/NAME] [p/PHONE] [e/EMAIL] [h/TELEGRAM_HANDLE] [s/SUBJECT] [g/GROUP] [t/TAG]...`<br>e.g., `edit 1,3-5 s/CS3240 g/T11 t/student` |
 | **Find** | `find [SEARCH_TERM [MORE_SEARCH_TERMS]] [s/SUBJECT] [g/GROUP] [t/TAG]...` |
 | **List** | `list` |
 | **Help** | `help` |
