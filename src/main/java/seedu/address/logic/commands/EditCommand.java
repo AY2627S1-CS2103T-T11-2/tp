@@ -101,11 +101,16 @@ public class EditCommand extends Command {
     public CommandResult execute(Model model) throws CommandException {
         requireNonNull(model);
 
-        if (target == null) {
-            return executeSingleEdit(model);
-        }
+        int personCountBeforeEdit = model.getAddressBook().getPersonList().size();
 
-        return executeBulkEdit(model);
+        CommandResult result = target == null ? executeSingleEdit(model) : executeBulkEdit(model);
+
+        assert model.getAddressBook().getPersonList().size() == personCountBeforeEdit
+                : "Editing a person must preserve the number of people";
+
+        model.updateFilteredPersonList(PREDICATE_SHOW_ALL_PERSONS);
+
+        return result;
     }
 
 
@@ -114,8 +119,7 @@ public class EditCommand extends Command {
      */
     private CommandResult executeSingleEdit(Model model)
             throws CommandException {
-        List<Person> lastShownList =
-                model.getFilteredPersonList();
+        List<Person> lastShownList = model.getFilteredPersonList();
 
         if (index.getZeroBased()
                 >= lastShownList.size()) {
@@ -123,24 +127,17 @@ public class EditCommand extends Command {
                     Messages.MESSAGE_INVALID_PERSON_DISPLAYED_INDEX);
         }
 
-        Person personToEdit =
-                lastShownList.get(index.getZeroBased());
+        Person personToEdit = lastShownList.get(index.getZeroBased());
         Person editedPerson =
                 createEditedPerson(
                         personToEdit,
                         editPersonDescriptor);
 
-        if (!personToEdit.isSamePerson(editedPerson)
-                && model.hasPerson(editedPerson)) {
-            throw new CommandException(
-                    MESSAGE_DUPLICATE_PERSON);
+        if (!personToEdit.isSamePerson(editedPerson) && model.hasPerson(editedPerson)) {
+            throw new CommandException(MESSAGE_DUPLICATE_PERSON);
         }
 
-        model.setPerson(
-                personToEdit,
-                editedPerson);
-        model.updateFilteredPersonList(
-                PREDICATE_SHOW_ALL_PERSONS);
+        model.setPerson(personToEdit, editedPerson);
 
         return new CommandResult(String.format(
                 MESSAGE_EDIT_PERSON_SUCCESS,
@@ -176,8 +173,6 @@ public class EditCommand extends Command {
             model.setPerson(peopleToEdit.get(i), editedPeople.get(i));
         }
 
-        model.updateFilteredPersonList(PREDICATE_SHOW_ALL_PERSONS);
-
         return result;
     }
 
@@ -186,7 +181,8 @@ public class EditCommand extends Command {
      * edited with {@code editPersonDescriptor}.
      */
     private static Person createEditedPerson(Person personToEdit, EditPersonDescriptor editPersonDescriptor) {
-        assert personToEdit != null;
+        requireNonNull(personToEdit);
+        requireNonNull(editPersonDescriptor);
 
         Name updatedName = editPersonDescriptor.getName().orElse(personToEdit.getName());
         Phone updatedPhone = editPersonDescriptor.getPhone().orElse(personToEdit.getPhone());
