@@ -51,7 +51,6 @@ import seedu.address.logic.commands.EditCommand;
 import seedu.address.logic.commands.EditCommand.EditPersonDescriptor;
 import seedu.address.logic.commands.IndexPersonTarget;
 import seedu.address.logic.commands.IndexRange;
-import seedu.address.model.person.Address;
 import seedu.address.model.person.Email;
 import seedu.address.model.person.Group;
 import seedu.address.model.person.Name;
@@ -274,7 +273,9 @@ public class EditCommandParserTest {
                 NAME_DESC_AMY,
                 PHONE_DESC_AMY,
                 EMAIL_DESC_AMY,
-                ADDRESS_DESC_AMY);
+                TELEGRAM_HANDLE_DESC_AMY,
+                " " + PREFIX_PHONE,
+                EMPTY_TELEGRAM_DESC);
 
         for (String field : disallowedFields) {
             assertParseFailure(

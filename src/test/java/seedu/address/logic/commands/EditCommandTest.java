@@ -11,6 +11,7 @@ import static seedu.address.logic.commands.CommandTestUtil.VALID_PHONE_BOB;
 import static seedu.address.logic.commands.CommandTestUtil.VALID_SUBJECT_AMY;
 import static seedu.address.logic.commands.CommandTestUtil.VALID_TAG_FRIEND;
 import static seedu.address.logic.commands.CommandTestUtil.VALID_TAG_HUSBAND;
+import static seedu.address.logic.commands.CommandTestUtil.VALID_TELEGRAM_HANDLE_AMY;
 import static seedu.address.logic.commands.CommandTestUtil.assertCommandFailure;
 import static seedu.address.logic.commands.CommandTestUtil.assertCommandSuccess;
 import static seedu.address.logic.commands.CommandTestUtil.showPersonAtIndex;
@@ -343,6 +344,11 @@ public class EditCommandTest {
             .withSubject(VALID_SUBJECT_AMY)
             .withGroup(VALID_GROUP_AMY)
             .withTags(VALID_TAG_FRIEND)
+            .build()
+            .hasSinglePersonOnlyFields());
+
+        assertTrue(new EditPersonDescriptorBuilder()
+            .withTelegramHandle(VALID_TELEGRAM_HANDLE_AMY)
             .build()
             .hasSinglePersonOnlyFields());
     }

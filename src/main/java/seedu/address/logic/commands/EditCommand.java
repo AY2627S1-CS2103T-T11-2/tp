@@ -42,7 +42,7 @@ public class EditCommand extends Command {
 
     public static final String MESSAGE_USAGE = COMMAND_WORD
             + ": Edits one or more persons identified by indexes in the displayed person list. "
-            + "Name, phone, email, and address can only be edited when one person is selected.\n"
+            + "Name, phone, email, and Telegram handle can only be edited when one person is selected.\n"
             + "Existing values will be overwritten by the input values.\n"
             + "Parameters: INDEX_OR_RANGE[,INDEX_OR_RANGE]... "
             + "Omitted fields stay unchanged. Use p/, h/, or t/ alone to clear phone, Telegram handle, or tags.\n"
@@ -274,7 +274,7 @@ public class EditCommand extends Command {
             return name != null
                     || phone != null
                     || email != null
-                    || address != null;
+                    || telegramHandle != null;
         }
 
         public void setName(Name name) {

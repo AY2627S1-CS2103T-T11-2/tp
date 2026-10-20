@@ -417,7 +417,7 @@ Use case ends.
     * 2b1. TutorTrack informs the TA that at least one field must be provided.
     * Use case ends.
 
-* 2c. A name, phone number, email address, or address is supplied.
+* 2c. A name, phone number, email address, or Telegram handle is supplied.
     * 2c1. TutorTrack informs the TA that only subject, group, and tags can be edited
       for multiple students.
     * Use case ends.
@@ -540,7 +540,7 @@ that operate on displayed persons.
 
 For backward compatibility, an index expression that selects exactly one index produces
 an `EditCommand` using the existing index-based constructor. This preserves the original
-single-person edit workflow and allows name, phone, email, address, subject, group, and
+single-person edit workflow and allows name, phone, email, Telegram handle, subject, group, and
 tags to be edited.
 
 When multiple indexes are selected, `EditCommandParser` constructs an `IndexPersonTarget`. `IndexPersonTarget` implements the `PersonTarget` interface and
@@ -552,7 +552,7 @@ all selected indexes against a snapshot of the displayed list before returning a
 persons. Consequently, an invalid command such as `edit 1,999 t/student` fails without
 editing person 1.
 
-Bulk edits are restricted to subject, group, and tags. Name, phone, email, and address
+Bulk edits are restricted to subject, group, and tags. Name, phone, email, and Telegram handle
 remain available only when exactly one person is selected. This policy is checked by both
 `EditCommandParser` and `EditCommand`. The parser provides early feedback for user input,
 while the command protects callers that construct commands directly.

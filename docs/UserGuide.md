@@ -157,7 +157,7 @@ Examples:
 
 * `edit 1 p/91234567 e/johndoe@example.com` Edits the phone number and email address of the 1st person to be `91234567` and `johndoe@example.com` respectively.
 * `edit 2 n/Betsy Crower t/` Edits the name of the 2nd person to be `Betsy Crower` and clears all existing tags.
-* `edit 1-3 t/student t/online` Replaces the tags of the first three displayed person with `student` and `online`.
+* `edit 1-3 t/student t/online` Replaces the tags of the first three displayed persons with `student` and `online`.
 * `edit 1 h/@johndoe` Updates the first person's Telegram handle.
 * `edit 1 p/ h/ t/` Clears the first person's phone number, Telegram handle, and tags.
 * `edit 2 t/Student t/Online` Replaces the second person's tags with `Student` and `Online`.
