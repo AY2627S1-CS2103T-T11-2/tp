@@ -2,6 +2,7 @@ package seedu.address.logic.commands;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.logic.commands.CommandTestUtil.DESC_AMY;
 import static seedu.address.logic.commands.CommandTestUtil.DESC_BOB;
@@ -68,6 +69,26 @@ public class EditCommandTest {
         expectedModel.setPerson(lastPerson, editedPerson);
 
         assertCommandSuccess(editCommand, model, expectedMessage, expectedModel);
+    }
+
+    @Test
+    public void execute_modelAddsPersonInsteadOfReplacing_throwsAssertionError() {
+        Model faultyModel = new ModelManager(getTypicalAddressBook(), new UserPrefs()) {
+            @Override
+            public void setPerson(Person target, Person editedPerson) {
+                // Deliberately violate the model contract to exercise the edit postcondition.
+                addPerson(editedPerson);
+            }
+        };
+        int personCountBeforeEdit = faultyModel.getAddressBook().getPersonList().size();
+        EditPersonDescriptor descriptor = new EditPersonDescriptorBuilder()
+                .withName("Unexpectedly Added Person").build();
+        EditCommand editCommand = new EditCommand(INDEX_FIRST_PERSON, descriptor);
+
+        AssertionError error = assertThrows(AssertionError.class, () -> editCommand.execute(faultyModel));
+
+        assertEquals("Editing a person must preserve the number of people", error.getMessage());
+        assertEquals(personCountBeforeEdit + 1, faultyModel.getAddressBook().getPersonList().size());
     }
 
     @Test

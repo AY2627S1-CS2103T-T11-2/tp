@@ -160,6 +160,7 @@ Examples:
   Updates the second person's name and clears their tags.
 - `edit 1 n/`
   Is rejected because Name cannot be empty.
+- `edit 1 h/alice_tan` Is rejected because Telegram handle needs to start with '@'
 
 ### Locating persons: `find`
 
