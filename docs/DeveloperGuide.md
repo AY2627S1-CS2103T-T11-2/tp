@@ -82,6 +82,15 @@ The `UI` component,
 * keeps a reference to the `Logic` component, because the `UI` relies on the `Logic` to execute commands.
 * depends on some classes in the `Model` component because it displays `Person` objects from the model.
 
+#### Command history
+
+`CommandHistory` stores previously entered commands independently of the JavaFX components. This allows its navigation behaviour to be tested using regular unit tests.
+
+The following sequence diagram shows how `CommandBox` records and retrieves commands:
+
+<puml src="diagrams/CommandHistorySequenceDiagram.puml"
+      alt="Command history navigation sequence diagram" />
+
 ### Logic component
 
 **API** : [`Logic.java`](https://github.com/se-edu/addressbook-level3/tree/master/src/main/java/seedu/address/logic/Logic.java)
