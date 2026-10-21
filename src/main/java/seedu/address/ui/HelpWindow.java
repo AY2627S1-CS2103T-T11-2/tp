@@ -18,7 +18,6 @@ public class HelpWindow extends UiPart<Stage> {
     public static final String USERGUIDE_URL = "https://se-education.org/addressbook-level3/UserGuide.html";
     public static final String HELP_MESSAGE = "Refer to the user guide: " + USERGUIDE_URL;
 
-    private static final double MINIMUM_WINDOW_HEIGHT = 480;
     private static final Logger logger = LogsCenter.getLogger(HelpWindow.class);
     private static final String FXML = "HelpWindow.fxml";
 
@@ -35,8 +34,6 @@ public class HelpWindow extends UiPart<Stage> {
      */
     public HelpWindow(Stage root) {
         super(FXML, root);
-        root.setMinHeight(MINIMUM_WINDOW_HEIGHT);
-        root.setHeight(MINIMUM_WINDOW_HEIGHT);
         helpMessage.setText(HELP_MESSAGE);
     }
 
@@ -103,6 +100,5 @@ public class HelpWindow extends UiPart<Stage> {
         final ClipboardContent url = new ClipboardContent();
         url.putString(USERGUIDE_URL);
         clipboard.setContent(url);
-        logger.fine("Copied User Guide URL to clipboard.");
     }
 }
