@@ -22,7 +22,7 @@ import seedu.address.model.tag.Tag;
 
 public class ParserUtilTest {
     private static final String INVALID_NAME = "R@chel";
-    private static final String INVALID_PHONE = "+651234";
+    private static final String INVALID_PHONE = "+65-";
     private static final String INVALID_EMAIL = "example.com";
     private static final String INVALID_TAG = "#friend";
     private static final String INVALID_SUBJECT = "CS2103T!";
@@ -83,6 +83,11 @@ public class ParserUtilTest {
     }
 
     @Test
+    public void parseName_repeatedWhitespace_returnsNormalizedName() throws Exception {
+        assertEquals(new Name("Rachel Walker"), ParserUtil.parseName("Rachel   Walker"));
+    }
+
+    @Test
     public void parsePhone_null_throwsNullPointerException() {
         assertThrows(NullPointerException.class, () -> ParserUtil.parsePhone((String) null));
     }
@@ -106,6 +111,11 @@ public class ParserUtilTest {
     }
 
     @Test
+    public void parsePhone_formattedValue_returnsCanonicalPhone() throws Exception {
+        assertEquals(new Phone("+6591234567"), ParserUtil.parsePhone("+65-9123 4567"));
+    }
+
+    @Test
     public void parseTelegramHandle_null_throwsNullPointerException() {
         assertThrows(NullPointerException.class, () -> ParserUtil.parseTelegramHandle((String) null));
     }
@@ -120,6 +130,12 @@ public class ParserUtilTest {
     public void parseTelegramHandle_handleWithoutAt_throwsParseException() {
         assertThrows(ParseException.class, TelegramHandle.MESSAGE_CONSTRAINTS, () ->
                 ParserUtil.parseTelegramHandle("rachel_walker"));
+    }
+
+    @Test
+    public void parseTelegramHandle_invalidFormat_throwsParseException() {
+        assertThrows(ParseException.class, TelegramHandle.MESSAGE_CONSTRAINTS, () ->
+                ParserUtil.parseTelegramHandle("@alice-tan"));
     }
 
     @Test

@@ -27,13 +27,21 @@ public class TelegramHandleTest {
         // Empty Telegram handles are valid
         assertTrue(TelegramHandle.isValidTelegramHandle(""));
 
-        // Non-empty Telegram handles must begin with @; remaining text is unrestricted
-        assertTrue(TelegramHandle.isValidTelegramHandle("@alice_123 / ! Unicode: 用户\nsecond line"));
-        assertTrue(TelegramHandle.isValidTelegramHandle("@"));
+        // Valid Telegram handles have 5 to 32 alphanumeric or underscore characters after @
+        assertTrue(TelegramHandle.isValidTelegramHandle("@alice_123"));
+        assertTrue(TelegramHandle.isValidTelegramHandle("@CS2103TA"));
+        assertTrue(TelegramHandle.isValidTelegramHandle("@a1234567890123456789012345678901"));
 
         // Invalid Telegram handles
         assertFalse(TelegramHandle.isValidTelegramHandle(" "));
         assertFalse(TelegramHandle.isValidTelegramHandle("alice_123"));
+        assertFalse(TelegramHandle.isValidTelegramHandle("@"));
+        assertFalse(TelegramHandle.isValidTelegramHandle("@abcd"));
+        assertFalse(TelegramHandle.isValidTelegramHandle("@_alice"));
+        assertFalse(TelegramHandle.isValidTelegramHandle("@alice-tan"));
+        assertFalse(TelegramHandle.isValidTelegramHandle("@alice tan"));
+        assertFalse(TelegramHandle.isValidTelegramHandle("@alice\n_tan"));
+        assertFalse(TelegramHandle.isValidTelegramHandle("@a12345678901234567890123456789012"));
         assertFalse(TelegramHandle.isValidTelegramHandle("Blk 456, Den Road, #01-355"));
     }
 

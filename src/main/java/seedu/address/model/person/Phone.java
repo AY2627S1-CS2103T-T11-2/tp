@@ -8,11 +8,10 @@ import static seedu.address.commons.util.AppUtil.checkArgument;
  * Guarantees: immutable; is valid as declared in {@link #isValidPhone(String)}
  */
 public class Phone {
-
-
-    public static final String MESSAGE_CONSTRAINTS =
-            "Phone numbers may be empty; otherwise, they should contain only digits and be at least 3 digits long";
-    public static final String VALIDATION_REGEX = "\\d{3,}";
+    public static final String MESSAGE_CONSTRAINTS = "Phone numbers may be empty; otherwise, they must contain at "
+            + "least 3 digits and may use spaces, hyphens, and one leading '+' as separators.";
+    public static final String VALIDATION_REGEX = "\\+?\\d(?:[ -]*\\d)*";
+    private static final String CANONICAL_PHONE_REGEX = "\\+?\\d{3,}";
     public final String value;
 
     /**
@@ -23,14 +22,24 @@ public class Phone {
     public Phone(String phone) {
         requireNonNull(phone);
         checkArgument(isValidPhone(phone), MESSAGE_CONSTRAINTS);
-        value = phone;
+        String canonicalPhone = phone.replace(" ", "").replace("-", "");
+        assert canonicalPhone.isEmpty() || canonicalPhone.matches(CANONICAL_PHONE_REGEX)
+                : "A valid phone number must have a canonical representation";
+        value = canonicalPhone;
     }
 
     /**
      * Returns true if a given string is a valid phone number.
      */
     public static boolean isValidPhone(String test) {
-        return test.isEmpty() || test.matches(VALIDATION_REGEX);
+        if (test.isEmpty()) {
+            return true;
+        }
+        if (!test.matches(VALIDATION_REGEX)) {
+            return false;
+        }
+        String canonicalPhone = test.replace(" ", "").replace("-", "");
+        return canonicalPhone.matches(CANONICAL_PHONE_REGEX);
     }
 
     /**

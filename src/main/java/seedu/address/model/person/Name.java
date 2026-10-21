@@ -10,13 +10,14 @@ import static seedu.address.commons.util.AppUtil.checkArgument;
 public class Name {
 
     public static final String MESSAGE_CONSTRAINTS =
-            "Names should only contain alphanumeric characters and spaces, and should not be blank";
+            "Names should contain alphanumeric words separated by single spaces, hyphens, or apostrophes, "
+                    + "and should not be blank";
 
     /*
-     * The first character of the name must not be a whitespace,
-     * otherwise " " (a blank string) becomes a valid input.
+     * A separator must occur only between alphanumeric words. This prevents leading, trailing, and repeated
+     * separators while allowing names such as {@code Jean-Luc} and {@code O'Connor}.
      */
-    public static final String VALIDATION_REGEX = "[\\p{Alnum}][\\p{Alnum} ]*";
+    public static final String VALIDATION_REGEX = "[\\p{Alnum}]+(?:[ '-][\\p{Alnum}]+)*";
 
     public final String fullName;
 
@@ -37,7 +38,6 @@ public class Name {
     public static boolean isValidName(String test) {
         return test.matches(VALIDATION_REGEX);
     }
-
 
     @Override
     public String toString() {
