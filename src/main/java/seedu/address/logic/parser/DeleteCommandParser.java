@@ -2,8 +2,6 @@ package seedu.address.logic.parser;
 
 import static seedu.address.logic.Messages.MESSAGE_INVALID_COMMAND_FORMAT;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.regex.Pattern;
 
 import seedu.address.commons.core.index.Index;
@@ -50,20 +48,7 @@ public class DeleteCommandParser implements Parser<DeleteCommand> {
      */
     private IndexDeleteTarget parseIndexTarget(String args)
             throws ParseException {
-        String trimmedArgs = args.trim();
-        if (trimmedArgs.isEmpty()) {
-            throw new ParseException(ParserUtil.MESSAGE_INVALID_INDEX);
-        }
-
-        if (!INDEX_EXPRESSION_PATTERN.matcher(trimmedArgs).matches()) {
-            throw new ParseException(ParserUtil.MESSAGE_INVALID_INDEX);
-        }
-
-        List<IndexRange> ranges = new ArrayList<>();
-        for (String item : trimmedArgs.split(ITEM_SEPARATOR, -1)) {
-            ranges.add(parseRange(item));
-        }
-        return new IndexDeleteTarget(ranges);
+        return new IndexDeleteTarget(IndexRangeParser.parse(args));
     }
 
     /**

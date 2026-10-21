@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import seedu.address.commons.core.index.Index;
 import seedu.address.commons.util.CollectionUtil;
@@ -39,11 +40,12 @@ public class EditCommand extends Command {
 
     public static final String COMMAND_WORD = "edit";
 
-    public static final String MESSAGE_USAGE = COMMAND_WORD + ": Edits the details of the person identified "
-            + "by the index number used in the displayed person list. "
+    public static final String MESSAGE_USAGE = COMMAND_WORD
+            + ": Edits one or more persons identified by indexes in the displayed person list. "
+            + "Name, phone, email, and Telegram handle can only be edited when one person is selected.\n"
             + "Existing values will be overwritten by the input values.\n"
+            + "Parameters: INDEX_OR_RANGE[,INDEX_OR_RANGE]... "
             + "Omitted fields stay unchanged. Use p/, h/, or t/ alone to clear phone, Telegram handle, or tags.\n"
-            + "Parameters: INDEX (must be a positive integer) "
             + "[" + PREFIX_NAME + "NAME] "
             + "[" + PREFIX_PHONE + "PHONE] "
             + "[" + PREFIX_EMAIL + "EMAIL] "
@@ -51,15 +53,20 @@ public class EditCommand extends Command {
             + "[" + PREFIX_SUBJECT + "SUBJECT] "
             + "[" + PREFIX_GROUP + "GROUP] "
             + "[" + PREFIX_TAG + "TAG]...\n"
-            + "Example: " + COMMAND_WORD + " 1 "
-            + PREFIX_PHONE + "91234567 "
-            + PREFIX_EMAIL + "johndoe@example.com";
+            + "Example: " + COMMAND_WORD + " 1,3-5 "
+            + PREFIX_SUBJECT + "CS3240 "
+            + PREFIX_GROUP + "T11 "
+            + PREFIX_TAG + "student";
 
     public static final String MESSAGE_EDIT_PERSON_SUCCESS = "Edited person: %1$s";
     public static final String MESSAGE_NOT_EDITED = "At least one field to edit must be provided.";
     public static final String MESSAGE_DUPLICATE_PERSON = "This person already exists in the address book.";
+    public static final String MESSAGE_EDIT_PERSONS_SUCCESS = "Edited %1$d persons:\n%2$s";
+    public static final String MESSAGE_INVALID_BULK_EDIT = "Only subject, group, and tags can be edited "
+            + "for multiple persons.";
 
     private final Index index;
+    private final PersonTarget target;
     private final EditPersonDescriptor editPersonDescriptor;
 
     /**
@@ -71,34 +78,102 @@ public class EditCommand extends Command {
         requireNonNull(editPersonDescriptor);
 
         this.index = index;
+        this.target = null;
+        this.editPersonDescriptor = new EditPersonDescriptor(editPersonDescriptor);
+    }
+
+    /**
+     * Creates a command that edits multiple selected persons.
+     *
+     * @param target persons to edit
+     * @param editPersonDescriptor details to edit
+     */
+    public EditCommand(PersonTarget target, EditPersonDescriptor editPersonDescriptor) {
+        requireNonNull(target);
+        requireNonNull(editPersonDescriptor);
+
+        this.index = null;
+        this.target = target;
         this.editPersonDescriptor = new EditPersonDescriptor(editPersonDescriptor);
     }
 
     @Override
     public CommandResult execute(Model model) throws CommandException {
         requireNonNull(model);
-        List<Person> lastShownList = model.getFilteredPersonList();
-
-        if (index.getZeroBased() >= lastShownList.size()) {
-            throw new CommandException(Messages.MESSAGE_INVALID_PERSON_DISPLAYED_INDEX);
-        }
-
-        Person personToEdit = lastShownList.get(index.getZeroBased());
-        Person editedPerson = createEditedPerson(personToEdit, editPersonDescriptor);
-
-        if (!personToEdit.isSamePerson(editedPerson) && model.hasPerson(editedPerson)) {
-            throw new CommandException(MESSAGE_DUPLICATE_PERSON);
-        }
 
         int personCountBeforeEdit = model.getAddressBook().getPersonList().size();
 
-        model.setPerson(personToEdit, editedPerson);
+        CommandResult result = target == null ? executeSingleEdit(model) : executeBulkEdit(model);
 
         assert model.getAddressBook().getPersonList().size() == personCountBeforeEdit
                 : "Editing a person must preserve the number of people";
 
         model.updateFilteredPersonList(PREDICATE_SHOW_ALL_PERSONS);
-        return new CommandResult(String.format(MESSAGE_EDIT_PERSON_SUCCESS, Messages.format(editedPerson)));
+
+        return result;
+    }
+
+
+    /**
+     * Executes the existing single-person edit workflow.
+     */
+    private CommandResult executeSingleEdit(Model model)
+            throws CommandException {
+        List<Person> lastShownList = model.getFilteredPersonList();
+
+        if (index.getZeroBased()
+                >= lastShownList.size()) {
+            throw new CommandException(
+                    Messages.MESSAGE_INVALID_PERSON_DISPLAYED_INDEX);
+        }
+
+        Person personToEdit = lastShownList.get(index.getZeroBased());
+        Person editedPerson =
+                createEditedPerson(
+                        personToEdit,
+                        editPersonDescriptor);
+
+        if (!personToEdit.isSamePerson(editedPerson) && model.hasPerson(editedPerson)) {
+            throw new CommandException(MESSAGE_DUPLICATE_PERSON);
+        }
+
+        model.setPerson(personToEdit, editedPerson);
+
+        return new CommandResult(String.format(
+                MESSAGE_EDIT_PERSON_SUCCESS,
+                Messages.format(editedPerson)));
+    }
+
+    /**
+     * Executes a bulk edit after validating every selected person.
+     */
+    private CommandResult executeBulkEdit(Model model)
+            throws CommandException {
+        List<Person> peopleToEdit = target.resolve(model);
+
+        if (editPersonDescriptor.hasSinglePersonOnlyFields()) {
+            throw new CommandException(MESSAGE_INVALID_BULK_EDIT);
+        }
+
+        List<Person> editedPeople =
+                peopleToEdit.stream()
+                        .map(person -> createEditedPerson(person, editPersonDescriptor))
+                        .toList();
+
+        String editedPeopleSummary = editedPeople.stream()
+                .map(Messages::format)
+                .collect(Collectors.joining("\n"));
+
+        CommandResult result = new CommandResult(String.format(
+                MESSAGE_EDIT_PERSONS_SUCCESS,
+                editedPeople.size(),
+                editedPeopleSummary));
+
+        for (int i = 0; i < peopleToEdit.size(); i++) {
+            model.setPerson(peopleToEdit.get(i), editedPeople.get(i));
+        }
+
+        return result;
     }
 
     /**
@@ -106,7 +181,8 @@ public class EditCommand extends Command {
      * edited with {@code editPersonDescriptor}.
      */
     private static Person createEditedPerson(Person personToEdit, EditPersonDescriptor editPersonDescriptor) {
-        assert personToEdit != null;
+        requireNonNull(personToEdit);
+        requireNonNull(editPersonDescriptor);
 
         Name updatedName = editPersonDescriptor.getName().orElse(personToEdit.getName());
         Phone updatedPhone = editPersonDescriptor.getPhone().orElse(personToEdit.getPhone());
@@ -132,16 +208,22 @@ public class EditCommand extends Command {
             return false;
         }
 
-        return index.equals(otherEditCommand.index)
+        return Objects.equals(index, otherEditCommand.index)
+                && Objects.equals(target, otherEditCommand.target)
                 && editPersonDescriptor.equals(otherEditCommand.editPersonDescriptor);
     }
 
     @Override
     public String toString() {
-        return new ToStringBuilder(this)
-                .add("index", index)
-                .add("editPersonDescriptor", editPersonDescriptor)
-                .toString();
+        ToStringBuilder builder = new ToStringBuilder(this);
+
+        if (target == null) {
+            builder.add("index", index);
+        } else {
+            builder.add("target", target);
+        }
+
+        return builder.add("editPersonDescriptor", editPersonDescriptor).toString();
     }
 
     /**
@@ -178,6 +260,17 @@ public class EditCommand extends Command {
          */
         public boolean isAnyFieldEdited() {
             return CollectionUtil.isAnyNonNull(name, phone, email, subject, group, telegramHandle, tags);
+        }
+
+        /**
+         * Returns whether this descriptor contains a field that can only be edited
+         * when exactly one person is selected.
+         */
+        public boolean hasSinglePersonOnlyFields() {
+            return name != null
+                    || phone != null
+                    || email != null
+                    || telegramHandle != null;
         }
 
         public void setName(Name name) {

@@ -6,21 +6,30 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.logic.commands.CommandTestUtil.DESC_AMY;
 import static seedu.address.logic.commands.CommandTestUtil.DESC_BOB;
+import static seedu.address.logic.commands.CommandTestUtil.VALID_GROUP_AMY;
 import static seedu.address.logic.commands.CommandTestUtil.VALID_NAME_BOB;
 import static seedu.address.logic.commands.CommandTestUtil.VALID_PHONE_BOB;
+import static seedu.address.logic.commands.CommandTestUtil.VALID_SUBJECT_AMY;
+import static seedu.address.logic.commands.CommandTestUtil.VALID_TAG_FRIEND;
 import static seedu.address.logic.commands.CommandTestUtil.VALID_TAG_HUSBAND;
+import static seedu.address.logic.commands.CommandTestUtil.VALID_TELEGRAM_HANDLE_AMY;
 import static seedu.address.logic.commands.CommandTestUtil.assertCommandFailure;
 import static seedu.address.logic.commands.CommandTestUtil.assertCommandSuccess;
 import static seedu.address.logic.commands.CommandTestUtil.showPersonAtIndex;
 import static seedu.address.testutil.TypicalIndexes.INDEX_FIRST_PERSON;
 import static seedu.address.testutil.TypicalIndexes.INDEX_SECOND_PERSON;
+import static seedu.address.testutil.TypicalIndexes.INDEX_THIRD_PERSON;
 import static seedu.address.testutil.TypicalPersons.getTypicalAddressBook;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
 
 import seedu.address.commons.core.index.Index;
 import seedu.address.logic.Messages;
 import seedu.address.logic.commands.EditCommand.EditPersonDescriptor;
+import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.model.AddressBook;
 import seedu.address.model.Model;
 import seedu.address.model.ModelManager;
@@ -243,12 +252,142 @@ public class EditCommandTest {
 
     @Test
     public void toStringMethod() {
+        // Single Person toString Assertion
         Index index = Index.fromOneBased(1);
         EditPersonDescriptor editPersonDescriptor = new EditPersonDescriptor();
         EditCommand editCommand = new EditCommand(index, editPersonDescriptor);
         String expected = EditCommand.class.getCanonicalName() + "{index=" + index + ", editPersonDescriptor="
                 + editPersonDescriptor + "}";
         assertEquals(expected, editCommand.toString());
+
+        // Multiple Persons toString Assertion
+        IndexPersonTarget target = new IndexPersonTarget(List.of(
+                new IndexRange(INDEX_FIRST_PERSON, INDEX_SECOND_PERSON)));
+        EditCommand bulkEditCommand = new EditCommand(target, editPersonDescriptor);
+        String expectedBulk = EditCommand.class.getCanonicalName() + "{target=" + target
+                + ", editPersonDescriptor=" + editPersonDescriptor + "}";
+
+        assertEquals(expectedBulk, bulkEditCommand.toString());
     }
 
+    @Test
+    public void execute_multipleIndexesAllowedFields_success() {
+        List<Person> originalPeople = List.copyOf(
+                model.getFilteredPersonList().subList(0, 3));
+
+        EditPersonDescriptor descriptor = new EditPersonDescriptorBuilder()
+                .withSubject(VALID_SUBJECT_AMY)
+                .withGroup(VALID_GROUP_AMY)
+                .withTags(VALID_TAG_FRIEND, VALID_TAG_HUSBAND)
+                .build();
+
+        IndexPersonTarget target = new IndexPersonTarget(List.of(
+                new IndexRange(INDEX_FIRST_PERSON, INDEX_THIRD_PERSON)));
+        EditCommand editCommand = new EditCommand(target, descriptor);
+
+        List<Person> editedPeople = originalPeople.stream()
+                .map(person -> new PersonBuilder(person)
+                        .withSubject(VALID_SUBJECT_AMY)
+                        .withGroup(VALID_GROUP_AMY)
+                        .withTags(VALID_TAG_FRIEND, VALID_TAG_HUSBAND)
+                        .build())
+                .toList();
+
+        Model expectedModel = new ModelManager(
+                new AddressBook(model.getAddressBook()), new UserPrefs());
+
+        for (int i = 0; i < originalPeople.size(); i++) {
+            expectedModel.setPerson(originalPeople.get(i), editedPeople.get(i));
+        }
+
+        String editedPeopleSummary = editedPeople.stream()
+                .map(Messages::format)
+                .collect(Collectors.joining("\n"));
+        String expectedMessage = String.format(
+                EditCommand.MESSAGE_EDIT_PERSONS_SUCCESS,
+                editedPeople.size(),
+                editedPeopleSummary);
+
+        assertCommandSuccess(editCommand, model, expectedMessage, expectedModel);
+    }
+
+    @Test
+    public void execute_multipleIndexesDisallowedField_failure() {
+        EditPersonDescriptor descriptor = new EditPersonDescriptorBuilder()
+                .withName(VALID_NAME_BOB)
+                .build();
+
+        IndexPersonTarget target = new IndexPersonTarget(List.of(
+                new IndexRange(INDEX_FIRST_PERSON, INDEX_SECOND_PERSON)));
+        EditCommand editCommand = new EditCommand(target, descriptor);
+
+        assertCommandFailure(
+                editCommand,
+                model,
+                EditCommand.MESSAGE_INVALID_BULK_EDIT);
+    }
+
+    @Test
+    public void execute_multipleIndexesOneInvalidIndex_failure() {
+        Index invalidIndex =
+                Index.fromOneBased(model.getFilteredPersonList().size() + 1);
+
+        EditPersonDescriptor descriptor = new EditPersonDescriptorBuilder()
+                .withTags(VALID_TAG_FRIEND)
+                .build();
+
+        IndexPersonTarget target = new IndexPersonTarget(List.of(
+                IndexRange.single(INDEX_FIRST_PERSON),
+                IndexRange.single(invalidIndex)));
+        EditCommand editCommand = new EditCommand(target, descriptor);
+
+        assertCommandFailure(
+                editCommand,
+                model,
+                Messages.MESSAGE_INVALID_PERSON_DISPLAYED_INDEX);
+    }
+
+    @Test
+    public void hasSinglePersonOnlyFields_variousDescriptors_returnsExpectedResult() {
+        assertFalse(new EditPersonDescriptor().hasSinglePersonOnlyFields());
+
+        assertTrue(new EditPersonDescriptorBuilder()
+            .withName(VALID_NAME_BOB)
+            .build()
+            .hasSinglePersonOnlyFields());
+
+        assertTrue(new EditPersonDescriptorBuilder()
+            .withPhone(VALID_PHONE_BOB)
+            .build()
+            .hasSinglePersonOnlyFields());
+
+        assertFalse(new EditPersonDescriptorBuilder()
+            .withSubject(VALID_SUBJECT_AMY)
+            .withGroup(VALID_GROUP_AMY)
+            .withTags(VALID_TAG_FRIEND)
+            .build()
+            .hasSinglePersonOnlyFields());
+
+        assertTrue(new EditPersonDescriptorBuilder()
+            .withTelegramHandle(VALID_TELEGRAM_HANDLE_AMY)
+            .build()
+            .hasSinglePersonOnlyFields());
+    }
+
+    @Test
+    public void execute_multipleIndexesEmptyTags_clearsTags() throws CommandException {
+        Person unaffectedPerson = model.getFilteredPersonList().get(2);
+        EditPersonDescriptor descriptor = new EditPersonDescriptorBuilder()
+                .withTags()
+                .build();
+        IndexPersonTarget target = new IndexPersonTarget(List.of(
+                new IndexRange(INDEX_FIRST_PERSON, INDEX_SECOND_PERSON)));
+
+        CommandResult result = new EditCommand(target, descriptor).execute(model);
+
+        assertTrue(model.getFilteredPersonList().get(0).getTags().isEmpty());
+        assertTrue(model.getFilteredPersonList().get(1).getTags().isEmpty());
+        assertEquals(unaffectedPerson, model.getFilteredPersonList().get(2));
+        assertTrue(result.getFeedbackToUser().startsWith("Edited 2 persons:"));
+    }
 }

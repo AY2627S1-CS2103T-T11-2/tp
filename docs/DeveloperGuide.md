@@ -115,14 +115,24 @@ How the parsing works:
 * When called upon to parse a user command, the `AddressBookParser` class creates an `XYZCommandParser` (`XYZ` is a placeholder for the specific command name, e.g., `AddCommandParser`). The parser uses the other classes shown above to parse the user command and create an `XYZCommand` object (e.g., `AddCommand`). The `AddressBookParser` returns that object as a `Command` object.
 * All `XYZCommandParser` classes, such as `AddCommandParser` and `DeleteCommandParser`, implement the `Parser` interface so they can be treated similarly where appropriate, for example during testing.
 
+#### Shared index and range parsing
+
+Commands that operate on displayed persons can use `IndexRangeParser` to parse comma-separated indexes and inclusive index ranges.
+
+For example, `1,3-5,7` represents displayed indexes 1, 3, 4, 5, and 7.
+
+`IndexRangeParser` validates the expression, parses its indexes, sorts the result, and merges duplicate, overlapping, and adjacent ranges. It returns the canonical ranges in an immutable list. For example, `3-4,1,2-3,1,6,5` is canonicalized to `1-6`.
+
+The parser does not check whether the selected indexes exist in the currently displayed person list. That list depends on the current model state and active filter, so bounds validation is performed when the resulting command executes.
+
+Command-specific parsers remain responsible for wrapping parsing failures in their own usage messages. This allows commands such as `delete`, `edit`, and future selection commands to share the same index-expression syntax while retaining command-specific feedback.
 `AddCommandParser` treats `h/TELEGRAM_HANDLE` as optional, while `EditCommandParser` distinguishes an omitted `h/`
 (preserve the current value) from an empty `h/` (clear it). Both parsers call `ParserUtil#parseTelegramHandle`, which
 trims the input and applies `TelegramHandle#isValidTelegramHandle`: an empty value represents no Telegram handle, and
 every non-empty value must begin with `@`. Both parsers explicitly reject the legacy `a/` prefix.
 
 #### Delete command
-`DeleteCommandParser` parses the argument as a comma-separated sequence of individual indexes and inclusive index
-ranges. For example, `1,3-5,7` represents indexes 1, 3, 4, 5, and 7.
+`DeleteCommandParser` delegates its index-expression parsing to the shared `IndexRangeParser`, then constructs an `IndexDeleteTarget` from the canonical ranges.
 
 Each parsed component is represented by an `IndexRange`. An individual index is represented as a range whose start
 and end are equal.
@@ -359,7 +369,7 @@ Use case ends.
     * Use case ends.
 
 
-**Use case: Edit a student's particulars**
+**Use case: Edit a single student's particulars**
 
 **MSS**
 
@@ -385,6 +395,36 @@ Use case ends.
     * 3b1. TutorTrack shows an error message.
     * Use case ends.
 
+**Use case: Edit multiple students' common particulars**
+
+**MSS**
+
+1. TA requests to edit students identified by displayed indexes or index ranges.
+2. TutorTrack validates the index expression and supplied particulars.
+3. TutorTrack resolves the indexes against the currently displayed student list.
+4. TutorTrack updates the supplied subject, group, or tags for every selected student.
+5. TutorTrack confirms which student records were updated.
+
+Use case ends.
+
+**Extensions**
+
+* 2a. The index expression or a supplied particular is invalid.
+    * 2a1. TutorTrack shows the corresponding error message.
+    * Use case ends.
+
+* 2b. No field to edit is supplied.
+    * 2b1. TutorTrack informs the TA that at least one field must be provided.
+    * Use case ends.
+
+* 2c. A name, phone number, email address, or Telegram handle is supplied.
+    * 2c1. TutorTrack informs the TA that only subject, group, and tags can be edited
+      for multiple students.
+    * Use case ends.
+
+* 3a. One or more indexes do not exist in the currently displayed list.
+    * 3a1. TutorTrack shows an error message without editing any student.
+    * Use case ends.
 
 **Use case: List students from a tutorial group**
 
@@ -491,6 +531,41 @@ testers are expected to do more *exploratory* testing.
       Expected: Similar to previous.
 
 1. _{ more test cases … }_
+
+### Edit command
+
+`EditCommandParser` delegates parsing of the index expression to `IndexRangeParser`. This
+gives `edit` the same comma-separated index and inclusive-range syntax as other commands
+that operate on displayed persons.
+
+For backward compatibility, an index expression that selects exactly one index produces
+an `EditCommand` using the existing index-based constructor. This preserves the original
+single-person edit workflow and allows name, phone, email, Telegram handle, subject, group, and
+tags to be edited.
+
+When multiple indexes are selected, `EditCommandParser` constructs an `IndexPersonTarget`. `IndexPersonTarget` implements the `PersonTarget` interface and
+resolves its ranges against the currently displayed person list when the command is
+executed.
+
+`IndexPersonTarget` normalizes duplicate, overlapping, and adjacent ranges. It validates
+all selected indexes against a snapshot of the displayed list before returning any
+persons. Consequently, an invalid command such as `edit 1,999 t/student` fails without
+editing person 1.
+
+Bulk edits are restricted to subject, group, and tags. Name, phone, email, and Telegram handle
+remain available only when exactly one person is selected. This policy is checked by both
+`EditCommandParser` and `EditCommand`. The parser provides early feedback for user input,
+while the command protects callers that construct commands directly.
+
+The edit descriptor represents fields that were not supplied using `null`. A supplied
+subject or group replaces the corresponding value for every selected person. A supplied
+tag set replaces each selected person's complete tag set. Tags are stored in a `Set`, so
+duplicate tags are retained only once. An explicitly empty tag set, produced by `t/`,
+removes all tags from every selected person.
+
+All edited `Person` objects and the success result are prepared before the model is
+updated. The command then replaces each selected person and restores the unfiltered
+person list.
 
 ### Finding persons
 

@@ -13,12 +13,14 @@ import static seedu.address.logic.parser.CliSyntax.PREFIX_TELEGRAM_HANDLE;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import seedu.address.commons.core.index.Index;
 import seedu.address.logic.commands.EditCommand;
 import seedu.address.logic.commands.EditCommand.EditPersonDescriptor;
+import seedu.address.logic.commands.IndexPersonTarget;
+import seedu.address.logic.commands.IndexRange;
 import seedu.address.logic.parser.exceptions.ParseException;
 import seedu.address.model.tag.Tag;
 
@@ -38,10 +40,10 @@ public class EditCommandParser implements Parser<EditCommand> {
                 ArgumentTokenizer.tokenize(args, PREFIX_NAME, PREFIX_PHONE, PREFIX_EMAIL, PREFIX_TELEGRAM_HANDLE,
                         PREFIX_SUBJECT, PREFIX_GROUP, PREFIX_TAG, PREFIX_LEGACY_ADDRESS);
 
-        Index index;
+        List<IndexRange> ranges;
 
         try {
-            index = ParserUtil.parseIndex(argMultimap.getPreamble());
+            ranges = IndexRangeParser.parse(argMultimap.getPreamble());
         } catch (ParseException pe) {
             throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, EditCommand.MESSAGE_USAGE), pe);
         }
@@ -82,7 +84,17 @@ public class EditCommandParser implements Parser<EditCommand> {
             throw new ParseException(EditCommand.MESSAGE_NOT_EDITED);
         }
 
-        return new EditCommand(index, editPersonDescriptor);
+        IndexPersonTarget target = new IndexPersonTarget(ranges);
+
+        if (target.selectsSingleIndex()) {
+            return new EditCommand(ranges.getFirst().start(), editPersonDescriptor);
+        }
+
+        if (editPersonDescriptor.hasSinglePersonOnlyFields()) {
+            throw new ParseException(EditCommand.MESSAGE_INVALID_BULK_EDIT);
+        }
+
+        return new EditCommand(target, editPersonDescriptor);
     }
 
     /**

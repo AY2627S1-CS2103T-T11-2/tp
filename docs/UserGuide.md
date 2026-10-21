@@ -125,17 +125,26 @@ Shows a list of all persons in the address book.
 
 Format: `list`
 
-### Editing a person: `edit`
+### Editing persons: `edit`
 
-Edits an existing person in the address book.
+Edits one or more persons in the currently displayed list.
 
-Format: `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [h/TELEGRAM_HANDLE] [s/SUBJECT] [g/GROUP] [t/TAG]...`
+Format: `edit INDEX_OR_RANGE[,INDEX_OR_RANGE]... [n/NAME] [p/PHONE] [e/EMAIL] [h/TELEGRAM_HANDLE] [s/SUBJECT] [g/GROUP] [t/TAG]...`
 
-- Edits the person at the specified `INDEX`. The index refers to the index number shown in the displayed person list. The index **must be a positive integer** 1, 2, 3, ...
-- At least one field must be supplied. Supplying an empty optional field to clear it also counts.
-- Supplied values replace the existing values. Omitted fields remain unchanged; in particular, omitting `h/` preserves
-  the existing Telegram handle.
+- `INDEX_OR_RANGE` is either an individual `INDEX` or an inclusive range written as `START_INDEX-END_INDEX`.
+- The indexes refer to the index numbers in the currently displayed person list. Each index must be a positive integer: 1, 2, 3, ...
+- Commas can combine individual indexes and ranges, for example `1,3-5,7`.
+- Spaces are not allowed inside the index expression. For example, use `1,3-5`, not `1, 3 - 5`.
+- Duplicate and overlapping indexes select each person only once.
+- All indexes are validated before any person is edited. If any index is invalid, nobody is edited.
+- At least one of the optional fields must be provided.
+- Existing values will be updated to the input values.
+- When exactly one person is selected, all fields can be edited.
+- When multiple persons are selected, only subject, group, and tags can be edited.
+- Only one subject and one group can be supplied in each command.
 - Name, Email, Subject, and Group cannot be cleared. Their supplied values must satisfy the validation rules.
+- When editing tags, all of the person's existing tags are removed; adding tags is not cumulative.
+- To remove all of a person's tags, enter `t/` without a tag after it.
 - Phone, Telegram handle, and tags are optional:
     - Enter `p/` without a value to clear the phone number.
     - Enter `h/` without a value to clear the Telegram handle.
@@ -143,24 +152,18 @@ Format: `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [h/TELEGRAM_HANDLE] [s/SUBJECT]
 - A non-empty phone number must contain only digits and be at least 3 digits long.
 - A non-empty Telegram handle must begin with `@`. No other Telegram username rules are checked.
 - Leading and trailing whitespace around values is ignored. Whitespace-only Phone or Telegram values clear those fields.
-- Supplying tags replaces the entire existing tag set. Repeat `t/TAG` to supply multiple tags.
-- An empty `t/` cannot be combined with non-empty tags in the same command.
 
 Examples:
 
-- `edit 1 p/91234567 e/johndoe@example.com`
-  Updates the first person's phone number and email, keeping all other details unchanged.
-- `edit 1 h/@alice_tan`
-  Updates the first person's Telegram handle.
-- `edit 1 p/ h/ t/`
-  Clears the first person's phone number, Telegram handle, and tags.
-- `edit 2 t/Student t/Online`
-  Replaces the second person's tags with `Student` and `Online`.
-- `edit 2 n/Betsy Crower t/`
-  Updates the second person's name and clears their tags.
-- `edit 1 n/`
-  Is rejected because Name cannot be empty.
-- `edit 1 h/alice_tan` Is rejected because Telegram handle needs to start with '@'
+* `edit 1 p/91234567 e/johndoe@example.com` Edits the phone number and email address of the 1st person to be `91234567` and `johndoe@example.com` respectively.
+* `edit 2 n/Betsy Crower t/` Edits the name of the 2nd person to be `Betsy Crower` and clears all existing tags.
+* `edit 1-3 t/student t/online` Replaces the tags of the first three displayed persons with `student` and `online`.
+* `edit 1 h/@johndoe` Updates the first person's Telegram handle.
+* `edit 1 p/ h/ t/` Clears the first person's phone number, Telegram handle, and tags.
+* `edit 2 t/Student t/Online` Replaces the second person's tags with `Student` and `Online`.
+* `edit 2 n/Betsy Crower t/` Updates the second person's name and clears their tags.
+* `edit 1 n/` Is rejected because Name cannot be empty.
+* `edit 1 h/alice_tan` Is rejected because Telegram handle needs to start with '@'
 
 ### Locating persons: `find`
 
@@ -274,7 +277,7 @@ _Details coming soon ..._
 | **Add** | `add n/NAME [p/PHONE] e/EMAIL [h/TELEGRAM_HANDLE] s/SUBJECT g/GROUP [t/TAG]...` |
 | **Clear** | `clear` |
 | **Delete** | `delete INDEX_OR_RANGE[,INDEX_OR_RANGE]...`<br> e.g., `delete 1,3-5,7` |
-| **Edit** | `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [h/TELEGRAM_HANDLE] [s/SUBJECT] [g/GROUP] [t/TAG]...` |
+| **Edit** | `edit INDEX_OR_RANGE[,INDEX_OR_RANGE]... [n/NAME] [p/PHONE] [e/EMAIL] [h/TELEGRAM_HANDLE] [s/SUBJECT] [g/GROUP] [t/TAG]...`<br>e.g., `edit 1,3-5 s/CS3240 g/T11 t/student` |
 | **Find** | `find [SEARCH_TERM [MORE_SEARCH_TERMS]] [s/SUBJECT] [g/GROUP] [t/TAG]...` |
 | **List** | `list` |
 | **Help** | `help` |
