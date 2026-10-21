@@ -1,0 +1,69 @@
+@startuml
+!include style.puml
+skinparam ArrowFontStyle plain
+box UI UI_COLOR_T1
+participant ":CommandBox" as CommandBox UI_COLOR
+participant "h:CommandHistory" as CommandHistory UI_COLOR
+end box
+== Remember an entered command ==
+[-> CommandBox : handleCommandEntered()
+activate CommandBox
+CommandBox -> CommandHistory : add(commandText)
+activate CommandHistory
+note right of CommandHistory
+Stores the command unless it is a
+consecutive case-insensitive duplicate.
+At most 100 commands are retained.
+Navigation resets to the blank entry.
+end note
+CommandHistory --> CommandBox
+deactivate CommandHistory
+deactivate CommandBox
+== Navigate to an older command ==
+
+[-> CommandBox : handleHistoryNavigation(upEvent)
+activate CommandBox
+
+CommandBox -> CommandHistory : getPrevious()
+activate CommandHistory
+CommandHistory --> CommandBox : Optional.of(previousCommand)
+deactivate CommandHistory
+
+CommandBox -> CommandBox ++ : displayHistoryEntry(previousCommand)
+deactivate CommandBox
+
+deactivate CommandBox
+== Navigate to a newer command ==
+
+[-> CommandBox : handleHistoryNavigation(downEvent)
+activate CommandBox
+
+CommandBox -> CommandHistory : getNext()
+activate CommandHistory
+CommandHistory --> CommandBox : Optional.of(nextCommand)
+deactivate CommandHistory
+
+CommandBox -> CommandBox ++ : displayHistoryEntry(nextCommand)
+deactivate CommandBox
+
+deactivate CommandBox
+== Navigate past the newest command ==
+
+[-> CommandBox : handleHistoryNavigation(downEvent)
+activate CommandBox
+
+CommandBox -> CommandHistory : getNext()
+activate CommandHistory
+CommandHistory --> CommandBox : Optional.of("")
+deactivate CommandHistory
+
+CommandBox -> CommandBox ++ : displayHistoryEntry("")
+deactivate CommandBox
+
+note right of CommandBox
+The empty string restores the blank
+entry after the newest command.
+end note
+
+deactivate CommandBox
+@enduml

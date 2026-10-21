@@ -81,6 +81,15 @@ The `UI` component,
 * depends on some classes in the `Model` component because it displays `Person` objects from the model.
 * uses `PersonCard` to hide empty Phone and Telegram handle labels; a person with no tags has no tag labels.
 
+#### Command history
+
+`CommandHistory` stores previously entered commands independently of the JavaFX components. This allows its navigation behaviour to be tested using regular unit tests.
+
+The following sequence diagram shows how `CommandBox` records and retrieves commands:
+
+<puml src="diagrams/CommandHistorySequenceDiagram.puml"
+      alt="Command history navigation sequence diagram" />
+
 ### Logic component
 
 **API** : [`Logic.java`](https://github.com/se-edu/addressbook-level3/tree/master/src/main/java/seedu/address/logic/Logic.java)

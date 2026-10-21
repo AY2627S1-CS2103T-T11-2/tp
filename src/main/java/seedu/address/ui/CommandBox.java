@@ -1,8 +1,5 @@
 package seedu.address.ui;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.TextField;
@@ -20,12 +17,10 @@ public class CommandBox extends UiPart<Region> {
 
     public static final String ERROR_STYLE_CLASS = "error";
     private static final String FXML = "CommandBox.fxml";
-    private static final int MAX_COMMAND_HISTORY = 100;
 
     private final CommandExecutor commandExecutor;
 
-    private final List<String> commandHistory = new ArrayList<>();
-    private int commandHistoryIndex;
+    private final CommandHistory commandHistory = new CommandHistory();
 
     @FXML
     private TextField commandTextField;
@@ -50,7 +45,7 @@ public class CommandBox extends UiPart<Region> {
             return;
         }
 
-        rememberCommand(commandText);
+        commandHistory.add(commandText);
 
         try {
             commandExecutor.execute(commandText);
@@ -58,26 +53,6 @@ public class CommandBox extends UiPart<Region> {
         } catch (CommandException | ParseException e) {
             setStyleToIndicateCommandFailure();
         }
-    }
-
-    /**
-     * Stores a command for keyboard history navigation.
-     *
-     * <p>Consecutive duplicates are ignored and the oldest entry is discarded when
-     * the configured history limit is exceeded.</p>
-     *
-     * @param commandText command to retain
-     */
-    private void rememberCommand(String commandText) {
-        if (commandHistory.isEmpty() || !commandText.equalsIgnoreCase(commandHistory.get(commandHistory.size() - 1))) {
-            commandHistory.add(commandText);
-
-            if (commandHistory.size() > MAX_COMMAND_HISTORY) {
-                commandHistory.remove(0);
-            }
-        }
-
-        commandHistoryIndex = commandHistory.size();
     }
 
     /**
@@ -100,31 +75,14 @@ public class CommandBox extends UiPart<Region> {
      * Displays the previous command in the command text field.
      */
     private void showPreviousUserInput() {
-        assert commandHistoryIndex >= 0
-                && commandHistoryIndex <= commandHistory.size()
-                : "Command history index must remain within valid bounds";
-
-        if (commandHistoryIndex > 0) {
-            commandHistoryIndex--;
-            displayHistoryEntry(commandHistory.get(commandHistoryIndex));
-        }
+        commandHistory.getPrevious().ifPresent(this::displayHistoryEntry);
     }
 
     /**
      * Displays the next command in the command text field.
      */
     private void showNextUserInput() {
-        assert commandHistoryIndex >= 0
-                && commandHistoryIndex <= commandHistory.size()
-                : "Command history index must remain within valid bounds";
-
-        if (commandHistoryIndex < commandHistory.size() - 1) {
-            commandHistoryIndex++;
-            displayHistoryEntry(commandHistory.get(commandHistoryIndex));
-        } else if (commandHistoryIndex == commandHistory.size() - 1) {
-            commandHistoryIndex++;
-            commandTextField.clear();
-        }
+        commandHistory.getNext().ifPresent(this::displayHistoryEntry);
     }
 
     /**
