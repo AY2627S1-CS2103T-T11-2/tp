@@ -8,8 +8,6 @@ import static seedu.address.commons.util.AppUtil.checkArgument;
  * Guarantees: immutable; is valid as declared in {@link #isValidPhone(String)}
  */
 public class Phone {
-
-
     public static final String MESSAGE_CONSTRAINTS = "Phone numbers may be empty; otherwise, they must contain at "
             + "least 3 digits and may use spaces, hyphens, and one leading '+' as separators.";
     public static final String VALIDATION_REGEX = "\\+?\\d(?:[ -]*\\d)*";
