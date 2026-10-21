@@ -87,25 +87,26 @@ Format: `add n/NAME [p/PHONE] e/EMAIL [h/TELEGRAM_HANDLE] s/SUBJECT g/GROUP [t/T
 
 * `n/NAME`, `e/EMAIL`, `s/SUBJECT`, and `g/GROUP` are required.
 * `p/PHONE`, `h/TELEGRAM_HANDLE`, and `t/TAG` are optional.
-* If `h/TELEGRAM_HANDLE` is omitted or supplied without a value, the student has no Telegram handle.
+* If  `p/PHONE` or `h/TELEGRAM_HANDLE` is omitted or supplied without a value, the student has no phone number or Telegram handle.
 * A student can have zero or more tags. To add multiple tags, repeat the `t/TAG` parameter.
 * Parameters can be supplied in any order.
 
 The following validation rules apply:
 
-* Names and subjects must be non-blank and contain only alphanumeric characters and spaces.
-* Phone numbers, when provided, must contain only digits and be at least 3 digits long.
-* Emails must use the `local-part@domain` format. The local part must start and end with an alphanumeric character;
-  `+`, `_`, `.`, and `-` are allowed only between alphanumeric characters. Domain labels may be separated by periods,
-  may contain hyphens only between alphanumeric characters, and the final label must be at least 2 characters long.
-* A non-empty Telegram handle must begin with `@`. No other Telegram username rules are checked.
-* Groups can contain any characters but must not be blank.
-* Tags must be non-blank and contain only alphanumeric characters.
-* Leading and trailing whitespace around each value is ignored. A whitespace-only Telegram handle is treated as empty.
+| Field | Prefix | Rules                                                                                                                                          |
+| --- |--------|------------------------------------------------------------------------------------------------------------------------------------------------|
+| Name | `n/`   | Must be non-blank. Alphanumeric words may be separated by single spaces, hyphens, or apostrophes; repeated spaces are normalized to one space. |
+| Phone | `p/`   | Optional. If provided, it must contain at least 3 digits. Spaces and hyphens are accepted as separators, and a leading `+` is allowed. Separators are removed before storage.                                                                                                                                                                    |
+| Email | `e/`   | Must use the `local-part@domain` format. The local part must start and end with an alphanumeric character; `+`, `_`, `.`, and `-` are allowed only between alphanumeric characters. Domain labels may be separated by periods, may contain hyphens only between alphanumeric characters, and the final label must be at least 2 characters long. |
+| Telegram handle | `h/`   | Optional. If provided, it must begin with `@`, followed by 5 to 32 letters, digits, or underscores. The first character after `@` cannot be an underscore.                                                                                                                                                                                       |
+| Subject | `s/`   | Must be non-blank and contain only alphanumeric characters and spaces.                                                                                                                                                                                                                                                                           |
+| Group | `g/`   | Must be non-blank; any characters are allowed.                                                                                                                                                                                                                                                                                                   |
+| Tag | `t/`   | Must be non-blank and contain only alphanumeric characters.                                                                                                                                                                                                                                                                                      |
 
-After leading and trailing whitespace is removed, TutorTrack considers two students duplicates when their names are
-exactly the same, including letter case. If an existing student has the same name, the new student is rejected even if
-the other details are different.
+* Leading and trailing whitespace around each value is ignored. Whitespace-only phone and Telegram values are treated as empty.
+* TutorTrack trims names and collapses consecutive internal whitespace before storing them. Two students
+are duplicates when their normalized names are exactly the same, including letter case. If an existing student has the
+same name, the new student is rejected even if the other details are different.
 
 <box type="tip" seamless>
 
@@ -116,6 +117,7 @@ the other details are different.
 Examples:
 * `add n/Alice Tan p/91234567 e/alice@example.com h/@alice_tan s/Mathematics g/Sec 3A t/Student`
 * `add n/Bob Lee p/92345678 e/bob@example.com h/@bob_lee s/Physics g/J1A t/Student t/Online`
+* `add n/Jean-Luc O'Connor p/+65-9123 4567 e/jean@example.com h/@jean_luc s/Physics g/J1A`
 * `add n/Charlie Lim e/charlie@example.com s/Mathematics g/Sec 3A` adds a student without a phone number, Telegram
   handle, or tags.
 
@@ -131,39 +133,49 @@ Edits one or more persons in the currently displayed list.
 
 Format: `edit INDEX_OR_RANGE[,INDEX_OR_RANGE]... [n/NAME] [p/PHONE] [e/EMAIL] [h/TELEGRAM_HANDLE] [s/SUBJECT] [g/GROUP] [t/TAG]...`
 
+At least one field must be supplied. Omitted fields remain unchanged; supplied fields replace the corresponding
+existing values.
+
+#### Selecting persons
+
 - `INDEX_OR_RANGE` is either an individual `INDEX` or an inclusive range written as `START_INDEX-END_INDEX`.
 - The indexes refer to the index numbers in the currently displayed person list. Each index must be a positive integer: 1, 2, 3, ...
 - Commas can combine individual indexes and ranges, for example `1,3-5,7`.
 - Spaces are not allowed inside the index expression. For example, use `1,3-5`, not `1, 3 - 5`.
 - Duplicate and overlapping indexes select each person only once.
 - All indexes are validated before any person is edited. If any index is invalid, nobody is edited.
-- At least one of the optional fields must be provided.
-- Existing values will be updated to the input values.
-- When exactly one person is selected, all fields can be edited.
-- When multiple persons are selected, only subject, group, and tags can be edited.
+
+#### Fields available
+
+| Selected persons | Allowed fields |
+| --- | --- |
+| One person | `n/`, `p/`, `e/`, `h/`, `s/`, `g/`, `t/` |
+| Multiple persons | `s/`, `g/`, `t/` only |
+
 - Only one subject and one group can be supplied in each command.
-- Name, Email, Subject, and Group cannot be cleared. Their supplied values must satisfy the validation rules.
-- When editing tags, all of the person's existing tags are removed; adding tags is not cumulative.
-- To remove all of a person's tags, enter `t/` without a tag after it.
-- Phone, Telegram handle, and tags are optional:
-    - Enter `p/` without a value to clear the phone number.
-    - Enter `h/` without a value to clear the Telegram handle.
-    - Enter `t/` without a value to clear all tags.
-- A non-empty phone number must contain only digits and be at least 3 digits long.
-- A non-empty Telegram handle must begin with `@`. No other Telegram username rules are checked.
-- Leading and trailing whitespace around values is ignored. Whitespace-only Phone or Telegram values clear those fields.
+
+#### Clearing and replacing fields
+
+| Field | Behaviour |
+| --- | --- |
+| Name, email, subject, group | Cannot be cleared. |
+| Phone | Use `p/` with no value to clear it. |
+| Telegram handle | Use `h/` with no value to clear it. |
+| Tags | Use `t/` with no value to clear all tags. Otherwise, supplied tags replace all existing tags. |
+
+- Field formats, whitespace normalization, and validation follow the rules in
+  [Adding a person](#adding-a-person-add). For `edit`, a whitespace-only phone
+  or Telegram value clears that field.
 
 Examples:
 
-* `edit 1 p/91234567 e/johndoe@example.com` Edits the phone number and email address of the 1st person to be `91234567` and `johndoe@example.com` respectively.
+* `edit 1 p/+65 9123 4567 e/johndoe@example.com h/@johndoe` Edits the phone number, email address and Telegram handle
+    of the 1st person to be `+6591234567`, `johndoe@example.com` and `@johndoe` respectively.
 * `edit 2 n/Betsy Crower t/` Edits the name of the 2nd person to be `Betsy Crower` and clears all existing tags.
-* `edit 1-3 t/student t/online` Replaces the tags of the first three displayed persons with `student` and `online`.
-* `edit 1 h/@johndoe` Updates the first person's Telegram handle.
+* `edit 1-3 s/CS3240 g/T11 t/student t/online` Updates the subject, group, and tags of the first three displayed persons.
 * `edit 1 p/ h/ t/` Clears the first person's phone number, Telegram handle, and tags.
-* `edit 2 t/Student t/Online` Replaces the second person's tags with `Student` and `Online`.
-* `edit 2 n/Betsy Crower t/` Updates the second person's name and clears their tags.
 * `edit 1 n/` Is rejected because Name cannot be empty.
-* `edit 1 h/alice_tan` Is rejected because Telegram handle needs to start with '@'
+* `edit 1 h/alice` Is rejected because Telegram handle needs to start with '@'.
 
 ### Locating persons: `find`
 
@@ -242,12 +254,17 @@ AddressBook data is saved automatically as a JSON file `[JAR file location]/data
 <box type="warning" seamless>
 
 **Caution:**
-If your changes make the data file invalid, AddressBook starts with an empty address book at the next run. The invalid file remains on disk until you run a command (AddressBook saves after every command). Still, we recommend backing up the file before editing it.<br>
-For data saved by older versions, a non-empty physical address in the JSON `"address"` field does not cause the
-student record to be rejected. TutorTrack loads the record with an empty Telegram handle instead. It does not create a
-migration or backup; the file remains unchanged until the next successful command saves the loaded data, replacing
-that physical address with an empty value.<br>
-Furthermore, certain edits can cause the AddressBook to behave in unexpected ways (e.g., if a value entered is outside of the acceptable range). Therefore, edit the data file only if you are confident that you can update it correctly.
+
+* **Back up first.** Editing the data file directly is for advanced users; create a backup before making changes.
+* **Invalid data.** If a change makes the file invalid, AddressBook starts with an empty address book at the next run.
+  The invalid file remains on disk until you run a command, which saves the in-memory data.
+* **Older data.** A non-empty physical address in the JSON `"address"` field does not cause a student record to be
+  rejected. TutorTrack loads the record with an empty Telegram handle instead. Values beginning with `@` must also
+  satisfy the current Telegram-handle format; otherwise, they are cleared. No migration or backup is created. The
+  file remains unchanged until the next successful command saves the loaded data, replacing the old physical address
+  with an empty value.
+* **Other manual changes.** Values outside their accepted range can cause unexpected behaviour. Edit the file only
+  when you are confident that the changes are valid.
 </box>
 
 ### Archiving data files `[coming in v2.0]`

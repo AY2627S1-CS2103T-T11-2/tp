@@ -338,10 +338,9 @@ public class EditCommandParserTest {
     }
 
     @Test
-    public void parse_unrestrictedTelegramHandle_success() {
+    public void parse_invalidTelegramHandle_failure() {
         String telegramHandle = "@alice_123 / ! 用户\nsecond line";
-        EditPersonDescriptor descriptor = new EditPersonDescriptorBuilder().withTelegramHandle(telegramHandle).build();
-        assertParseSuccess(parser, "1 h/" + telegramHandle, new EditCommand(INDEX_FIRST_PERSON, descriptor));
+        assertParseFailure(parser, "1 h/" + telegramHandle, TelegramHandle.MESSAGE_CONSTRAINTS);
     }
 
     @Test

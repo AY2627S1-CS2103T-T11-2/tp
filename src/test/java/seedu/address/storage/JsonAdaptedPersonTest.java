@@ -23,7 +23,7 @@ import seedu.address.testutil.PersonBuilder;
 
 public class JsonAdaptedPersonTest {
     private static final String INVALID_NAME = "R@chel";
-    private static final String INVALID_PHONE = "+651234";
+    private static final String INVALID_PHONE = "+65-";
     private static final String INVALID_EMAIL = "example.com";
     private static final String INVALID_GROUP = " ";
     private static final String INVALID_TAG = "#friend";
@@ -134,11 +134,11 @@ public class JsonAdaptedPersonTest {
     }
 
     @Test
-    public void toModelType_unrestrictedTelegramHandle_returnsPerson() throws Exception {
+    public void toModelType_invalidTelegramHandle_clearsTelegramHandle() throws Exception {
         String telegramHandle = "@alice / ! 用户\nsecond line";
         JsonAdaptedPerson person =
                 new JsonAdaptedPerson(VALID_NAME, VALID_PHONE, VALID_EMAIL, telegramHandle, VALID_TAGS);
-        assertEquals(new PersonBuilder(BENSON).withTelegramHandle(telegramHandle).build(), person.toModelType());
+        assertEquals(new PersonBuilder(BENSON).withTelegramHandle("").build(), person.toModelType());
     }
 
     @Test

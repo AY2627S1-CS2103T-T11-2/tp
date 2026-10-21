@@ -9,9 +9,10 @@ import static seedu.address.commons.util.AppUtil.checkArgument;
  */
 public class TelegramHandle {
 
-    public static final String MESSAGE_CONSTRAINTS = "Telegram handles must be empty or begin with '@'.";
+    public static final String MESSAGE_CONSTRAINTS = "Telegram handles must be empty or begin with '@' followed by "
+            + "5 to 32 letters, digits, or underscores; the first character after '@' cannot be an underscore.";
 
-    public static final String VALIDATION_REGEX = "(?s)^$|^@.*$";
+    public static final String VALIDATION_REGEX = "|@[A-Za-z0-9][A-Za-z0-9_]{4,31}";
 
     public final String value;
 
@@ -27,7 +28,7 @@ public class TelegramHandle {
     }
 
     /**
-     * Returns true if the given string is empty or begins with {@code @}.
+     * Returns true if the given string is empty or is a valid Telegram username.
      */
     public static boolean isValidTelegramHandle(String test) {
         return test.matches(VALIDATION_REGEX);

@@ -115,7 +115,7 @@ public class LogicManagerTest {
         JsonAddressBookStorage storage = new JsonAddressBookStorage(temporaryFolder.resolve("addressBook.json"));
         assertEquals(expectedModel.getAddressBook(), storage.readAddressBook().get());
 
-        String telegramHandle = "@alice_123 / ! 用户\nsecond line";
+        String telegramHandle = "@alice_123";
         Person restoredPerson = new PersonBuilder(clearedPerson)
                 .withPhone("91234567").withTelegramHandle(telegramHandle).withTags("Student", "Online").build();
         expectedModel.setPerson(clearedPerson, restoredPerson);
