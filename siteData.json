@@ -63,6 +63,7 @@
         "appendix-instructions-for-manual-testing": "Appendix: Instructions for manual testing",
         "launch-and-shutdown": "Launch and shutdown",
         "deleting-contacts": "Deleting contacts",
+        "edit-command": "Edit command",
         "finding-persons": "Finding persons",
         "saving-data": "Saving data"
       },
@@ -114,7 +115,7 @@
         "viewing-help-help": "Viewing help: help",
         "adding-a-person-add": "Adding a person: add",
         "listing-all-persons-list": "Listing all persons: list",
-        "editing-a-person-edit": "Editing a person: edit",
+        "editing-persons-edit": "Editing persons: edit",
         "locating-persons-find": "Locating persons: find",
         "deleting-contacts-delete": "Deleting contacts: delete",
         "clearing-all-entries-clear": "Clearing all entries: clear",
