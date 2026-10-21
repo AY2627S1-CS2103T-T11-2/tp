@@ -72,9 +72,7 @@ TutorTrack is a **desktop application for tutors to manage student contacts, opt
 
 ### Viewing help: `help`
 
-Shows a message explaining how to access the help page.
-
-![help message](images/helpMessage.png)
+Opens a help window with a summary of the available commands and a link to the full User Guide.
 
 Format: `help`
 

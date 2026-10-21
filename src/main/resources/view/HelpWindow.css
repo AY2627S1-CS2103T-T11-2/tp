@@ -1,4 +1,4 @@
-#copyButton, #helpMessage {
+#copyButton, #helpMessage, #commandSummaryTitle, .commandTableHeader, .commandTableAction, .commandTableFormat {
     -fx-text-fill: white;
 }
 
@@ -16,4 +16,16 @@
 
 #helpMessageContainer {
     -fx-background-color: derive(#1d1d1d, 20%);
+}
+
+#helpWindowContainer {
+    -fx-background-color: derive(#1d1d1d, 20%);
+}
+
+#commandSummaryTitle {
+    -fx-font-size: 1.1em;
+}
+
+.commandTableHeader, .commandTableAction {
+    -fx-font-weight: bold;
 }

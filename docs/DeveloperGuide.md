@@ -90,6 +90,14 @@ The following sequence diagram shows how `CommandBox` records and retrieves comm
 <puml src="diagrams/CommandHistorySequenceDiagram.puml"
       alt="Command history navigation sequence diagram" />
 
+#### Help window
+
+The `help` command returns a `CommandResult` that requests the UI to show the `HelpWindow`. The window displays a
+compact command summary and lets users copy the User Guide URL. The following sequence diagram shows this flow:
+
+<puml src="diagrams/HelpCommandSequenceDiagram.puml"
+      alt="Help command sequence diagram" />
+
 ### Logic component
 
 **API** : [`Logic.java`](https://github.com/se-edu/addressbook-level3/tree/master/src/main/java/seedu/address/logic/Logic.java)
