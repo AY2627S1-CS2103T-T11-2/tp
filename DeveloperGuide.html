@@ -69,9 +69,13 @@ The parser does not check whether the selected indexes exist in the currently di
 
 Command-specific parsers remain responsible for wrapping parsing failures in their own usage messages. This allows commands such as `delete`, `edit`, and future selection commands to share the same index-expression syntax while retaining command-specific feedback.
 `AddCommandParser` treats `h/TELEGRAM_HANDLE` as optional, while `EditCommandParser` distinguishes an omitted `h/`
-(preserve the current value) from an empty `h/` (clear it). Both parsers call `ParserUtil#parseTelegramHandle`, which
-trims the input and applies `TelegramHandle#isValidTelegramHandle`: an empty value represents no Telegram handle, and
-every non-empty value must begin with `@`. Both parsers explicitly reject the legacy `a/` prefix.
+(preserve the current value) from an empty `h/` (clear it). Both parsers explicitly reject the legacy `a/` prefix.
+
+`ParserUtil` performs shared contact-field normalization before constructing the corresponding model value object.
+It trims names and collapses consecutive internal whitespace, while `Name` permits single spaces, hyphens, and
+apostrophes between alphanumeric words. `Phone` accepts spaces and hyphens as separators, with an optional leading
+`+`, and stores the resulting compact canonical form. `TelegramHandle` treats an empty value as absent; a non-empty
+value must begin with `@`, followed by 5 to 32 letters, digits, or underscores, with no leading underscore.
 
 #### Delete command
 `DeleteCommandParser` delegates its index-expression parsing to the shared `IndexRangeParser`, then constructs an `IndexDeleteTarget` from the canonical ranges.
@@ -101,6 +105,7 @@ The `Model` component,
 
 * stores the address book data i.e., all `Person` objects (which are contained in a `UniquePersonList` object).
 * represents a person&#39;s Telegram contact using `TelegramHandle`; an empty value represents an omitted handle.
+* stores phone numbers in a compact canonical form after accepting supported input separators during parsing.
 * stores the `Person` objects selected by the current filter, such as search results, in a separate _filtered_ list. It exposes this list as an unmodifiable `ObservableList<person>` that the UI can observe and bind to, so the UI updates when the list changes.
 * stores a `UserPrefs` object that represents the user’s preferences (currently, just the GUI settings). This is exposed to the outside as a `ReadOnlyUserPrefs` object.
 * does not depend on any of the other three components (as the `Model` represents data entities of the domain, they should make sense on their own without depending on other components)
@@ -124,8 +129,9 @@ The `Storage` component,
 
 `JsonAdaptedPerson` deliberately reads and writes a person&#39;s `TelegramHandle` using the existing JSON `&quot;address&quot;`
 property; it does not introduce a `&quot;telegramHandle&quot;` property. When loading an older record, it replaces a non-empty
-physical address that does not begin with `@` with an empty `TelegramHandle` in memory, while preserving the rest of
-the person. This is not a migration and no backup is created. The original JSON remains unchanged until the next
+physical address that does not begin with `@` with an empty `TelegramHandle` in memory, while preserving
+the person. Values beginning with `@` must also satisfy the current Telegram-handle format; otherwise, they are
+cleared. This is not a migration and no backup is created. The original JSON remains unchanged until the next
 successfully executed command causes `LogicManager` to save the in-memory data, at which point the old physical
 address is overwritten with an empty `&quot;address&quot;` value.
 
@@ -523,7 +529,7 @@ person list.
    1. _{Explain how to simulate missing or corrupted data files and state the expected behavior.}_
 
 1. _{ more test cases … }_**
-</person></div> <nav id="page-nav" data-v-6b1b63d2><!--[--><div class="nav-component slim-scroll"></div><!--]--><!--v-if--></nav> <div class="scroll-top-button fa-lg d-print-none" style="display:none;bottom:2%;right:2%;position:fixed;" aria-hidden="true"><!--[--><i class="fas fa-arrow-circle-up"></i><!--]--></div></div> <footer><div class="text-center"><small>[<span><strong>Powered by</strong></span> <img src="https://markbind.org/favicon.ico" width="30"> <a href="https://markbind.org/">MarkBind 7.2.1</a>, generated on Wed, 21 Oct 2026, 9:47:47 GMT+8]</small></div></footer><!--]--></div>
+</person></div> <nav id="page-nav" data-v-6b1b63d2><!--[--><div class="nav-component slim-scroll"></div><!--]--><!--v-if--></nav> <div class="scroll-top-button fa-lg d-print-none" style="display:none;bottom:2%;right:2%;position:fixed;" aria-hidden="true"><!--[--><i class="fas fa-arrow-circle-up"></i><!--]--></div></div> <footer><div class="text-center"><small>[<span><strong>Powered by</strong></span> <img src="https://markbind.org/favicon.ico" width="30"> <a href="https://markbind.org/">MarkBind 7.2.1</a>, generated on Wed, 21 Oct 2026, 15:56:15 GMT+8]</small></div></footer><!--]--></div>
 </body><script src="/tp/markbind/js/bootstrap-utility.min.js"></script>
 <script src="/tp/markbind/js/polyfill.min.js"></script>
 <script src="/tp/markbind/js/vue.global.prod.min.js"></script>
