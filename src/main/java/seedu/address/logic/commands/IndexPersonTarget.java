@@ -94,6 +94,8 @@ public final class IndexPersonTarget implements PersonTarget {
      */
     private static List<IndexRange> normalize(
             List<IndexRange> ranges) {
+        assert !ranges.isEmpty() : "Range normalization requires at least one range";
+
         List<IndexRange> sortedRanges =
                 new ArrayList<>(ranges);
 
@@ -118,6 +120,8 @@ public final class IndexPersonTarget implements PersonTarget {
                     next.start().getZeroBased();
             long lastEnd =
                     last.end().getZeroBased();
+
+            assert nextStart >= last.start().getZeroBased() : "Ranges must be processed in sorted order";
 
             if (nextStart <= lastEnd + 1) {
                 IndexRange merged = new IndexRange(
