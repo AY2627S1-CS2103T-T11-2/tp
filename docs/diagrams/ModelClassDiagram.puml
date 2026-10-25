@@ -47,14 +47,24 @@ Person *--> "1" Subject
 Person *--> "1" Group
 Person *--> "*" Tag
 
+note left of Name
+  Stores a normalized, non-blank name.
+  Alphanumeric words are separated by single
+  spaces, hyphens, or apostrophes.
+end note
+
 note right of TelegramHandle
   Stores an optional Telegram handle.
-  Non-empty values begin with @.
+  Non-empty values begin with @, followed by
+  5 to 32 letters, digits, or underscores.
+  The first character after @ is not an underscore.
 end note
 
 note right of Phone
   Optional phone number.
   An empty value represents no phone number.
+  Spaces and hyphens are removed when constructed;
+  an optional leading + is retained.
 end note
 
 Person -[hidden]up--> I
