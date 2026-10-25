@@ -1,8 +1,12 @@
 package seedu.address.logic.parser;
 
 import static seedu.address.logic.Messages.MESSAGE_INVALID_COMMAND_FORMAT;
+import static seedu.address.logic.parser.CliSyntax.PREFIX_TAG;
 import static seedu.address.logic.parser.CommandParserTestUtil.assertParseFailure;
 import static seedu.address.logic.parser.CommandParserTestUtil.assertParseSuccess;
+import static seedu.address.logic.parser.ParserUtil.MESSAGE_INVALID_TAG_FILTER;
+import static seedu.address.model.person.FindPredicate.TagMatchMode.ALL;
+import static seedu.address.model.person.FindPredicate.TagMatchMode.ANY;
 
 import java.util.List;
 import java.util.Optional;
@@ -10,6 +14,7 @@ import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 
+import seedu.address.logic.Messages;
 import seedu.address.logic.commands.FindCommand;
 import seedu.address.model.person.FindPredicate;
 import seedu.address.model.person.Group;
@@ -96,10 +101,15 @@ public class FindCommandParserTest {
                 Optional.empty(), Optional.empty(), Optional.empty(), Set.of(new Tag("highParticipation"))));
         assertParseSuccess(parser, "t/highParticipation", tagCommand);
 
-        FindCommand multipleTagsCommand = new FindCommand(new FindPredicate(
+        FindCommand anyTagsCommand = new FindCommand(new FindPredicate(
                 Optional.empty(), Optional.empty(), Optional.empty(),
-                Set.of(new Tag("lowAttendance"), new Tag("needsHelp"))));
-        assertParseSuccess(parser, "t/lowAttendance t/needsHelp", multipleTagsCommand);
+                Set.of(new Tag("lowAttendance"), new Tag("needsHelp")), ANY));
+        assertParseSuccess(parser, "t/lowAttendance,needsHelp", anyTagsCommand);
+
+        FindCommand allTagsCommand = new FindCommand(new FindPredicate(
+                Optional.empty(), Optional.empty(), Optional.empty(),
+                Set.of(new Tag("lowAttendance"), new Tag("needsHelp")), ALL));
+        assertParseSuccess(parser, "t/lowAttendance&needsHelp", allTagsCommand);
 
         FindCommand allFiltersCommand = new FindCommand(new FindPredicate(
                 Optional.of(new NameContainsSearchTermsPredicate(List.of("John"), List.of())),
@@ -113,6 +123,9 @@ public class FindCommandParserTest {
         assertParseFailure(parser, "s/", Subject.MESSAGE_CONSTRAINTS);
         assertParseFailure(parser, "g/", Group.MESSAGE_CONSTRAINTS);
         assertParseFailure(parser, "t/", Tag.MESSAGE_CONSTRAINTS);
+        assertParseFailure(parser, "t/lowAttendance,needsHelp&consultation", MESSAGE_INVALID_TAG_FILTER);
+        assertParseFailure(parser, "t/lowAttendance t/needsHelp",
+                Messages.getErrorMessageForDuplicatePrefixes(PREFIX_TAG));
     }
 
     @Test

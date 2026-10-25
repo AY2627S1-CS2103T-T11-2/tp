@@ -3,6 +3,8 @@ package seedu.address.model.person;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static seedu.address.model.person.FindPredicate.TagMatchMode.ALL;
+import static seedu.address.model.person.FindPredicate.TagMatchMode.ANY;
 import static seedu.address.testutil.Assert.assertThrows;
 
 import java.util.HashSet;
@@ -59,9 +61,27 @@ public class FindPredicateTest {
     public void test_anyTagMatches_returnsTrue() {
         Person person = new PersonBuilder().withTags("highParticipation").build();
         FindPredicate predicate = new FindPredicate(Optional.empty(), Optional.empty(), Optional.empty(),
-                Set.of(new Tag("highParticipation"), new Tag("lowParticipation")));
+                Set.of(new Tag("highParticipation"), new Tag("lowParticipation")), ANY);
 
         assertTrue(predicate.test(person));
+    }
+
+    @Test
+    public void test_allTagsMatch_returnsTrue() {
+        Person person = new PersonBuilder().withTags("highParticipation", "needsHelp").build();
+        FindPredicate predicate = new FindPredicate(Optional.empty(), Optional.empty(), Optional.empty(),
+                Set.of(new Tag("highParticipation"), new Tag("needsHelp")), ALL);
+
+        assertTrue(predicate.test(person));
+    }
+
+    @Test
+    public void test_notAllTagsMatch_returnsFalse() {
+        Person person = new PersonBuilder().withTags("highParticipation").build();
+        FindPredicate predicate = new FindPredicate(Optional.empty(), Optional.empty(), Optional.empty(),
+                Set.of(new Tag("highParticipation"), new Tag("needsHelp")), ALL);
+
+        assertFalse(predicate.test(person));
     }
 
     @Test
@@ -102,5 +122,9 @@ public class FindPredicateTest {
                 Optional.of(new NameContainsSearchTermsPredicate(List.of("John"), List.of())),
                 Optional.of(new Subject("CS3434")), Optional.of(new Group("T11")),
                 Set.of(new Tag("consultation")))));
+        assertFalse(predicate.equals(new FindPredicate(
+                Optional.of(new NameContainsSearchTermsPredicate(List.of("John"), List.of())),
+                Optional.of(new Subject("CS3434")), Optional.of(new Group("T11")),
+                Set.of(new Tag("needsHelp")), ALL)));
     }
 }

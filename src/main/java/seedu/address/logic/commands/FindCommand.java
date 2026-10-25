@@ -22,13 +22,15 @@ public class FindCommand extends Command {
     public static final String MESSAGE_USAGE = COMMAND_WORD + ": Finds persons matching the supplied name, subject, "
             + "group, and tag criteria (case-insensitive).\n"
             + "Parameters: [SEARCH_TERM [MORE_SEARCH_TERMS]...] "
-            + "[" + PREFIX_SUBJECT + "SUBJECT] [" + PREFIX_GROUP + "GROUP] [" + PREFIX_TAG + "TAG]...\n"
+            + "[" + PREFIX_SUBJECT + "SUBJECT] [" + PREFIX_GROUP + "GROUP] [" + PREFIX_TAG + "TAG_EXPRESSION]\n"
             + "A search term is either a KEYWORD (one word without quotation marks) or a \"PHRASE\" "
-            + "(one or more words enclosed in quotation marks). Multiple tag filters use OR.\n"
+            + "(one or more words enclosed in quotation marks). Separate tags with ',' for OR or '&' for AND; "
+            + "do not mix the operators or repeat the t/ prefix.\n"
             + "Examples:\n"
             + "  " + COMMAND_WORD + " alice bob\n"
             + "  " + COMMAND_WORD + " \"Alice Pauline\"\n"
-            + "  " + COMMAND_WORD + " t/needsHelp\n"
+            + "  " + COMMAND_WORD + " t/needsHelp,lowAttendance\n"
+            + "  " + COMMAND_WORD + " t/needsHelp&lowAttendance\n"
             + "  " + COMMAND_WORD + " \"John\" s/Mathematics g/G01 t/highParticipation";
 
     private final Predicate<Person> predicate;
