@@ -91,9 +91,12 @@ public final class IndexPersonTarget implements PersonTarget {
 
     /**
      * Sorts and merges duplicate, overlapping, and adjacent ranges.
+     * The caller must supply at least one range.
      */
-    private static List<IndexRange> normalize(
+    static List<IndexRange> normalize(
             List<IndexRange> ranges) {
+        assert !ranges.isEmpty() : "Range normalization requires at least one range";
+
         List<IndexRange> sortedRanges =
                 new ArrayList<>(ranges);
 
