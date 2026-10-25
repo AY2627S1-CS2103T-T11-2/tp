@@ -91,8 +91,9 @@ public final class IndexPersonTarget implements PersonTarget {
 
     /**
      * Sorts and merges duplicate, overlapping, and adjacent ranges.
+     * The caller must supply at least one range.
      */
-    private static List<IndexRange> normalize(
+    static List<IndexRange> normalize(
             List<IndexRange> ranges) {
         assert !ranges.isEmpty() : "Range normalization requires at least one range";
 
@@ -120,8 +121,6 @@ public final class IndexPersonTarget implements PersonTarget {
                     next.start().getZeroBased();
             long lastEnd =
                     last.end().getZeroBased();
-
-            assert nextStart >= last.start().getZeroBased() : "Ranges must be processed in sorted order";
 
             if (nextStart <= lastEnd + 1) {
                 IndexRange merged = new IndexRange(
