@@ -4,6 +4,7 @@ import static java.util.Objects.requireNonNull;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import seedu.address.commons.core.index.Index;
@@ -23,6 +24,8 @@ import seedu.address.model.tag.Tag;
 public class ParserUtil {
 
     public static final String MESSAGE_INVALID_INDEX = "Index must be a positive integer.";
+    public static final String MESSAGE_INVALID_TAG_FILTER =
+            "Tag filters must use either ',' for OR or '&' for AND, but not both.";
 
     /**
      * Parses {@code oneBasedIndex} into an {@code Index} and returns it. Leading and trailing whitespaces will be
@@ -157,5 +160,21 @@ public class ParserUtil {
             tagSet.add(parseTag(tagName));
         }
         return tagSet;
+    }
+
+    /**
+     * Parses a tag filter containing one tag or multiple tags joined using either {@code ,} or {@code &}.
+     */
+    public static Set<Tag> parseTagsForFind(String tagFilter) throws ParseException {
+        requireNonNull(tagFilter);
+        boolean containsOrOperator = tagFilter.contains(",");
+        boolean containsAndOperator = tagFilter.contains("&");
+
+        if (containsOrOperator && containsAndOperator) {
+            throw new ParseException(MESSAGE_INVALID_TAG_FILTER);
+        }
+
+        String operator = containsAndOperator ? "&" : ",";
+        return parseTags(List.of(tagFilter.split(operator, -1)));
     }
 }

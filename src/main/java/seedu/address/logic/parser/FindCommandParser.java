@@ -4,6 +4,8 @@ import static seedu.address.logic.Messages.MESSAGE_INVALID_COMMAND_FORMAT;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_GROUP;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_SUBJECT;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_TAG;
+import static seedu.address.model.person.FindPredicate.TagMatchMode.ALL;
+import static seedu.address.model.person.FindPredicate.TagMatchMode.ANY;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,6 +18,7 @@ import java.util.regex.Pattern;
 import seedu.address.logic.commands.FindCommand;
 import seedu.address.logic.parser.exceptions.ParseException;
 import seedu.address.model.person.FindPredicate;
+import seedu.address.model.person.FindPredicate.TagMatchMode;
 import seedu.address.model.person.Group;
 import seedu.address.model.person.NameContainsSearchTermsPredicate;
 import seedu.address.model.person.Person;
@@ -92,11 +95,12 @@ public class FindCommandParser implements Parser<FindCommand> {
 
     /**
      * Parses optional name, subject, group, and tag filters.
-     * A person must match every supplied criterion type; multiple tag filters use OR.
+     * A person must match every supplied criterion type. Tags separated by commas use OR, while tags separated by
+     * ampersands use AND.
      */
     private FindCommand parseCriteria(ArgumentMultimap argMultimap, Optional<String> subjectValue,
                                       Optional<String> groupValue) throws ParseException {
-        argMultimap.verifyNoDuplicatePrefixesFor(PREFIX_SUBJECT, PREFIX_GROUP);
+        argMultimap.verifyNoDuplicatePrefixesFor(PREFIX_SUBJECT, PREFIX_GROUP, PREFIX_TAG);
 
         Optional<Predicate<Person>> namePredicate = Optional.empty();
         if (!argMultimap.getPreamble().isEmpty()) {
@@ -114,8 +118,14 @@ public class FindCommandParser implements Parser<FindCommand> {
         }
 
         List<String> tagValues = argMultimap.getAllValues(PREFIX_TAG);
-        Set<Tag> tags = ParserUtil.parseTags(tagValues);
+        Set<Tag> tags = Set.of();
+        TagMatchMode tagMatchMode = ANY;
+        if (!tagValues.isEmpty()) {
+            String tagFilter = tagValues.getFirst();
+            tags = ParserUtil.parseTagsForFind(tagFilter);
+            tagMatchMode = tagFilter.contains("&") ? ALL : ANY;
+        }
 
-        return new FindCommand(new FindPredicate(namePredicate, subject, group, tags));
+        return new FindCommand(new FindPredicate(namePredicate, subject, group, tags, tagMatchMode));
     }
 }

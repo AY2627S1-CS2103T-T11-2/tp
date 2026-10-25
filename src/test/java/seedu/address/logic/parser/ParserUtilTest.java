@@ -247,4 +247,31 @@ public class ParserUtilTest {
 
         assertEquals(expectedTagSet, actualTagSet);
     }
+
+    @Test
+    public void parseTagsForFind_commaSeparatedTags_returnsTagSet() throws Exception {
+        Set<Tag> expectedTagSet = Set.of(new Tag(VALID_TAG_1), new Tag(VALID_TAG_2));
+
+        assertEquals(expectedTagSet, ParserUtil.parseTagsForFind(VALID_TAG_1 + "," + VALID_TAG_2));
+    }
+
+    @Test
+    public void parseTagsForFind_ampersandSeparatedTags_returnsTagSet() throws Exception {
+        Set<Tag> expectedTagSet = Set.of(new Tag(VALID_TAG_1), new Tag(VALID_TAG_2));
+
+        assertEquals(expectedTagSet, ParserUtil.parseTagsForFind(VALID_TAG_1 + "&" + VALID_TAG_2));
+    }
+
+    @Test
+    public void parseTagsForFind_mixedOperators_throwsParseException() {
+        String mixedTagFilter = VALID_TAG_1 + "," + VALID_TAG_2 + "&consultation";
+
+        assertThrows(ParseException.class, ParserUtil.MESSAGE_INVALID_TAG_FILTER, () ->
+                ParserUtil.parseTagsForFind(mixedTagFilter));
+    }
+
+    @Test
+    public void parseTagsForFind_emptyTag_throwsParseException() {
+        assertThrows(ParseException.class, () -> ParserUtil.parseTagsForFind(""));
+    }
 }
