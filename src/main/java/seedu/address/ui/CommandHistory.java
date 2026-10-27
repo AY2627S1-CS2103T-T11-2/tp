@@ -15,16 +15,21 @@ public class CommandHistory {
 
     private final List<String> commands = new ArrayList<>();
     private int currentIndex;
+    private String draft = "";
 
     /**
      * Stores a command for later navigation.
-     * Consecutive duplicates are compared case-insensitively and stored only once.
+     * Consecutive exact duplicates are stored only once.
+     * Resets navigation and discards any previously saved draft.
+     *
+     * @param command processed command to store
+     * @throws NullPointerException if {@code command} is null
      */
     public void add(String command) {
         requireNonNull(command);
 
         if (commands.isEmpty()
-                || !command.equalsIgnoreCase(commands.get(commands.size() - 1))) {
+                || !command.equals(commands.get(commands.size() - 1))) {
             commands.add(command);
 
             if (commands.size() > MAX_COMMAND_HISTORY) {
@@ -33,10 +38,25 @@ public class CommandHistory {
         }
 
         currentIndex = commands.size();
+        draft = "";
     }
 
     /**
-     * Returns the previous command, if navigation can move further backwards.
+     * Replaces the current unprocessed draft.
+     *
+     * @param draft command currently being edited
+     * @throws NullPointerException if {@code draft} is null
+     */
+    public void saveDraft(String draft) {
+        requireNonNull(draft);
+
+        this.draft = draft;
+    }
+
+    /**
+     * Moves backwards through the history, if navigation can move further backwards.
+     *
+     * @return the previous command, or an empty optional at the oldest command
      */
     public Optional<String> getPrevious() {
         assertIndexIsValid();
@@ -50,8 +70,10 @@ public class CommandHistory {
     }
 
     /**
-     * Returns the next command, if navigation can move further forwards.
-     * An empty string represents the blank entry immediately after the newest command.
+     * Moves forwards through the history, if navigation can move further forwards.
+     * The saved draft is returned after navigating past the newest command.
+     *
+     * @return the next command or saved draft, or an empty optional when already at the draft
      */
     public Optional<String> getNext() {
         assertIndexIsValid();
@@ -62,7 +84,7 @@ public class CommandHistory {
 
         currentIndex++;
         if (currentIndex == commands.size()) {
-            return Optional.of("");
+            return Optional.of(draft);
         }
 
         return Optional.of(commands.get(currentIndex));

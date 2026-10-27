@@ -56,7 +56,7 @@
               <Label styleClass="commandTableAction" text="Edit" GridPane.rowIndex="4" />
               <Label styleClass="commandTableFormat" text="edit INDEX_OR_RANGE[INDEX_OR_RANGE] [n/NAME] [p/PHONE] [e/EMAIL] [h/TELEGRAM_HANDLE] [s/SUBJECT] [g/GROUP] [t/TAG]&#10;" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="4" />
               <Label styleClass="commandTableAction" text="Find" GridPane.rowIndex="5" />
-              <Label styleClass="commandTableFormat" text="find [SEARCH_TERM [MORE_SEARCH_TERMS]] [s/SUBJECT] [g/GROUP] [t/TAG_EXPRESSION]&#10;" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+              <Label styleClass="commandTableFormat" text="find [n/NAME_TERM[,NAME_TERM]...] [h/TELEGRAM_HANDLE] [s/SUBJECT] [g/GROUP] [t/TAG_EXPRESSION]&#10;" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="5" />
               <Label styleClass="commandTableAction" text="List" GridPane.rowIndex="6" />
               <Label styleClass="commandTableFormat" text="list" GridPane.columnIndex="1" GridPane.rowIndex="6" />
               <Label styleClass="commandTableAction" text="Help" GridPane.rowIndex="7" />

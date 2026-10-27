@@ -22,6 +22,8 @@ public class CommandBox extends UiPart<Region> {
 
     private final CommandHistory commandHistory = new CommandHistory();
 
+    private boolean isDisplayingHistoryEntry;
+
     @FXML
     private TextField commandTextField;
 
@@ -32,7 +34,13 @@ public class CommandBox extends UiPart<Region> {
         super(FXML);
         this.commandExecutor = commandExecutor;
         // calls #setStyleToDefault() whenever there is a change to the text of the command box.
-        commandTextField.textProperty().addListener((unused1, unused2, unused3) -> setStyleToDefault());
+        commandTextField.textProperty().addListener((unused, oldText, newText) -> {
+            setStyleToDefault();
+
+            if (!isDisplayingHistoryEntry) {
+                commandHistory.saveDraft(newText);
+            }
+        });
     }
 
     /**
@@ -86,11 +94,18 @@ public class CommandBox extends UiPart<Region> {
     }
 
     /**
-     * Displays the specified command and moves the caret to its end.
+     * Displays the specified {@code commandText} and moves the caret to its end.
+     *
+     * @param commandText text to display
      */
     private void displayHistoryEntry(String commandText) {
-        commandTextField.setText(commandText);
-        commandTextField.positionCaret(commandTextField.getLength());
+        isDisplayingHistoryEntry = true;
+        try {
+            commandTextField.setText(commandText);
+            commandTextField.positionCaret(commandTextField.getLength());
+        } finally {
+            isDisplayingHistoryEntry = false;
+        }
     }
 
     /**
@@ -126,4 +141,12 @@ public class CommandBox extends UiPart<Region> {
         CommandResult execute(String commandText) throws CommandException, ParseException;
     }
 
+    /**
+     * Returns whether the command input currently owns keyboard focus.
+     *
+     * @return true if the command input is focused
+     */
+    boolean isInputFocused() {
+        return commandTextField.isFocused();
+    }
 }

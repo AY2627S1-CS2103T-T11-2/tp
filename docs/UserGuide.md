@@ -39,6 +39,8 @@ TutorTrack is a **desktop application for tutors to manage student contacts, opt
 
    - `exit` : Exits the app.
 
+1. Use the **Up Arrow (↑)** and **Down Arrow (↓)** keys in the command box to navigate previously submitted commands.
+
 1. Refer to the [Features](#features) section below for details of each command.
 
 ---
@@ -76,6 +78,16 @@ Opens a help window with a summary of the available commands and a link to the f
 
 Format: `help`
 
+### Navigating command history
+
+When the command box is focused, you can reuse previously submitted commands:
+
+- Press the **Up Arrow (↑)** key to move to an older command.
+- Press the **Down Arrow (↓)** key to move towards newer commands.
+- Moving down past the newest command restores the text you were previously typing.
+- If you edit a recalled command, the edited text is preserved as your current draft until you submit it by pressing Enter.
+
+Commands are added to the history when submitted, including commands that fail.
 
 ### Adding a person: `add`
 
@@ -196,43 +208,47 @@ Examples:
 
 ### Locating persons: `find`
 
-Finds persons by name, subject, group, tag, or a combination of these criteria.
+Finds persons by name, Telegram handle, subject, group, tag, or a combination of these criteria.
 
 Formats:
 
-- `find [SEARCH_TERM [MORE_SEARCH_TERMS]] [s/SUBJECT] [g/GROUP] [t/TAG_EXPRESSION]`, where a search term is a `KEYWORD` or `"PHRASE"`
+- `find [n/NAME_TERM[,NAME_TERM]...] [h/TELEGRAM_HANDLE] [s/SUBJECT] [g/GROUP] [t/TAG_EXPRESSION]`, where a
+  name term is a `KEYWORD` or `"PHRASE"`
 
-- At least one name, subject, group, or tag criterion must be provided.
-- All searches are case-insensitive; for example, `hans` matches `Hans`, `g/t11` matches `T11`, and
+- At least one name, Telegram handle, subject, group, or tag criterion must be provided.
+- All searches are case-insensitive; for example, `n/hans` matches `Hans`, `g/t11` matches `T11`, and
   `t/needshelp` matches `needsHelp`.
-- Keyword order does not matter; for example, `Hans Bo` matches `Bo Hans`.
-- Only full words match; for example, `Han` does not match `Hans`.
-- Persons matching at least one keyword are returned (an `OR` search); for example, `Hans Bo` returns `Hans Gruber` and `Bo Yang`.
-- A quoted phrase matches names containing the phrase, ignoring case.
+- Separate multiple name terms with commas. A person matching any name term is returned (an `OR` search).
+- An unquoted keyword matches only a complete name component. Spaces, hyphens, and apostrophes separate components;
+  for example, `n/Jean` matches `Jean-Luc`, while `n/Han` does not match `Hans`.
+- A quoted phrase performs a substring match; for example, `n/"lex Ye"` matches `Alex Yeoh`.
+- A Telegram handle must include its leading `@` and is matched exactly, ignoring letter case.
 - Subject, group, and tag filters require an exact match, ignoring letter case.
-- Only one `t/` prefix can be supplied.
+- Only one of each prefix can be supplied.
 - Within `TAG_EXPRESSION`, separate tags with `,` for `OR`; for example, `t/lowAttendance,needsHelp` matches a
   person with either tag.
 - Within `TAG_EXPRESSION`, separate tags with `&` for `AND`; for example, `t/lowAttendance&needsHelp` matches only a
   person with both tags.
 - `,` and `&` cannot be used together in the same tag expression.
-- When name, subject, group, or tag criteria are combined, a person must match every supplied criterion type
+- When name, Telegram handle, subject, group, or tag criteria are combined, a person must match every supplied
+  criterion type
   (an `AND` search).
 
 Examples:
-* `find John` returns `john` and `John Doe`
-* `find alex david` returns `Alex Yeoh`, `David Li`<br>
-* `find "Alex Yeoh"` returns names containing the phrase `Alex Yeoh`, ignoring case.
-* `find "Alex Yeoh" David` returns names containing either the phrase `Alex Yeoh` or the keyword `David`.
+* `find n/John` returns `john` and `John Doe`.
+* `find n/alex,david` returns `Alex Yeoh` and `David Li`.<br>
+* `find n/"Alex Yeoh"` returns names containing the phrase `Alex Yeoh`, ignoring case.
+* `find n/"Alex Yeoh",David` returns names containing either the phrase `Alex Yeoh` or the keyword `David`.
+* `find h/@alice_tan` returns the person whose Telegram handle is `@alice_tan`.
 * `find s/CS2103T` returns persons whose subject is `CS2103T`.
 * `find g/T11` returns persons whose group is `T11`.
 * `find s/CS2103T g/T11` returns persons in group `T11` whose subject is `CS2103T`.
-* `find "John" s/CS3434` returns persons whose names contain `John` and whose subject is `CS3434`.
+* `find n/"John" s/CS3434` returns persons whose names contain `John` and whose subject is `CS3434`.
 * `find t/needsHelp` returns persons tagged `needsHelp`.
 * `find t/highParticipation,needsHelp` returns persons tagged `highParticipation` or `needsHelp`.
 * `find t/highParticipation&needsHelp` returns persons tagged with both `highParticipation` and `needsHelp`.
-* `find "John" s/CS3434 g/T11 t/highParticipation` returns persons matching all four criterion types.
-  ![result for 'find alex david'](images/findAlexDavidResult.png)
+* `find n/"John" h/@john_doe s/CS3434 g/T11 t/highParticipation` returns persons matching all five criterion types.
+  ![result for 'find n/alex,david'](images/findAlexDavidResult.png)
 
 ### Deleting contacts: `delete`
 
@@ -320,7 +336,7 @@ _Details coming soon ..._
 | **Clear** | `clear` |
 | **Delete** | `delete INDEX_OR_RANGE[,INDEX_OR_RANGE]...`<br> e.g., `delete 1,3-5,7` |
 | **Edit** | `edit INDEX_OR_RANGE[,INDEX_OR_RANGE]... [n/NAME] [p/PHONE] [e/EMAIL] [h/TELEGRAM_HANDLE] [s/SUBJECT] [g/GROUP] [t/TAG]...`<br>e.g., `edit 1,3-5 s/CS3240 g/T11 t/student` |
-| **Find** | `find [SEARCH_TERM [MORE_SEARCH_TERMS]] [s/SUBJECT] [g/GROUP] [t/TAG_EXPRESSION]` |
+| **Find** | `find [n/NAME_TERM[,NAME_TERM]...] [h/TELEGRAM_HANDLE] [s/SUBJECT] [g/GROUP] [t/TAG_EXPRESSION]` |
 | **List** | `list` |
 | **Help** | `help` |
 | **Exit** | `exit` |

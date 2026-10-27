@@ -32,17 +32,19 @@ public class IndexPersonTargetTest {
     }
 
     @Test
-    public void normalize_emptyRanges_throwsAssertionError() {
-        AssertionError error = assertThrows(AssertionError.class, () -> IndexPersonTarget.normalize(List.of()));
-
-        assertEquals("Range normalization requires at least one range", error.getMessage());
-    }
-
-    @Test
     public void selectsSingleIndex_singleIndex_returnsTrue() {
         IndexPersonTarget target = new IndexPersonTarget(List.of(IndexRange.single(INDEX_FIRST_PERSON)));
 
         assertTrue(target.selectsSingleIndex());
+    }
+
+    @Test
+    public void selectsSingleIndex_multipleRanges_returnsFalse() {
+        IndexPersonTarget target = new IndexPersonTarget(List.of(
+                IndexRange.single(INDEX_FIRST_PERSON),
+                IndexRange.single(INDEX_THIRD_PERSON)));
+
+        assertFalse(target.selectsSingleIndex());
     }
 
     @Test

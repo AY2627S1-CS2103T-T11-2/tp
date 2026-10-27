@@ -13,8 +13,8 @@ Class CommandResult
 Class "{abstract}\nCommand" as Command
 
 Class DeleteCommand
-Class "<<interface>>\nDeleteTarget" as DeleteTarget
-Class IndexDeleteTarget
+Class "<<interface>>\nPersonTarget" as PersonTarget
+Class IndexPersonTarget
 Class IndexRange
 
 Class EditCommand
@@ -48,9 +48,9 @@ EditCommand -up-|> Command
 
 LogicManager .left.> Command : <<call>>
 
-DeleteCommand --> "1" DeleteTarget : target
-IndexDeleteTarget .up.|> DeleteTarget
-IndexDeleteTarget --> "1..*" IndexRange : ranges
+DeleteCommand --> "1" PersonTarget : target
+IndexPersonTarget .up.|> PersonTarget
+IndexPersonTarget --> "1..*" IndexRange : ranges
 
 EditCommand --> "0..1" PersonTarget : target
 EditCommand *--> "1" EditPersonDescriptor : defensive copy
@@ -77,7 +77,6 @@ Storage --[hidden] Model
 
 Command .[hidden]up.> Storage
 Command .right.> Model
-DeleteTarget ..> Model : <<use>>
 PersonTarget ..> Model : <<use>>
 note right of XYZCommand: XYZCommand = AddCommand, \nFindCommand, etc
 

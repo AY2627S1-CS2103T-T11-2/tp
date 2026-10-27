@@ -5,10 +5,13 @@ import java.util.logging.Logger;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.control.Menu;
+import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextInputControl;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import seedu.address.commons.core.GuiSettings;
@@ -36,6 +39,10 @@ public class MainWindow extends UiPart<Stage> {
     private PersonListPanel personListPanel;
     private ResultDisplay resultDisplay;
     private HelpWindow helpWindow;
+    private CommandBox commandBox;
+
+    @FXML
+    private MenuBar menuBar;
 
     @FXML
     private StackPane commandBoxPlaceholder;
@@ -123,8 +130,25 @@ public class MainWindow extends UiPart<Stage> {
         StatusBarFooter statusBarFooter = new StatusBarFooter(dataFilePath);
         statusbarPlaceholder.getChildren().add(statusBarFooter.getRoot());
 
-        CommandBox commandBox = new CommandBox(this::executeCommand);
+        commandBox = new CommandBox(this::executeCommand);
         commandBoxPlaceholder.getChildren().add(commandBox.getRoot());
+
+        preventMenuHoverFromActivatingNavigation();
+    }
+
+    /**
+     * Prevents passive menu hovering from activating keyboard menu navigation
+     * while the user is typing a command.
+     */
+    private void preventMenuHoverFromActivatingNavigation() {
+        menuBar.addEventFilter(MouseEvent.MOUSE_ENTERED_TARGET, event -> {
+            boolean isMenuOpen = menuBar.getMenus().stream()
+                    .anyMatch(Menu::isShowing);
+
+            if (commandBox.isInputFocused() && !isMenuOpen) {
+                event.consume();
+            }
+        });
     }
 
     /**

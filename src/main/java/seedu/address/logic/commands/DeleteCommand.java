@@ -1,6 +1,7 @@
 package seedu.address.logic.commands;
 
 import static java.util.Objects.requireNonNull;
+import static seedu.address.model.Model.PREDICATE_SHOW_ALL_PERSONS;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -33,7 +34,7 @@ public class DeleteCommand extends Command {
 
     public static final String MESSAGE_DELETE_PERSON_SUCCESS = "Deleted person: %1$s";
 
-    private final DeleteTarget target;
+    private final PersonTarget target;
 
     /**
      * Creates a command that deletes the person at one displayed index.
@@ -41,7 +42,7 @@ public class DeleteCommand extends Command {
      * @param targetIndex Displayed index of the person to delete.
      */
     public DeleteCommand(Index targetIndex) {
-        this(new IndexDeleteTarget(
+        this(new IndexPersonTarget(
                 List.of(IndexRange.single(targetIndex))));
     }
 
@@ -50,7 +51,7 @@ public class DeleteCommand extends Command {
      *
      * @param target Selection strategy used when the command executes.
      */
-    public DeleteCommand(DeleteTarget target) {
+    public DeleteCommand(PersonTarget target) {
         this.target = requireNonNull(target);
     }
 
@@ -63,18 +64,24 @@ public class DeleteCommand extends Command {
             model.deletePerson(person);
         }
 
+        CommandResult result;
+
         if (peopleToDelete.size() == 1) {
-            return new CommandResult(String.format(
+            result = new CommandResult(String.format(
                     MESSAGE_DELETE_PERSON_SUCCESS,
                     Messages.format(peopleToDelete.get(0))));
+        } else {
+            String deletedPeople = peopleToDelete.stream()
+                    .map(Messages::format)
+                    .collect(Collectors.joining("\n"));
+            result = new CommandResult(String.format(
+                    MESSAGE_DELETE_PERSONS_SUCCESS,
+                    peopleToDelete.size(), deletedPeople));
         }
 
-        String deletedPeople = peopleToDelete.stream()
-                .map(Messages::format)
-                .collect(Collectors.joining("\n"));
-        return new CommandResult(String.format(
-                MESSAGE_DELETE_PERSONS_SUCCESS,
-                peopleToDelete.size(), deletedPeople));
+        model.updateFilteredPersonList(PREDICATE_SHOW_ALL_PERSONS);
+
+        return result;
     }
 
     @Override
