@@ -173,9 +173,41 @@ public class EditCommandTest {
         String expectedMessage = String.format(EditCommand.MESSAGE_EDIT_PERSON_SUCCESS, Messages.format(editedPerson));
 
         Model expectedModel = new ModelManager(new AddressBook(model.getAddressBook()), new UserPrefs());
+        showPersonAtIndex(expectedModel, INDEX_FIRST_PERSON);
         expectedModel.setPerson(model.getFilteredPersonList().get(0), editedPerson);
 
         assertCommandSuccess(editCommand, model, expectedMessage, expectedModel);
+    }
+
+    @Test
+    public void execute_filteredListGroupEdit_preservesFilter() throws CommandException {
+        showPersonAtIndex(model, INDEX_FIRST_PERSON);
+        Person originalPerson = model.getFilteredPersonList().getFirst();
+        Person editedPerson = new PersonBuilder(originalPerson).withGroup("T12").build();
+        new EditCommand(INDEX_FIRST_PERSON,
+                new EditPersonDescriptorBuilder().withGroup("T12").build()).execute(model);
+
+        assertEquals(List.of(editedPerson), model.getFilteredPersonList());
+        assertEquals(editedPerson, model.getAddressBook().getPersonList().getFirst());
+    }
+
+    @Test
+    public void execute_filteredBulkEdit_rechecksFilterWithoutSkippingPeople() throws CommandException {
+        List<Person> selectedPeople = List.copyOf(model.getFilteredPersonList().subList(0, 3));
+        model.updateFilteredPersonList(selectedPeople::contains);
+        IndexPersonTarget target = new IndexPersonTarget(List.of(
+                new IndexRange(INDEX_FIRST_PERSON, INDEX_THIRD_PERSON)));
+        List<Person> originalPeople = List.copyOf(model.getAddressBook().getPersonList());
+
+        new EditCommand(target, new EditPersonDescriptorBuilder().withGroup("NewGroup").build()).execute(model);
+
+        assertTrue(model.getFilteredPersonList().isEmpty());
+        for (int i = 0; i < selectedPeople.size(); i++) {
+            assertEquals(new PersonBuilder(selectedPeople.get(i)).withGroup("NewGroup").build(),
+                    model.getAddressBook().getPersonList().get(i));
+        }
+        assertEquals(originalPeople.subList(3, originalPeople.size()),
+                model.getAddressBook().getPersonList().subList(3, originalPeople.size()));
     }
 
     @Test

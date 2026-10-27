@@ -1,5 +1,6 @@
 package seedu.address.logic.parser;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static seedu.address.logic.Messages.MESSAGE_INVALID_COMMAND_FORMAT;
 import static seedu.address.logic.commands.CommandTestUtil.EMAIL_DESC_AMY;
 import static seedu.address.logic.commands.CommandTestUtil.EMAIL_DESC_BOB;
@@ -51,6 +52,8 @@ import seedu.address.logic.commands.EditCommand;
 import seedu.address.logic.commands.EditCommand.EditPersonDescriptor;
 import seedu.address.logic.commands.IndexPersonTarget;
 import seedu.address.logic.commands.IndexRange;
+import seedu.address.model.Model;
+import seedu.address.model.ModelManager;
 import seedu.address.model.person.Email;
 import seedu.address.model.person.Group;
 import seedu.address.model.person.Name;
@@ -59,6 +62,7 @@ import seedu.address.model.person.Subject;
 import seedu.address.model.person.TelegramHandle;
 import seedu.address.model.tag.Tag;
 import seedu.address.testutil.EditPersonDescriptorBuilder;
+import seedu.address.testutil.PersonBuilder;
 
 public class EditCommandParserTest {
 
@@ -68,6 +72,74 @@ public class EditCommandParserTest {
             String.format(MESSAGE_INVALID_COMMAND_FORMAT, EditCommand.MESSAGE_USAGE);
 
     private EditCommandParser parser = new EditCommandParser();
+
+    @Test
+    public void parse_repeatedPhoneSeparators_failure() {
+        for (String phone : List.of("1--- --2 3", "9123--4567", "9123  4567", "9123 -4567")) {
+            assertParseFailure(parser, "1 p/" + phone, Phone.MESSAGE_CONSTRAINTS);
+        }
+    }
+
+    @Test
+    public void parse_hyphenatedFinalEmailLabel_success() {
+        EditPersonDescriptor descriptor = new EditPersonDescriptorBuilder().withEmail("alice@x.a-b").build();
+        assertParseSuccess(parser, "1 e/alice@x.a-b", new EditCommand(INDEX_FIRST_PERSON, descriptor));
+    }
+
+    @Test
+    public void parse_repeatedEmptyTags_success() {
+        EditPersonDescriptor descriptor = new EditPersonDescriptorBuilder().withTagRemovalCount(2).build();
+        assertParseSuccess(parser, "1 t/ t/", new EditCommand(INDEX_FIRST_PERSON, descriptor));
+        assertParseSuccess(parser, "1 t/   t/ \t t/", new EditCommand(INDEX_FIRST_PERSON,
+                new EditPersonDescriptorBuilder().withTagRemovalCount(3).build()));
+        IndexPersonTarget target = new IndexPersonTarget(List.of(
+                new IndexRange(INDEX_FIRST_PERSON, INDEX_SECOND_PERSON)));
+        assertParseSuccess(parser, "1-2 t/ t/", new EditCommand(target, descriptor));
+    }
+
+    @Test
+    public void parse_unknownPrefix_failure() {
+        for (String input : List.of("1 g/T11 x/typo", "1 x/typo g/T11", "1 g/T11 typo/value",
+                "1 g/T11 X/typo", "1 g/T11 x/", "1 g/T11\tx/typo", "1-2 g/T11 x/typo")) {
+            assertParseFailure(parser, input, MESSAGE_INVALID_FORMAT);
+        }
+    }
+
+    @Test
+    public void parse_groupContainingSlashes_success() {
+        for (String group : List.of("T11/T12", "T11 x / typo", "T11 https://example.com")) {
+            EditPersonDescriptor descriptor = new EditPersonDescriptorBuilder().withGroup(group).build();
+            assertParseSuccess(parser, "1 g/" + group, new EditCommand(INDEX_FIRST_PERSON, descriptor));
+        }
+    }
+
+    @Test
+    public void parse_caseVariantTags_storesOneTag() throws Exception {
+        Model model = new ModelManager();
+        model.addPerson(new PersonBuilder().withTags("old").build());
+        parser.parse("1 t/Student t/student t/STUDENT").execute(model);
+
+        var tags = model.getFilteredPersonList().getFirst().getTags();
+        assertEquals(1, tags.size());
+        assertEquals("Student", tags.iterator().next().tagName);
+    }
+
+    @Test
+    public void parse_emptyTag_removesOnlyLastTag() throws Exception {
+        Model model = new ModelManager();
+        model.addPerson(new PersonBuilder().withTags("Student", "Online").build());
+        parser.parse("1 t/").execute(model);
+        assertEquals(List.of("Student"),
+                model.getFilteredPersonList().getFirst().getTags().stream().map(tag -> tag.tagName).toList());
+    }
+
+    @Test
+    public void parse_repeatedEmptyTags_clearsExistingTags() throws Exception {
+        Model model = new ModelManager();
+        model.addPerson(new PersonBuilder().withTags("Student", "Online").build());
+        parser.parse("1 t/ t/").execute(model);
+        assertEquals(0, model.getFilteredPersonList().getFirst().getTags().size());
+    }
 
     @Test
     public void parse_missingParts_failure() {
@@ -239,7 +311,7 @@ public class EditCommandParserTest {
         Index targetIndex = INDEX_THIRD_PERSON;
         String userInput = targetIndex.getOneBased() + TAG_EMPTY;
 
-        EditPersonDescriptor descriptor = new EditPersonDescriptorBuilder().withTags().build();
+        EditPersonDescriptor descriptor = new EditPersonDescriptorBuilder().withTagRemovalCount(1).build();
         EditCommand expectedCommand = new EditCommand(targetIndex, descriptor);
 
         assertParseSuccess(parser, userInput, expectedCommand);
@@ -288,7 +360,7 @@ public class EditCommandParserTest {
     @Test
     public void parse_multipleIndexesResetTags_success() {
         EditPersonDescriptor descriptor =
-                new EditPersonDescriptorBuilder().withTags().build();
+                new EditPersonDescriptorBuilder().withTagRemovalCount(1).build();
 
         IndexPersonTarget target = new IndexPersonTarget(List.of(
                 new IndexRange(INDEX_FIRST_PERSON, INDEX_THIRD_PERSON)));
@@ -331,7 +403,7 @@ public class EditCommandParserTest {
     @Test
     public void parse_clearAllOptionalFields_success() {
         EditPersonDescriptor descriptor = new EditPersonDescriptorBuilder()
-                .withPhone("").withTelegramHandle("").withTags().build();
+                .withPhone("").withTelegramHandle("").withTagRemovalCount(1).build();
         EditCommand expectedCommand = new EditCommand(INDEX_FIRST_PERSON, descriptor);
         assertParseSuccess(parser, "1 p/ h/ t/", expectedCommand);
         assertParseSuccess(parser, "1 t/ \t h/ \t p/ \t ", expectedCommand);

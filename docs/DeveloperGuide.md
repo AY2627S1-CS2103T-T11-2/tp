@@ -108,7 +108,7 @@ compact command summary and lets users copy the User Guide URL. The following se
 
 Here's a (partial) class diagram of the `Logic` component:
 
-<puml src="diagrams/LogicClassDiagram.puml" width="550"/>
+<puml src="diagrams/LogicClassDiagram.puml" width="900"/>
 
 The sequence diagram below illustrates the interactions within the `Logic` component, taking `execute("delete 1,3-4")` API call as an example.
 
@@ -130,7 +130,7 @@ How the `Logic` component works:
 
 Here are the other classes in `Logic` (omitted from the class diagram above) that are used for parsing a user command:
 
-<puml src="diagrams/ParserClasses.puml" width="600"/>
+<puml src="diagrams/ParserClasses.puml" width="800"/>
 
 How the parsing works:
 * When called upon to parse a user command, the `AddressBookParser` class creates an `XYZCommandParser` (`XYZ` is a placeholder for the specific command name, e.g., `AddCommandParser`). The parser uses the other classes shown above to parse the user command and create an `XYZCommand` object (e.g., `AddCommand`). The `AddressBookParser` returns that object as a `Command` object.
@@ -152,8 +152,9 @@ Command-specific parsers remain responsible for wrapping parsing failures in the
 
 `ParserUtil` performs shared contact-field normalization before constructing the corresponding model value object.
 It trims names and collapses consecutive internal whitespace, while `Name` permits single spaces, hyphens, and
-apostrophes between alphanumeric words. `Phone` accepts spaces and hyphens as separators, with an optional leading
-`+`, and stores the resulting compact canonical form. `TelegramHandle` treats an empty value as absent; a non-empty
+apostrophes between alphanumeric words. `Phone` requires exactly eight digits, accepts single spaces or hyphens
+between digit groups, and stores numbers as `xxxx xxxx`. Country codes, `+`, and consecutive separators are rejected.
+`TelegramHandle` treats an empty value as absent; a non-empty
 value must begin with `@`, followed by 5 to 32 letters, digits, or underscores, with no leading underscore.
 
 #### Delete command
@@ -177,14 +178,16 @@ workflow.
 ### Model component
 **API** : [`Model.java`](https://github.com/se-edu/addressbook-level3/tree/master/src/main/java/seedu/address/model/Model.java)
 
-<puml src="diagrams/ModelClassDiagram.puml" width="450" />
+<puml src="diagrams/ModelClassDiagram.puml" width="900" />
 
 
 The `Model` component,
 
 * stores the address book data i.e., all `Person` objects (which are contained in a `UniquePersonList` object).
 * represents a person's Telegram contact using `TelegramHandle`; an empty value represents an omitted handle.
-* stores phone numbers in a compact canonical form after accepting supported input separators during parsing.
+* stores non-empty phone numbers as eight digits with a single space after the fourth digit (`xxxx xxxx`).
+* stores tags in a `LinkedHashSet`, preserving entry order through parsing, editing, JSON storage, and display.
+  `Tag.equals` and `hashCode` are case-insensitive; the first spelling supplied is retained when duplicates occur.
 * stores the `Person` objects selected by the current filter, such as search results, in a separate _filtered_ list. It exposes this list as an unmodifiable `ObservableList<Person>` that the UI can observe and bind to, so the UI updates when the list changes.
 * stores a `UserPrefs` object that represents the user’s preferences (currently, just the GUI settings). This is exposed to the outside as a `ReadOnlyUserPrefs` object.
 * does not depend on any of the other three components (as the `Model` represents data entities of the domain, they should make sense on their own without depending on other components)
@@ -569,6 +572,15 @@ testers are expected to do more *exploratory* testing.
 gives `edit` the same comma-separated index and inclusive-range syntax as other commands
 that operate on displayed persons.
 
+The following diagram shows parsing, validation, tag-removal requests, and constructor selection:
+
+<puml src="diagrams/tracing/LogicSequenceDiagram.puml" alt="Edit command parsing sequence diagram" />
+
+The parser rejects unknown parameter-like tokens such as `x/typo`, the legacy `a/` prefix,
+and repeated non-tag prefixes. Shared value objects validate supplied fields: `Phone` requires
+eight digits and stores `xxxx xxxx`, while `Email` accepts hyphens inside domain labels,
+including the final label, whose total length must be at least two characters.
+
 For backward compatibility, an index expression that selects exactly one index produces
 an `EditCommand` using the existing index-based constructor. This preserves the original
 single-person edit workflow and allows name, phone, email, Telegram handle, subject, group, and
@@ -590,13 +602,24 @@ while the command protects callers that construct commands directly.
 
 The edit descriptor represents fields that were not supplied using `null`. A supplied
 subject or group replaces the corresponding value for every selected person. A supplied
-tag set replaces each selected person's complete tag set. Tags are stored in a `Set`, so
-duplicate tags are retained only once. An explicitly empty tag set, produced by `t/`,
-removes all tags from every selected person.
+non-empty tag set replaces each selected person's complete tag set in entry order.
+`LinkedHashSet` and case-insensitive `Tag` equality retain the first spelling of each distinct
+tag. When every supplied `t/` is empty, the parser sets `tagRemovalCount` on the descriptor
+instead of supplying a replacement set. Each empty prefix removes one tag from the end of
+each selected person's current tag order; removal stops when no tags remain. For example,
+`t/` changes `[Student, Online]` to `[Student]`, while `t/ t/` removes both. Empty and non-empty
+tag values cannot be mixed. Both command constructors copy the descriptor defensively,
+including tag order and the removal count.
 
-All edited `Person` objects and the success result are prepared before the model is
-updated. The command then replaces each selected person and restores the unfiltered
-person list.
+For a bulk edit, all edited `Person` objects and the success result are prepared before the
+model is updated. The command then replaces each selected person using the resolved selection,
+so changes to the filtered list cannot cause later selected people to be skipped.
+
+<puml src="diagrams/EditSequenceDiagram.puml" alt="Bulk edit execution and saving sequence diagram" />
+
+Both single and bulk edits leave the current filter active, matching `delete`. The filtered
+list is reevaluated as people are replaced; edited people that no longer match disappear
+from the view. `LogicManager` saves the address book after successful execution.
 
 ### Finding persons
 

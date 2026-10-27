@@ -5,18 +5,67 @@ skinparam ArrowFontStyle plain
 Participant ":LogicManager" as logic LOGIC_COLOR
 Participant ":AddressBookParser" as abp LOGIC_COLOR
 Participant ":EditCommandParser" as ecp LOGIC_COLOR
+Participant ":IndexRangeParser" as irp LOGIC_COLOR
+Participant "descriptor:EditPersonDescriptor" as descriptor LOGIC_COLOR
+Participant "target:IndexPersonTarget" as target LOGIC_COLOR
 Participant "command:EditCommand" as ec LOGIC_COLOR
 
-[-> logic : execute
+[-> logic : execute(commandText)
 activate logic
 logic -> abp ++: parseCommand(commandText)
 create ecp
 abp -> ecp
 abp -> ecp ++: parse(arguments)
-create ec
-ecp -> ec ++: index, editPersonDescriptor
-ec --> ecp --
+
+ecp -> ecp : ArgumentTokenizer.tokenize(arguments, prefixes)
+ecp -> irp ++: parse(preamble)
+irp --> ecp --: ranges
+ecp -> ecp : verifyNoUnknownPrefixes(arguments)
+ecp -> ecp : reject legacy a/ and duplicate non-tag prefixes
+
+create descriptor
+ecp -> descriptor : new EditPersonDescriptor()
+
+note over ecp, descriptor
+  ParserUtil validates supplied fields.
+  Phone: exactly eight digits, stored as "xxxx xxxx".
+  Email: hyphens allowed inside the final domain label.
+  Non-empty tags: ordered, case-insensitive deduplication.
+  All-empty tags: tagRemovalCount = number of t/ prefixes.
+  Omitted fields remain null; at least one edit is required.
+  Invalid input throws ParseException before execution.
+end note
+
+create target
+ecp -> target : new IndexPersonTarget(ranges)
+ecp -> target ++: selectsSingleIndex()
+target --> ecp --: singleSelection
+
+alt singleSelection
+    ecp -> ec ++: new EditCommand(index, descriptor)
+    ec --> ecp --: command
+else multiple selected indexes
+    ecp -> descriptor ++: hasSinglePersonOnlyFields()
+    descriptor --> ecp --: false
+    note over ecp, descriptor
+      If true, parsing fails with MESSAGE_INVALID_BULK_EDIT.
+      Bulk edits permit only subject, group, and tags.
+    end note
+    ecp -> ec ++: new EditCommand(target, descriptor)
+    ec --> ecp --: command
+end
+
+note right of ec
+  Both constructors copy the descriptor defensively,
+  preserving tag order and tagRemovalCount.
+end note
+
 ecp --> abp --: command
 abp --> logic --: command
+note right of logic
+  Execution and saving follow after parsing.
+  See EditSequenceDiagram for the bulk workflow.
+end note
+deactivate logic
 
 @enduml
