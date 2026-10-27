@@ -176,7 +176,7 @@ public class LogicManagerTest {
     }
 
     @Test
-    public void execute_findThenEditAndDelete_preservesFilter() throws Exception {
+    public void execute_findThenEdit_preservesFilter() throws Exception {
         Person firstAlice = new PersonBuilder().withName("Alice Tan").withGroup("T11").build();
         Person secondAlice = new PersonBuilder().withName("Alice Lee").build();
         Person bob = new PersonBuilder().withName("Bob").build();
@@ -184,14 +184,27 @@ public class LogicManagerTest {
         model.addPerson(secondAlice);
         model.addPerson(bob);
 
-        logic.execute("find Alice");
+        logic.execute("find n/Alice");
         Person editedAlice = new PersonBuilder(firstAlice).withGroup("T12").build();
         logic.execute("edit 1 g/T12");
         assertEquals(List.of(editedAlice, secondAlice), model.getFilteredPersonList());
-        logic.execute("find Alice");
+    }
+
+    @Test
+    public void execute_findThenDelete_resetsFilter() throws Exception {
+        Person firstAlice = new PersonBuilder().withName("Alice Tan").withGroup("T11").build();
+        Person secondAlice = new PersonBuilder().withName("Alice Lee").build();
+        Person bob = new PersonBuilder().withName("Bob").build();
+        model.addPerson(firstAlice);
+        model.addPerson(secondAlice);
+        model.addPerson(bob);
+
+        logic.execute("find n/Alice");
         logic.execute("delete 1");
-        assertEquals(List.of(secondAlice), model.getFilteredPersonList());
-        assertEquals(List.of(secondAlice, bob), model.getAddressBook().getPersonList());
+        List<Person> remainingPeople = List.of(secondAlice, bob);
+
+        assertEquals(remainingPeople, model.getFilteredPersonList());
+        assertEquals(remainingPeople, model.getAddressBook().getPersonList());
     }
 
     @Test
