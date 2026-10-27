@@ -23,6 +23,16 @@ public class NameContainsSearchTermsPredicateTest {
     }
 
     @Test
+    public void test_keywordMatchesHyphenatedAndApostrophizedNameComponents_returnsTrue() {
+        Person person = new PersonBuilder().withName("Jean-Luc O'Connor").build();
+
+        assertTrue(new NameContainsSearchTermsPredicate(List.of("Jean"), List.of()).test(person));
+        assertTrue(new NameContainsSearchTermsPredicate(List.of("Luc"), List.of()).test(person));
+        assertTrue(new NameContainsSearchTermsPredicate(List.of("Connor"), List.of()).test(person));
+        assertTrue(new NameContainsSearchTermsPredicate(List.of("Jean-Luc"), List.of()).test(person));
+    }
+
+    @Test
     public void test_matchesPhrases_returnsTrue() {
         NameContainsSearchTermsPredicate predicate =
                 new NameContainsSearchTermsPredicate(List.of("Tan"), List.of("Alice Chen"));
@@ -41,6 +51,8 @@ public class NameContainsSearchTermsPredicateTest {
         assertFalse(predicate.test(new PersonBuilder().withName("Alice Chan").build()));
         assertFalse(new NameContainsSearchTermsPredicate(List.of("Alice"), List.of()).test(
                 new PersonBuilder().withName("Alicea Chen").build()));
+        assertFalse(new NameContainsSearchTermsPredicate(List.of("ean"), List.of()).test(
+                new PersonBuilder().withName("Jean-Luc O'Connor").build()));
     }
 
     @Test

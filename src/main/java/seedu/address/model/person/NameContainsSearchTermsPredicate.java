@@ -1,5 +1,6 @@
 package seedu.address.model.person;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -26,12 +27,26 @@ public class NameContainsSearchTermsPredicate implements Predicate<Person> {
     @Override
     public boolean test(Person person) {
         String name = person.getName().fullName;
-        if (keywords.stream().anyMatch(keyword -> StringUtil.containsWordIgnoreCase(name, keyword))) {
+        if (keywords.stream().anyMatch(keyword -> containsNameComponentIgnoreCase(name, keyword))) {
             return true;
         }
 
         String normalizedName = normalize(name);
         return phrases.stream().anyMatch(normalizedName::contains);
+    }
+
+    /**
+     * Returns whether the name contains the keyword as a complete name component.
+     * Spaces, hyphens, and apostrophes are treated as name-component separators.
+     */
+    private static boolean containsNameComponentIgnoreCase(String name, String keyword) {
+        if (StringUtil.containsWordIgnoreCase(name, keyword)) {
+            return true;
+        }
+
+        String trimmedKeyword = keyword.trim();
+        return Arrays.stream(name.split("[\\s'-]+"))
+                .anyMatch(trimmedKeyword::equalsIgnoreCase);
     }
 
     @Override

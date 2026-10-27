@@ -40,6 +40,16 @@ public class FindPredicateTest {
     }
 
     @Test
+    public void test_telegramHandle_matchesExactlyIgnoringCase() {
+        Person person = new PersonBuilder().withTelegramHandle("@alice_tan").build();
+
+        assertTrue(new FindPredicate(Optional.empty(), Optional.of(new TelegramHandle("@ALICE_TAN")),
+                Optional.empty(), Optional.empty(), Set.of()).test(person));
+        assertFalse(new FindPredicate(Optional.empty(), Optional.of(new TelegramHandle("@alice_123")),
+                Optional.empty(), Optional.empty(), Set.of()).test(person));
+    }
+
+    @Test
     public void test_anyCriterionDoesNotMatch_returnsFalse() {
         Person person = new PersonBuilder().withName("John Doe")
                 .withSubject("CS3434").withGroup("T11").build();
