@@ -23,10 +23,6 @@ Class Group
 Class Tag
 
 Class I #FFFFFF
-}
-
-Class HiddenOutside #FFFFFF
-HiddenOutside ..> Model
 
 AddressBook .up.|> ReadOnlyAddressBook
 
@@ -47,24 +43,33 @@ Person *--> "1" Subject
 Person *--> "1" Group
 Person *--> "*" Tag
 
-note left of Name
+note bottom of Name
   Stores a normalized, non-blank name.
   Alphanumeric words are separated by single
   spaces, hyphens, or apostrophes.
 end note
 
-note right of TelegramHandle
+note bottom of TelegramHandle
   Stores an optional Telegram handle.
   Non-empty values begin with @, followed by
   5 to 32 letters, digits, or underscores.
   The first character after @ is not an underscore.
 end note
 
-note right of Phone
+note bottom of Phone
   Optional phone number.
   An empty value represents no phone number.
-  Spaces and hyphens are removed when constructed;
-  an optional leading + is retained.
+  Non-empty numbers contain exactly eight digits
+  and are stored as "xxxx xxxx".
+  Single spaces or hyphens may separate input digits;
+  country codes and + are rejected.
+end note
+
+note bottom of Tag
+  Identity is case-insensitive.
+  The first supplied spelling is retained.
+  Person stores tags in a LinkedHashSet:
+  entry order is preserved in storage and display.
 end note
 
 Person -[hidden]up--> I
@@ -75,4 +80,8 @@ Phone -[hidden]right-> TelegramHandle
 TelegramHandle -[hidden]right-> Email
 
 ModelManager --> "~* filtered" Person
+}
+
+Class HiddenOutside #FFFFFF
+HiddenOutside ..> Model
 @enduml
