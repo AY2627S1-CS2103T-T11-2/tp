@@ -157,19 +157,19 @@ apostrophes between alphanumeric words. `Phone` accepts spaces and hyphens as se
 value must begin with `@`, followed by 5 to 32 letters, digits, or underscores, with no leading underscore.
 
 #### Delete command
-`DeleteCommandParser` delegates its index-expression parsing to the shared `IndexRangeParser`, then constructs an `IndexDeleteTarget` from the canonical ranges.
+`DeleteCommandParser` delegates its index-expression parsing to the shared `IndexRangeParser`, then constructs an `IndexPersonTarget` from the canonical ranges.
 
 Each parsed component is represented by an `IndexRange`. An individual index is represented as a range whose start
 and end are equal.
 
-`IndexDeleteTarget` sorts and merges duplicate, adjacent, or overlapping ranges. For example, `1-3,2-4,4` is
+`IndexPersonTarget` sorts and merges duplicate, adjacent, or overlapping ranges. For example, `1-3,2-4,4` is
 normalized to `1-4`. This ensures that each contact is deleted at most once.
 
-Before deleting any contacts, `IndexDeleteTarget` resolves and validates every index against a snapshot of the
+Before deleting any contacts, `IndexPersonTarget` resolves and validates every index against a snapshot of the
 currently displayed person list. Consequently, a command such as `delete 1,999` fails without deleting contact 1
 (suppose that contact index 999 does not exist).
 
-`DeleteCommand` depends on the `DeleteTarget` interface rather than directly on an index. This allows future
+`DeleteCommand` depends on the shared `PersonTarget` interface rather than directly on an index. This allows future
 implementations such as `GroupDeleteTarget`, `SubjectDeleteTarget`, and `TagDeleteTarget` to reuse the deletion
 workflow.
 

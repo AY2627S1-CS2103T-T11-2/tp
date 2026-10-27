@@ -3,7 +3,6 @@ package seedu.address.logic.parser;
 import static java.util.Objects.requireNonNull;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -66,11 +65,15 @@ public final class IndexRangeParser {
             parsedRanges.add(parseRange(item));
         }
 
-        return normalize(parsedRanges);
+        return IndexRange.normalize(parsedRanges);
     }
 
     /**
      * Parses one individual index or one inclusive range.
+     *
+     * @param item index or range text
+     * @return parsed range
+     * @throws ParseException if {@code item} contains an invalid index
      */
     private static IndexRange parseRange(String item)
             throws ParseException {
@@ -93,54 +96,5 @@ public final class IndexRangeParser {
                     ParserUtil.MESSAGE_INVALID_INDEX,
                     exception);
         }
-    }
-
-    /**
-     * Sorts and merges duplicate, overlapping, and adjacent ranges.
-     */
-    private static List<IndexRange> normalize(
-            List<IndexRange> ranges) {
-        List<IndexRange> sortedRanges =
-                new ArrayList<>(ranges);
-
-        sortedRanges.sort(Comparator.comparingInt(
-                range -> range.start().getZeroBased()));
-
-        List<IndexRange> normalizedRanges =
-                new ArrayList<>();
-
-        for (IndexRange next : sortedRanges) {
-            if (normalizedRanges.isEmpty()) {
-                normalizedRanges.add(next);
-                continue;
-            }
-
-            int lastPosition = normalizedRanges.size() - 1;
-            IndexRange last =
-                    normalizedRanges.get(lastPosition);
-
-            long nextStart =
-                    next.start().getZeroBased();
-            long lastEnd =
-                    last.end().getZeroBased();
-
-            if (nextStart <= lastEnd + 1) {
-                Index mergedEnd =
-                        next.end().getZeroBased()
-                                > last.end().getZeroBased()
-                                ? next.end()
-                                : last.end();
-
-                normalizedRanges.set(
-                        lastPosition,
-                        new IndexRange(
-                                last.start(),
-                                mergedEnd));
-            } else {
-                normalizedRanges.add(next);
-            }
-        }
-
-        return List.copyOf(normalizedRanges);
     }
 }

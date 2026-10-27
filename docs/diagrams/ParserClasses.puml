@@ -6,11 +6,13 @@ skinparam classBackgroundColor LOGIC_COLOR
 
 Class "{abstract}\nCommand" as Command
 Class XYZCommand
+Class IndexRange
 
 package "Parser classes"{
 Class "<<interface>>\nParser" as Parser
 Class AddressBookParser
 Class XYZCommandParser
+Class IndexRangeParser
 Class CliSyntax
 Class ParserUtil
 Class ArgumentMultimap
@@ -32,6 +34,9 @@ ArgumentTokenizer .left.> ArgumentMultimap
 XYZCommandParser ..> CliSyntax
 CliSyntax ..> Prefix
 XYZCommandParser ..> ParserUtil
+XYZCommandParser ..> IndexRangeParser : <<use for index expressions>>
+IndexRangeParser ..> ParserUtil : <<use>>
+IndexRangeParser ..> IndexRange : <<create>>
 ParserUtil .down.> Prefix
 ArgumentTokenizer .down.> Prefix
 XYZCommand -up-|> Command

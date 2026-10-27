@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 
 import seedu.address.commons.core.index.Index;
 import seedu.address.logic.commands.DeleteCommand;
-import seedu.address.logic.commands.IndexDeleteTarget;
+import seedu.address.logic.commands.IndexPersonTarget;
 import seedu.address.logic.commands.IndexRange;
 
 /**
@@ -98,6 +98,6 @@ public class DeleteCommandParserTest {
      * @return A delete command containing the ranges.
      */
     private DeleteCommand commandFor(IndexRange... ranges) {
-        return new DeleteCommand(new IndexDeleteTarget(List.of(ranges)));
+        return new DeleteCommand(new IndexPersonTarget(List.of(ranges)));
     }
 }
