@@ -94,12 +94,12 @@ The following validation rules apply:
 | Field | Prefix | Rules                                                                                                                                          |
 | --- |--------|------------------------------------------------------------------------------------------------------------------------------------------------|
 | Name | `n/`   | Must be non-blank. Alphanumeric words may be separated by single spaces, hyphens, or apostrophes; repeated spaces are normalized to one space. |
-| Phone | `p/`   | Optional. If provided, it must contain at least 3 digits. Spaces and hyphens are accepted as separators, and a leading `+` is allowed. Separators are removed before storage.                                                                                                                                                                    |
+| Phone | `p/`   | Optional. If provided, it must contain exactly 8 digits. A single space or hyphen is allowed between digit groups. Consecutive separators, country codes, and `+` are rejected. Numbers are stored and displayed as `xxxx xxxx`, for example `9123 4567`. |
 | Email | `e/`   | Must use the `local-part@domain` format. The local part must start and end with an alphanumeric character; `+`, `_`, `.`, and `-` are allowed only between alphanumeric characters. Domain labels may be separated by periods, may contain hyphens only between alphanumeric characters, and the final label must be at least 2 characters long. |
 | Telegram handle | `h/`   | Optional. If provided, it must begin with `@`, followed by 5 to 32 letters, digits, or underscores. The first character after `@` cannot be an underscore.                                                                                                                                                                                       |
 | Subject | `s/`   | Must be non-blank and contain only alphanumeric characters and spaces.                                                                                                                                                                                                                                                                           |
 | Group | `g/`   | Must be non-blank; any characters are allowed.                                                                                                                                                                                                                                                                                                   |
-| Tag | `t/`   | Must be non-blank and contain only alphanumeric characters.                                                                                                                                                                                                                                                                                      |
+| Tag | `t/`   | Must be non-blank and contain only alphanumeric characters. Tags appear in the order entered, including after saving and reopening. Tags are unique ignoring case; repeated tags such as `Student` and `student` are stored once, using the first spelling supplied. |
 
 * Leading and trailing whitespace around each value is ignored. Whitespace-only phone and Telegram values are treated as empty.
 * TutorTrack trims names and collapses consecutive internal whitespace before storing them. Two students
@@ -115,7 +115,7 @@ same name, the new student is rejected even if the other details are different.
 Examples:
 * `add n/Alice Tan p/91234567 e/alice@example.com h/@alice_tan s/Mathematics g/Sec 3A t/Student`
 * `add n/Bob Lee p/92345678 e/bob@example.com h/@bob_lee s/Physics g/J1A t/Student t/Online`
-* `add n/Jean-Luc O'Connor p/+65-9123 4567 e/jean@example.com h/@jean_luc s/Physics g/J1A`
+* `add n/Jean-Luc O'Connor p/9123 4567 e/jean@example.com h/@jean_luc s/Physics g/J1A`
 * `add n/Charlie Lim e/charlie@example.com s/Mathematics g/Sec 3A` adds a student without a phone number, Telegram
   handle, or tags.
 
@@ -142,6 +142,8 @@ existing values.
 - Spaces are not allowed inside the index expression. For example, use `1,3-5`, not `1, 3 - 5`.
 - Duplicate and overlapping indexes select each person only once.
 - All indexes are validated before any person is edited. If any index is invalid, nobody is edited.
+- The current filter stays active after an edit, including a bulk edit. Edited persons disappear from the displayed
+  list if they no longer match the filter. Use `list` to show everyone again.
 
 #### Fields available
 
@@ -151,6 +153,11 @@ existing values.
 | Multiple persons | `s/`, `g/`, `t/` only |
 
 - Only one subject and one group can be supplied in each command.
+- Unknown parameter-like tokens such as `x/typo` are rejected, including inside group values. A token beginning at
+  the start of the input or after whitespace, with a letter followed by letters, digits, underscores, or hyphens and
+  then `/`, is reserved for command prefixes. Only `n/`, `p/`, `e/`, `h/`, `s/`, `g/`, and `t/` are supported.
+  To include literal text such as `x/typo` in a group, put a space before the slash: `g/T11 x /typo`.
+  Embedded slashes such as `g/T11/T12` and URLs such as `g/https://example.com` are accepted.
 
 #### Clearing and replacing fields
 
@@ -159,19 +166,31 @@ existing values.
 | Name, email, subject, group | Cannot be cleared. |
 | Phone | Use `p/` with no value to clear it. |
 | Telegram handle | Use `h/` with no value to clear it. |
-| Tags | Use `t/` with no value to clear all tags. Otherwise, supplied tags replace all existing tags. |
+| Tags | Each empty `t/` removes one tag from the end (the rightmost displayed tag). Repeat it to remove more tags: `t/ t/` removes the last two. Extra empty prefixes after all tags are removed have no further effect. Non-empty supplied tags replace all existing tags in the order entered. Do not mix empty and non-empty tag values. |
 
 - Field formats, whitespace normalization, and validation follow the rules in
   [Adding a person](#adding-a-person-add). For `edit`, a whitespace-only phone
   or Telegram value clears that field.
+- To remove only one tag, supply all tags you want to keep. For example, if a person has `Student` and `Online`,
+  `edit 1 t/Student` removes `Online` and keeps `Student`. Alternatively, `edit 1 t/` removes the last tag,
+  also leaving `Student`. To remove both, use `edit 1 t/ t/`.
+- For bulk edits, the number of empty `t/` prefixes applies separately to each selected person's tags.
+- Tag comparisons ignore case: `edit 1 t/Student t/student` stores one tag, displayed as `Student`.
 
 Examples:
 
-* `edit 1 p/+65 9123 4567 e/johndoe@example.com h/@johndoe` Edits the phone number, email address and Telegram handle
-    of the 1st person to be `+6591234567`, `johndoe@example.com` and `@johndoe` respectively.
-* `edit 2 n/Betsy Crower t/` Edits the name of the 2nd person to be `Betsy Crower` and clears all existing tags.
+* `edit 1 p/91234567 e/johndoe@example.com h/@johndoe` Edits the phone number, email address and Telegram handle
+    of the 1st person to be `9123 4567`, `johndoe@example.com` and `@johndoe` respectively.
+* `edit 2 n/Betsy Crower t/` Edits the name of the 2nd person to be `Betsy Crower` and removes their last tag.
 * `edit 1-3 s/CS3240 g/T11 t/student t/online` Updates the subject, group, and tags of the first three displayed persons.
-* `edit 1 p/ h/ t/` Clears the first person's phone number, Telegram handle, and tags.
+* `edit 1 p/ h/ t/` Clears the first person's phone number and Telegram handle, and removes their last tag.
+* `edit 1 t/Student t/Online` Replaces the person's tags with `Student` followed by `Online`.
+* `edit 1 t/ t/` Removes the last two tags. If the person has `Student` and `Online`, both are removed.
+* `edit 1 e/alice@x.a-b` Sets a valid email with a hyphenated final domain label of at least two characters.
+* `edit 1 p/1--- --2 3` Is rejected because phone separators cannot be consecutive.
+* `edit 1 p/912345678` Is rejected because phone numbers must have exactly eight digits.
+* `edit 1 g/T11 x/typo` Is rejected because `x/` is not a supported prefix.
+* `find Alice` followed by `edit 1 g/T12` Updates the first matching person's group and keeps the name filter active.
 * `edit 1 n/` Is rejected because Name cannot be empty.
 * `edit 1 h/alice` Is rejected because Telegram handle needs to start with '@'.
 
@@ -229,6 +248,7 @@ Format: `delete INDEX_OR_RANGE[,INDEX_OR_RANGE]...`
 * Spaces are not allowed around commas or hyphens. For example, use `delete 1,3-5` not `delete 1, 3 - 5`.
 * Duplicate and overlapping indexes are deleted only once. For example, `delete 1-3,2-4` deletes contacts 1 through 4.
 * All indexes are validated before any contact is deleted. If any index is invalid, no contacts are deleted.
+* The current filter stays active after deletion, just as it does after editing. Use `list` to show everyone again.
 
 Examples:
 * `list` followed by `delete 2` deletes the 2nd person in the address book.

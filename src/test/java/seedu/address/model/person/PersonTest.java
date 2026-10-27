@@ -12,6 +12,8 @@ import static seedu.address.testutil.Assert.assertThrows;
 import static seedu.address.testutil.TypicalPersons.ALICE;
 import static seedu.address.testutil.TypicalPersons.BOB;
 
+import java.util.List;
+
 import org.junit.jupiter.api.Test;
 
 import seedu.address.testutil.PersonBuilder;
@@ -96,6 +98,15 @@ public class PersonTest {
         // different tags -> returns false
         editedAlice = new PersonBuilder(ALICE).withTags(VALID_TAG_HUSBAND).build();
         assertFalse(ALICE.equals(editedAlice));
+    }
+
+    @Test
+    public void tags_entryOrderIsPartOfPersonState() {
+        Person student = new PersonBuilder().withTags("Student", "Online").build();
+        Person reordered = new PersonBuilder(student).withTags("Online", "Student").build();
+        assertFalse(student.equals(reordered));
+        assertEquals(List.of("Student", "Online"), student.getTags().stream().map(tag -> tag.tagName).toList());
+        assertEquals(student.hashCode(), new PersonBuilder(student).build().hashCode());
     }
 
     @Test

@@ -1,6 +1,7 @@
 package seedu.address.logic;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.logic.Messages.MESSAGE_INVALID_PERSON_DISPLAYED_INDEX;
 import static seedu.address.logic.Messages.MESSAGE_UNKNOWN_COMMAND;
 import static seedu.address.logic.commands.CommandTestUtil.EMAIL_DESC_AMY;
@@ -14,7 +15,9 @@ import static seedu.address.testutil.TypicalPersons.AMY;
 
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -88,7 +91,7 @@ public class LogicManagerTest {
 
         assertCommandSuccess("add n/Alice Tan p/91234567 e/alice@example.com h/@alice_tan "
                         + "s/Mathematics g/T11",
-                "New person added: Alice Tan; Phone: 91234567; Email: alice@example.com; "
+                "New person added: Alice Tan; Phone: 9123 4567; Email: alice@example.com; "
                         + "Telegram: @alice_tan; Subject: Mathematics; Group: T11; Tags: ",
                 expectedModel);
 
@@ -123,6 +126,72 @@ public class LogicManagerTest {
         assertCommandSuccess("edit 1 p/91234567 h/" + telegramHandle + " t/Student t/Online",
                 String.format(EditCommand.MESSAGE_EDIT_PERSON_SUCCESS, Messages.format(restoredPerson)), expectedModel);
         assertEquals(expectedModel.getAddressBook(), storage.readAddressBook().get());
+    }
+
+    @Test
+    public void execute_editTags_preservesEntryOrderAcrossStorageAndRemovesFromEnd() throws Exception {
+        model.addPerson(new PersonBuilder().withTags("old").build());
+        logic.execute("edit 1 t/Student t/Online t/student t/Local");
+        assertEquals(List.of("Student", "Online", "Local"),
+                model.getFilteredPersonList().getFirst().getTags().stream().map(tag -> tag.tagName).toList());
+
+        JsonAddressBookStorage storage = new JsonAddressBookStorage(temporaryFolder.resolve("addressBook.json"));
+        Person savedPerson = storage.readAddressBook().get().getPersonList().getFirst();
+        assertEquals(List.of("Student", "Online", "Local"),
+                savedPerson.getTags().stream().map(tag -> tag.tagName).toList());
+        model.setAddressBook(storage.readAddressBook().get());
+
+        logic.execute("edit 1 t/");
+        assertEquals(List.of("Student", "Online"),
+                model.getFilteredPersonList().getFirst().getTags().stream().map(tag -> tag.tagName).toList());
+        logic.execute("edit 1 t/ t/");
+        assertTrue(model.getFilteredPersonList().getFirst().getTags().isEmpty());
+        logic.execute("edit 1 t/ t/ t/");
+        assertTrue(model.getFilteredPersonList().getFirst().getTags().isEmpty());
+        assertTrue(storage.readAddressBook().get().getPersonList().getFirst().getTags().isEmpty());
+    }
+
+    @Test
+    public void execute_bulkTagRemoval_appliesCountToEachPerson() throws Exception {
+        model.addPerson(new PersonBuilder().withName("Alice").withTags("First", "Second", "Third").build());
+        model.addPerson(new PersonBuilder().withName("Bob").withTags("Only").build());
+        model.addPerson(new PersonBuilder().withName("Charlie").withTags().build());
+        logic.execute("edit 1-3 t/ t/");
+        assertEquals(List.of("First"),
+                model.getFilteredPersonList().get(0).getTags().stream().map(tag -> tag.tagName).toList());
+        assertTrue(model.getFilteredPersonList().get(1).getTags().isEmpty());
+        assertTrue(model.getFilteredPersonList().get(2).getTags().isEmpty());
+    }
+
+    @Test
+    public void execute_eightDigitPhone_storesSpecifiedSpacing() throws Exception {
+        model.addPerson(new PersonBuilder().build());
+        logic.execute("edit 1 p/9123-4567");
+        assertEquals("9123 4567", model.getFilteredPersonList().getFirst().getPhone().value);
+        assertTrue(Files.readString(temporaryFolder.resolve("addressBook.json")).contains("\"9123 4567\""));
+        for (String phone : List.of("9123456", "912345678", "9123 45678", "+65-9123-4567")) {
+            assertThrows(ParseException.class, () -> logic.execute("edit 1 p/" + phone));
+            assertEquals("9123 4567", model.getFilteredPersonList().getFirst().getPhone().value);
+        }
+    }
+
+    @Test
+    public void execute_findThenEditAndDelete_preservesFilter() throws Exception {
+        Person firstAlice = new PersonBuilder().withName("Alice Tan").withGroup("T11").build();
+        Person secondAlice = new PersonBuilder().withName("Alice Lee").build();
+        Person bob = new PersonBuilder().withName("Bob").build();
+        model.addPerson(firstAlice);
+        model.addPerson(secondAlice);
+        model.addPerson(bob);
+
+        logic.execute("find Alice");
+        Person editedAlice = new PersonBuilder(firstAlice).withGroup("T12").build();
+        logic.execute("edit 1 g/T12");
+        assertEquals(List.of(editedAlice, secondAlice), model.getFilteredPersonList());
+        logic.execute("find Alice");
+        logic.execute("delete 1");
+        assertEquals(List.of(secondAlice), model.getFilteredPersonList());
+        assertEquals(List.of(secondAlice, bob), model.getAddressBook().getPersonList());
     }
 
     @Test

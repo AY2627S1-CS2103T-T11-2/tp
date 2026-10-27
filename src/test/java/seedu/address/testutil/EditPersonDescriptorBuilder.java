@@ -1,5 +1,6 @@
 package seedu.address.testutil;
 
+import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -95,8 +96,16 @@ public class EditPersonDescriptorBuilder {
      * that we are building.
      */
     public EditPersonDescriptorBuilder withTags(String... tags) {
-        Set<Tag> tagSet = Stream.of(tags).map(Tag::new).collect(Collectors.toSet());
+        Set<Tag> tagSet = Stream.of(tags).map(Tag::new).collect(Collectors.toCollection(LinkedHashSet::new));
         descriptor.setTags(tagSet);
+        return this;
+    }
+
+    /**
+     * Sets the number of tags to remove from the end.
+     */
+    public EditPersonDescriptorBuilder withTagRemovalCount(int count) {
+        descriptor.setTagRemovalCount(count);
         return this;
     }
 

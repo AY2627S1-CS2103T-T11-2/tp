@@ -1,6 +1,5 @@
 package seedu.address.ui;
 
-import java.util.Comparator;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
@@ -61,7 +60,6 @@ public class PersonCard extends UiPart<Region> {
         setVisibleAndManaged(phone, !person.getPhone().isEmpty());
         setVisibleAndManaged(telegramHandle, !person.getTelegramHandle().isEmpty());
         person.getTags().stream()
-                .sorted(Comparator.comparing(tag -> tag.tagName))
                 .forEach(tag -> tags.getChildren().add(new Label(tag.tagName)));
     }
 

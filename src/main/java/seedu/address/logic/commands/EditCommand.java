@@ -1,6 +1,7 @@
 package seedu.address.logic.commands;
 
 import static java.util.Objects.requireNonNull;
+import static seedu.address.commons.util.AppUtil.checkArgument;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_EMAIL;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_GROUP;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_NAME;
@@ -8,10 +9,9 @@ import static seedu.address.logic.parser.CliSyntax.PREFIX_PHONE;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_SUBJECT;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_TAG;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_TELEGRAM_HANDLE;
-import static seedu.address.model.Model.PREDICATE_SHOW_ALL_PERSONS;
 
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -45,7 +45,8 @@ public class EditCommand extends Command {
             + "Name, phone, email, and Telegram handle can only be edited when one person is selected.\n"
             + "Existing values will be overwritten by the input values.\n"
             + "Parameters: INDEX_OR_RANGE[,INDEX_OR_RANGE]... "
-            + "Omitted fields stay unchanged. Use p/, h/, or t/ alone to clear phone, Telegram handle, or tags.\n"
+            + "Omitted fields stay unchanged. Use p/ or h/ alone to clear phone or Telegram handle. "
+            + "Each empty t/ removes one tag from the end; repeat t/ to remove more tags.\n"
             + "[" + PREFIX_NAME + "NAME] "
             + "[" + PREFIX_PHONE + "PHONE] "
             + "[" + PREFIX_EMAIL + "EMAIL] "
@@ -107,8 +108,6 @@ public class EditCommand extends Command {
 
         assert model.getAddressBook().getPersonList().size() == personCountBeforeEdit
                 : "Editing a person must preserve the number of people";
-
-        model.updateFilteredPersonList(PREDICATE_SHOW_ALL_PERSONS);
 
         return result;
     }
@@ -192,6 +191,11 @@ public class EditCommand extends Command {
         Subject updatedSubject = editPersonDescriptor.getSubject().orElse(personToEdit.getSubject());
         Group updatedGroup = editPersonDescriptor.getGroup().orElse(personToEdit.getGroup());
         Set<Tag> updatedTags = editPersonDescriptor.getTags().orElse(personToEdit.getTags());
+        if (editPersonDescriptor.getTagRemovalCount() > 0) {
+            List<Tag> existingTags = List.copyOf(updatedTags);
+            int remainingCount = Math.max(0, existingTags.size() - editPersonDescriptor.getTagRemovalCount());
+            updatedTags = new LinkedHashSet<>(existingTags.subList(0, remainingCount));
+        }
 
         return new Person(updatedName, updatedPhone, updatedEmail, updatedTelegramHandle, updatedTags,
                 updatedSubject, updatedGroup);
@@ -228,7 +232,8 @@ public class EditCommand extends Command {
 
     /**
      * Stores the details to edit the person with. Each supplied field replaces the corresponding value.
-     * Null means unchanged; empty phone, Telegram handle, or tags values clear those fields.
+     * Null means unchanged; empty phone or Telegram handle values clear those fields.
+     * Tags can be replaced in entry order or removed from the end using a removal count.
      */
     public static class EditPersonDescriptor {
         private Name name;
@@ -238,6 +243,7 @@ public class EditCommand extends Command {
         private Group group;
         private TelegramHandle telegramHandle;
         private Set<Tag> tags;
+        private int tagRemovalCount;
 
         public EditPersonDescriptor() {}
 
@@ -253,13 +259,15 @@ public class EditCommand extends Command {
             setGroup(toCopy.group);
             setTelegramHandle(toCopy.telegramHandle);
             setTags(toCopy.tags);
+            tagRemovalCount = toCopy.tagRemovalCount;
         }
 
         /**
          * Returns true if at least one field is edited.
          */
         public boolean isAnyFieldEdited() {
-            return CollectionUtil.isAnyNonNull(name, phone, email, subject, group, telegramHandle, tags);
+            return CollectionUtil.isAnyNonNull(name, phone, email, subject, group, telegramHandle, tags)
+                    || tagRemovalCount > 0;
         }
 
         /**
@@ -327,7 +335,21 @@ public class EditCommand extends Command {
          * A defensive copy of {@code tags} is used internally.
          */
         public void setTags(Set<Tag> tags) {
-            this.tags = (tags != null) ? new HashSet<>(tags) : null;
+            this.tags = (tags != null) ? new LinkedHashSet<>(tags) : null;
+            tagRemovalCount = 0;
+        }
+
+        /**
+         * Sets the positive number of tags to remove from the end instead of replacing tags.
+         */
+        public void setTagRemovalCount(int tagRemovalCount) {
+            checkArgument(tagRemovalCount > 0, "Tag removal count must be positive.");
+            this.tagRemovalCount = tagRemovalCount;
+            tags = null;
+        }
+
+        public int getTagRemovalCount() {
+            return tagRemovalCount;
         }
 
         /**
@@ -356,7 +378,9 @@ public class EditCommand extends Command {
                     && Objects.equals(subject, otherEditPersonDescriptor.subject)
                     && Objects.equals(group, otherEditPersonDescriptor.group)
                     && Objects.equals(telegramHandle, otherEditPersonDescriptor.telegramHandle)
-                    && Objects.equals(tags, otherEditPersonDescriptor.tags);
+                    && Objects.equals(tags == null ? null : List.copyOf(tags),
+                            otherEditPersonDescriptor.tags == null ? null : List.copyOf(otherEditPersonDescriptor.tags))
+                    && tagRemovalCount == otherEditPersonDescriptor.tagRemovalCount;
         }
 
         @Override
@@ -369,6 +393,7 @@ public class EditCommand extends Command {
                     .add("subject", subject)
                     .add("group", group)
                     .add("tags", tags)
+                    .add("tagRemovalCount", tagRemovalCount)
                     .toString();
         }
     }

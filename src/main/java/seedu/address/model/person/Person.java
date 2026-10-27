@@ -3,7 +3,8 @@ package seedu.address.model.person;
 import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
 
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -26,7 +27,7 @@ public class Person {
 
     // Data fields
     private final TelegramHandle telegramHandle;
-    private final Set<Tag> tags = new HashSet<>();
+    private final Set<Tag> tags = new LinkedHashSet<>();
     private final Subject subject;
     private final Group group;
 
@@ -78,7 +79,7 @@ public class Person {
     }
 
     /**
-     * Returns an immutable tag set, which throws {@code UnsupportedOperationException}
+     * Returns an immutable tag set in entry order, which throws {@code UnsupportedOperationException}
      * if modification is attempted.
      */
     public Set<Tag> getTags() {
@@ -119,13 +120,13 @@ public class Person {
                 && telegramHandle.equals(otherPerson.telegramHandle)
                 && subject.equals(otherPerson.subject)
                 && group.equals(otherPerson.group)
-                && tags.equals(otherPerson.tags);
+                && List.copyOf(tags).equals(List.copyOf(otherPerson.tags));
     }
 
     @Override
     public int hashCode() {
         // use this method for custom fields hashing instead of implementing your own
-        return Objects.hash(name, phone, email, telegramHandle, tags, subject, group);
+        return Objects.hash(name, phone, email, telegramHandle, List.copyOf(tags), subject, group);
     }
 
     @Override

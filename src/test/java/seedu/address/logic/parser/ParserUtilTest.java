@@ -29,7 +29,7 @@ public class ParserUtilTest {
     private static final String INVALID_GROUP = " ";
 
     private static final String VALID_NAME = "Rachel Walker";
-    private static final String VALID_PHONE = "123456";
+    private static final String VALID_PHONE = "12345678";
     private static final String VALID_TELEGRAM_HANDLE = "@rachel_walker";
     private static final String VALID_EMAIL = "rachel@example.com";
     private static final String VALID_TAG_1 = "friend";
@@ -112,7 +112,7 @@ public class ParserUtilTest {
 
     @Test
     public void parsePhone_formattedValue_returnsCanonicalPhone() throws Exception {
-        assertEquals(new Phone("+6591234567"), ParserUtil.parsePhone("+65-9123 4567"));
+        assertEquals("9123 4567", ParserUtil.parsePhone("9123-4567").value);
     }
 
     @Test

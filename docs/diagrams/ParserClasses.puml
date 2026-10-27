@@ -11,6 +11,7 @@ package "Parser classes"{
 Class "<<interface>>\nParser" as Parser
 Class AddressBookParser
 Class XYZCommandParser
+Class IndexRangeParser
 Class CliSyntax
 Class ParserUtil
 Class ArgumentMultimap
@@ -32,6 +33,22 @@ ArgumentTokenizer .left.> ArgumentMultimap
 XYZCommandParser ..> CliSyntax
 CliSyntax ..> Prefix
 XYZCommandParser ..> ParserUtil
+XYZCommandParser ..> IndexRangeParser : edit and delete
+IndexRangeParser ..> ParserUtil : parseIndex
+
+note right of XYZCommandParser
+  EditCommandParser rejects unknown prefixes
+  and duplicate non-tag prefixes.
+  Non-empty tags retain entry order.
+  Each empty t/ increments tagRemovalCount;
+  empty and non-empty tags cannot be mixed.
+end note
+
+note right of IndexRangeParser
+  Parses displayed indexes and inclusive ranges.
+  Sorts and merges overlapping or adjacent ranges.
+  Bounds are checked when the command executes.
+end note
 ParserUtil .down.> Prefix
 ArgumentTokenizer .down.> Prefix
 XYZCommand -up-|> Command

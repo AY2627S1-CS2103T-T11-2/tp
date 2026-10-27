@@ -10,10 +10,14 @@ import static seedu.address.logic.commands.CommandTestUtil.VALID_NAME_BOB;
 import static seedu.address.logic.commands.CommandTestUtil.VALID_PHONE_BOB;
 import static seedu.address.logic.commands.CommandTestUtil.VALID_TAG_HUSBAND;
 import static seedu.address.logic.commands.CommandTestUtil.VALID_TELEGRAM_HANDLE_BOB;
+import static seedu.address.testutil.Assert.assertThrows;
+
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
 import seedu.address.logic.commands.EditCommand.EditPersonDescriptor;
+import seedu.address.model.tag.Tag;
 import seedu.address.testutil.EditPersonDescriptorBuilder;
 
 public class EditPersonDescriptorTest {
@@ -58,6 +62,34 @@ public class EditPersonDescriptorTest {
     }
 
     @Test
+    public void tagRemovalCount_copiedAndComparedIndependently() {
+        EditPersonDescriptor descriptor = new EditPersonDescriptorBuilder().withTagRemovalCount(2).build();
+        EditPersonDescriptor copy = new EditPersonDescriptor(descriptor);
+        assertTrue(descriptor.isAnyFieldEdited());
+        assertFalse(descriptor.hasSinglePersonOnlyFields());
+        assertEquals(2, copy.getTagRemovalCount());
+        assertEquals(descriptor, copy);
+
+        copy.setTagRemovalCount(1);
+        assertFalse(descriptor.equals(copy));
+        assertEquals(2, descriptor.getTagRemovalCount());
+        assertThrows(IllegalArgumentException.class, () -> copy.setTagRemovalCount(0));
+        assertThrows(IllegalArgumentException.class, () -> copy.setTagRemovalCount(-1));
+    }
+
+    @Test
+    public void setTags_preservesOrderAndReplacesRemovalRequest() {
+        EditPersonDescriptor descriptor = new EditPersonDescriptorBuilder().withTagRemovalCount(2)
+                .withTags("Student", "Online").build();
+        assertEquals(0, descriptor.getTagRemovalCount());
+        assertEquals(List.of(new Tag("Student"), new Tag("Online")), List.copyOf(descriptor.getTags().get()));
+        assertFalse(descriptor.equals(new EditPersonDescriptorBuilder().withTags("Online", "Student").build()));
+
+        descriptor.setTagRemovalCount(1);
+        assertTrue(descriptor.getTags().isEmpty());
+    }
+
+    @Test
     public void toStringMethod() {
         EditPersonDescriptor editPersonDescriptor = new EditPersonDescriptor();
         String expected = EditPersonDescriptor.class.getCanonicalName() + "{name="
@@ -67,7 +99,8 @@ public class EditPersonDescriptorTest {
                 + editPersonDescriptor.getTelegramHandle().orElse(null) + ", subject="
                 + editPersonDescriptor.getSubject().orElse(null) + ", group="
                 + editPersonDescriptor.getGroup().orElse(null) + ", tags="
-                + editPersonDescriptor.getTags().orElse(null) + "}";
+                + editPersonDescriptor.getTags().orElse(null) + ", tagRemovalCount="
+                + editPersonDescriptor.getTagRemovalCount() + "}";
         assertEquals(expected, editPersonDescriptor.toString());
     }
 }

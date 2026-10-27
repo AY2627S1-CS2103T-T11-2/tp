@@ -17,6 +17,11 @@ Class "<<interface>>\nDeleteTarget" as DeleteTarget
 Class IndexDeleteTarget
 Class IndexRange
 
+Class EditCommand
+Class "EditCommand.EditPersonDescriptor" as EditPersonDescriptor
+Class "<<interface>>\nPersonTarget" as PersonTarget
+Class IndexPersonTarget
+
 Class "<<interface>>\nLogic" as Logic
 Class LogicManager
 }
@@ -35,15 +40,36 @@ LogicManager .right.|> Logic
 LogicManager -right->"1" ParserClasses
 ParserClasses ..> XYZCommand : <<create>>
 ParserClasses ..> DeleteCommand : <<create>>
+ParserClasses ..> EditCommand : <<create>>
 
 XYZCommand -up-|> Command
 DeleteCommand -up-|> Command
+EditCommand -up-|> Command
 
 LogicManager .left.> Command : <<call>>
 
 DeleteCommand --> "1" DeleteTarget : target
 IndexDeleteTarget .up.|> DeleteTarget
 IndexDeleteTarget --> "1..*" IndexRange : ranges
+
+EditCommand --> "0..1" PersonTarget : target
+EditCommand *--> "1" EditPersonDescriptor : defensive copy
+IndexPersonTarget .up.|> PersonTarget
+IndexPersonTarget --> "1..*" IndexRange : ranges
+
+note right of EditCommand
+  Single selection: index, target = null.
+  Bulk selection: target, index = null.
+  The current filter remains active after editing.
+end note
+
+note right of EditPersonDescriptor
+  null field = unchanged.
+  Empty phone or Telegram handle = clear.
+  Non-null tags = replace in entry order.
+  tagRemovalCount > 0 = remove that many
+  tags from the end of each selected person.
+end note
 
 LogicManager --> Model
 LogicManager --> Storage
@@ -52,6 +78,7 @@ Storage --[hidden] Model
 Command .[hidden]up.> Storage
 Command .right.> Model
 DeleteTarget ..> Model : <<use>>
+PersonTarget ..> Model : <<use>>
 note right of XYZCommand: XYZCommand = AddCommand, \nFindCommand, etc
 
 Logic ..> CommandResult

@@ -1,6 +1,6 @@
 package seedu.address.testutil;
 
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 import seedu.address.model.person.Email;
@@ -43,7 +43,7 @@ public class PersonBuilder {
         telegramHandle = new TelegramHandle(DEFAULT_TELEGRAM_HANDLE);
         subject = new Subject(DEFAULT_SUBJECT);
         group = new Group(DEFAULT_GROUP);
-        tags = new HashSet<>();
+        tags = new LinkedHashSet<>();
     }
 
     /**
@@ -56,7 +56,7 @@ public class PersonBuilder {
         telegramHandle = personToCopy.getTelegramHandle();
         subject = personToCopy.getSubject();
         group = personToCopy.getGroup();
-        tags = new HashSet<>(personToCopy.getTags());
+        tags = new LinkedHashSet<>(personToCopy.getTags());
     }
 
     /**
