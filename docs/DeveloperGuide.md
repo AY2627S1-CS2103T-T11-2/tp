@@ -83,7 +83,11 @@ The `UI` component,
 
 #### Command history
 
-`CommandHistory` stores previously entered commands independently of the JavaFX components. This allows its navigation behaviour to be tested using regular unit tests.
+`CommandHistory` stores up to 100 submitted commands independently of the JavaFX components. Consecutive exact duplicates
+are stored only once, while commands that differ in case remain distinct. This allows its navigation behaviour to be tested
+using regular unit tests.
+
+`CommandBox` saves user-entered text as a separate draft. Programmatic text changes made while displaying history entries are excluded, preventing ordinary history navigation from overwriting the draft. Consequently, edits made to a recalled command are preserved and restored when the user navigates past the newest stored command.
 
 The following sequence diagram shows how `CommandBox` records and retrieves commands:
 
@@ -153,19 +157,19 @@ apostrophes between alphanumeric words. `Phone` accepts spaces and hyphens as se
 value must begin with `@`, followed by 5 to 32 letters, digits, or underscores, with no leading underscore.
 
 #### Delete command
-`DeleteCommandParser` delegates its index-expression parsing to the shared `IndexRangeParser`, then constructs an `IndexDeleteTarget` from the canonical ranges.
+`DeleteCommandParser` delegates its index-expression parsing to the shared `IndexRangeParser`, then constructs an `IndexPersonTarget` from the canonical ranges.
 
 Each parsed component is represented by an `IndexRange`. An individual index is represented as a range whose start
 and end are equal.
 
-`IndexDeleteTarget` sorts and merges duplicate, adjacent, or overlapping ranges. For example, `1-3,2-4,4` is
+`IndexPersonTarget` sorts and merges duplicate, adjacent, or overlapping ranges. For example, `1-3,2-4,4` is
 normalized to `1-4`. This ensures that each contact is deleted at most once.
 
-Before deleting any contacts, `IndexDeleteTarget` resolves and validates every index against a snapshot of the
+Before deleting any contacts, `IndexPersonTarget` resolves and validates every index against a snapshot of the
 currently displayed person list. Consequently, a command such as `delete 1,999` fails without deleting contact 1
 (suppose that contact index 999 does not exist).
 
-`DeleteCommand` depends on the `DeleteTarget` interface rather than directly on an index. This allows future
+`DeleteCommand` depends on the shared `PersonTarget` interface rather than directly on an index. This allows future
 implementations such as `GroupDeleteTarget`, `SubjectDeleteTarget`, and `TagDeleteTarget` to reuse the deletion
 workflow.
 
@@ -204,6 +208,10 @@ The `Storage` component,
 * can save both address book data and user preference data in JSON format, and read them back into corresponding objects.
 * is implemented by `StorageManager`, which delegates the actual JSON file access to `JsonAddressBookStorage` and `JsonUserPrefsStorage` (one class per data file).
 * depends on some classes in the `Model` component (because the `Storage` component's job is to save/retrieve objects that belong to the `Model`)
+
+`FileUtil` writes replacement content to a temporary file in the destination directory before moving it over the
+destination. It uses an atomic replacement when supported by the file system and otherwise falls back to a regular
+replacement. If writing or moving fails, it attempts to remove the temporary file.
 
 `JsonAdaptedPerson` deliberately reads and writes a person's `TelegramHandle` using the existing JSON `"address"`
 property; it does not introduce a `"telegramHandle"` property. When loading an older record, it replaces a non-empty

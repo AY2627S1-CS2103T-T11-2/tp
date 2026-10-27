@@ -3,7 +3,6 @@ package seedu.address.logic.commands;
 import static java.util.Objects.requireNonNull;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -25,6 +24,7 @@ public final class IndexPersonTarget implements PersonTarget {
      *
      * @param ranges displayed index ranges to select
      * @throws IllegalArgumentException if no ranges are supplied
+     * @throws NullPointerException if {@code ranges} or one of its elements is null
      */
     public IndexPersonTarget(List<IndexRange> ranges) {
         requireNonNull(ranges);
@@ -34,11 +34,13 @@ public final class IndexPersonTarget implements PersonTarget {
                     "At least one index range is required");
         }
 
-        this.ranges = normalize(ranges);
+        this.ranges = IndexRange.normalize(ranges);
     }
 
     /**
      * Returns whether this target selects exactly one displayed index.
+     *
+     * @return true if exactly one index is selected
      */
     public boolean selectsSingleIndex() {
         return ranges.size() == 1
@@ -87,58 +89,6 @@ public final class IndexPersonTarget implements PersonTarget {
                         Messages.MESSAGE_INVALID_PERSON_DISPLAYED_INDEX);
             }
         }
-    }
-
-    /**
-     * Sorts and merges duplicate, overlapping, and adjacent ranges.
-     * The caller must supply at least one range.
-     */
-    static List<IndexRange> normalize(
-            List<IndexRange> ranges) {
-        assert !ranges.isEmpty() : "Range normalization requires at least one range";
-
-        List<IndexRange> sortedRanges =
-                new ArrayList<>(ranges);
-
-        sortedRanges.sort(Comparator.comparingInt(
-                range -> range.start().getZeroBased()));
-
-        List<IndexRange> normalizedRanges =
-                new ArrayList<>();
-
-        for (IndexRange next : sortedRanges) {
-            if (normalizedRanges.isEmpty()) {
-                normalizedRanges.add(next);
-                continue;
-            }
-
-            int lastPosition =
-                    normalizedRanges.size() - 1;
-            IndexRange last =
-                    normalizedRanges.get(lastPosition);
-
-            long nextStart =
-                    next.start().getZeroBased();
-            long lastEnd =
-                    last.end().getZeroBased();
-
-            if (nextStart <= lastEnd + 1) {
-                IndexRange merged = new IndexRange(
-                        last.start(),
-                        next.end().getZeroBased()
-                                > last.end().getZeroBased()
-                                ? next.end()
-                                : last.end());
-
-                normalizedRanges.set(
-                        lastPosition,
-                        merged);
-            } else {
-                normalizedRanges.add(next);
-            }
-        }
-
-        return List.copyOf(normalizedRanges);
     }
 
     @Override

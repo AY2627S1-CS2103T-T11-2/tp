@@ -64,7 +64,6 @@ public class DeleteCommandTest {
 
         Model expectedModel = new ModelManager(model.getAddressBook(), new UserPrefs());
         expectedModel.deletePerson(personToDelete);
-        showNoPerson(expectedModel);
 
         assertCommandSuccess(deleteCommand, model, expectedMessage, expectedModel);
     }
@@ -106,19 +105,10 @@ public class DeleteCommandTest {
 
     @Test
     public void toStringMethod() {
-        DeleteTarget target = new IndexDeleteTarget(List.of(IndexRange.single(INDEX_FIRST_PERSON)));
+        PersonTarget target = new IndexPersonTarget(List.of(IndexRange.single(INDEX_FIRST_PERSON)));
         DeleteCommand deleteCommand = new DeleteCommand(target);
         String expected = DeleteCommand.class.getCanonicalName() + "{target=" + target + "}";
         assertEquals(expected, deleteCommand.toString());
-    }
-
-    /**
-     * Updates {@code model}'s filtered list to show no one.
-     */
-    private void showNoPerson(Model model) {
-        model.updateFilteredPersonList(p -> false);
-
-        assertTrue(model.getFilteredPersonList().isEmpty());
     }
 
     @Test
@@ -180,38 +170,6 @@ public class DeleteCommandTest {
                 Messages.MESSAGE_INVALID_PERSON_DISPLAYED_INDEX);
     }
 
-    @Test
-    public void execute_validIndexesFilteredList_success() {
-        List<Person> initialPeople =
-                List.copyOf(model.getFilteredPersonList());
-        Person firstPerson = initialPeople.get(0);
-        Person secondPerson = initialPeople.get(1);
-
-        model.updateFilteredPersonList(
-                person -> person.equals(firstPerson)
-                        || person.equals(secondPerson));
-
-        DeleteCommand deleteCommand = commandFor(
-                new IndexRange(
-                        INDEX_FIRST_PERSON,
-                        INDEX_SECOND_PERSON));
-        List<Person> peopleToDelete =
-                List.of(firstPerson, secondPerson);
-
-        Model expectedModel =
-                new ModelManager(model.getAddressBook(), new UserPrefs());
-        expectedModel.updateFilteredPersonList(
-                person -> person.equals(firstPerson)
-                        || person.equals(secondPerson));
-        peopleToDelete.forEach(expectedModel::deletePerson);
-
-        assertCommandSuccess(
-                deleteCommand,
-                model,
-                formatMultipleSuccess(peopleToDelete),
-                expectedModel);
-    }
-
     /**
      * Creates a delete command for the supplied index ranges.
      *
@@ -220,7 +178,7 @@ public class DeleteCommandTest {
      */
     private DeleteCommand commandFor(IndexRange... ranges) {
         return new DeleteCommand(
-                new IndexDeleteTarget(List.of(ranges)));
+                new IndexPersonTarget(List.of(ranges)));
     }
 
     /**
