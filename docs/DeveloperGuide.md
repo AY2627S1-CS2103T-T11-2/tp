@@ -83,7 +83,11 @@ The `UI` component,
 
 #### Command history
 
-`CommandHistory` stores previously entered commands independently of the JavaFX components. This allows its navigation behaviour to be tested using regular unit tests.
+`CommandHistory` stores up to 100 submitted commands independently of the JavaFX components. Consecutive exact duplicates
+are stored only once, while commands that differ in case remain distinct. This allows its navigation behaviour to be tested
+using regular unit tests.
+
+`CommandBox` saves user-entered text as a separate draft. Programmatic text changes made while displaying history entries are excluded, preventing ordinary history navigation from overwriting the draft. Consequently, edits made to a recalled command are preserved and restored when the user navigates past the newest stored command.
 
 The following sequence diagram shows how `CommandBox` records and retrieves commands:
 

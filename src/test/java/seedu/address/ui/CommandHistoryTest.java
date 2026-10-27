@@ -84,6 +84,77 @@ public class CommandHistoryTest {
     }
 
     @Test
+    public void getNext_afterBackwardNavigation_returnsSavedDraft() {
+        commandHistory.add("list");
+        commandHistory.saveDraft("edit");
+        commandHistory.getPrevious();
+
+        assertEquals(Optional.of("edit"), commandHistory.getNext());
+    }
+
+    @Test
+    public void saveDraft_afterEditingHistoryEntry_restoresEditedDraft() {
+        commandHistory.add("list");
+        commandHistory.saveDraft("original draft");
+
+        assertEquals(Optional.of("list"), commandHistory.getPrevious());
+
+        commandHistory.saveDraft("edited historical command");
+
+        assertEquals(
+                Optional.of("edited historical command"),
+                commandHistory.getNext());
+    }
+
+    @Test
+    public void navigation_caseCorrectionAndDraftCompletion_preservesExpectedHistory() {
+        commandHistory.add("List");
+        commandHistory.add("list");
+
+        commandHistory.saveDraft("edit");
+        assertEquals(Optional.of("list"), commandHistory.getPrevious());
+        assertEquals(Optional.of("edit"), commandHistory.getNext());
+
+        commandHistory.add("edit 1-2 g/somegrp");
+
+        assertEquals(Optional.of("edit 1-2 g/somegrp"), commandHistory.getPrevious());
+        assertEquals(Optional.of("list"), commandHistory.getPrevious());
+        assertEquals(Optional.of("List"), commandHistory.getPrevious());
+    }
+
+    @Test
+    public void add_afterSavingDraft_discardsDraft() {
+        commandHistory.add("list");
+        commandHistory.saveDraft("edit");
+        commandHistory.getPrevious();
+        commandHistory.getNext();
+
+        commandHistory.add("edit 1-2 g/somegrp");
+        commandHistory.getPrevious();
+
+        assertEquals(Optional.of(""), commandHistory.getNext());
+    }
+
+    @Test
+    public void saveDraft_afterReturningToNewest_replacesPreviousDraft() {
+        commandHistory.add("list");
+
+        commandHistory.saveDraft("first draft");
+        commandHistory.getPrevious();
+        commandHistory.getNext();
+
+        commandHistory.saveDraft("updated draft");
+        commandHistory.getPrevious();
+
+        assertEquals(Optional.of("updated draft"), commandHistory.getNext());
+    }
+
+    @Test
+    public void saveDraft_nullDraft_throwsNullPointerException() {
+        assertThrows(NullPointerException.class, () -> commandHistory.saveDraft(null));
+    }
+
+    @Test
     public void getNext_atBlankEntry_returnsEmptyWithoutMoving() {
         commandHistory.add("list");
         commandHistory.getPrevious();
@@ -103,10 +174,11 @@ public class CommandHistoryTest {
     }
 
     @Test
-    public void add_consecutiveDuplicateWithDifferentCase_storesOnlyFirstCopy() {
+    public void add_consecutiveDuplicateWithDifferentCase_storesBothCommands() {
         commandHistory.add("LiSt");
         commandHistory.add("list");
 
+        assertEquals(Optional.of("list"), commandHistory.getPrevious());
         assertEquals(Optional.of("LiSt"), commandHistory.getPrevious());
         assertEquals(Optional.empty(), commandHistory.getPrevious());
     }

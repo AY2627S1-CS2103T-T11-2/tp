@@ -22,6 +22,8 @@ public class CommandBox extends UiPart<Region> {
 
     private final CommandHistory commandHistory = new CommandHistory();
 
+    private boolean isDisplayingHistoryEntry;
+
     @FXML
     private TextField commandTextField;
 
@@ -92,11 +94,18 @@ public class CommandBox extends UiPart<Region> {
     }
 
     /**
-     * Displays the specified command and moves the caret to its end.
+     * Displays the specified {@code commandText} and moves the caret to its end.
+     *
+     * @param commandText text to display
      */
     private void displayHistoryEntry(String commandText) {
-        commandTextField.setText(commandText);
-        commandTextField.positionCaret(commandTextField.getLength());
+        isDisplayingHistoryEntry = true;
+        try {
+            commandTextField.setText(commandText);
+            commandTextField.positionCaret(commandTextField.getLength());
+        } finally {
+            isDisplayingHistoryEntry = false;
+        }
     }
 
     /**

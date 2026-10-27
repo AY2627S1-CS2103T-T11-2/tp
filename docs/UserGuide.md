@@ -39,6 +39,8 @@ TutorTrack is a **desktop application for tutors to manage student contacts, opt
 
    - `exit` : Exits the app.
 
+1. Use the **Up Arrow (↑)** and **Down Arrow (↓)** keys in the command box to navigate previously submitted commands.
+
 1. Refer to the [Features](#features) section below for details of each command.
 
 ---
@@ -76,6 +78,16 @@ Opens a help window with a summary of the available commands and a link to the f
 
 Format: `help`
 
+### Navigating command history
+
+When the command box is focused, you can reuse previously submitted commands:
+
+- Press the **Up Arrow (↑)** key to move to an older command.
+- Press the **Down Arrow (↓)** key to move towards newer commands.
+- Moving down past the newest command restores the text you were previously typing.
+- If you edit a recalled command, the edited text is preserved as your current draft until you submit it by pressing Enter.
+
+Commands are added to the history when submitted, including commands that fail.
 
 ### Adding a person: `add`
 
