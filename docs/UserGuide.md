@@ -264,7 +264,6 @@ Format: `delete INDEX_OR_RANGE[,INDEX_OR_RANGE]...`
 * Spaces are not allowed around commas or hyphens. For example, use `delete 1,3-5` not `delete 1, 3 - 5`.
 * Duplicate and overlapping indexes are deleted only once. For example, `delete 1-3,2-4` deletes contacts 1 through 4.
 * All indexes are validated before any contact is deleted. If any index is invalid, no contacts are deleted.
-* The current filter stays active after deletion, just as it does after editing. Use `list` to show everyone again.
 
 Examples:
 * `list` followed by `delete 2` deletes the 2nd person in the address book.
