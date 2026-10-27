@@ -93,6 +93,7 @@
         "quick-start": "Quick start",
         "features": "Features",
         "viewing-help-help": "Viewing help: help",
+        "navigating-command-history": "Navigating command history",
         "adding-a-person-add": "Adding a person: add",
         "listing-all-persons-list": "Listing all persons: list",
         "editing-persons-edit": "Editing persons: edit",

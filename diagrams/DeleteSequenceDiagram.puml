@@ -6,7 +6,8 @@ box Logic LOGIC_COLOR_T1
 participant ":LogicManager" as LogicManager LOGIC_COLOR
 participant ":AddressBookParser" as AddressBookParser LOGIC_COLOR
 participant ":DeleteCommandParser" as DeleteCommandParser LOGIC_COLOR
-participant "t:IndexDeleteTarget" as IndexDeleteTarget LOGIC_COLOR
+participant "t:IndexPersonTarget" as IndexPersonTarget LOGIC_COLOR
+participant "IndexRangeParser" as IndexRangeParser LOGIC_COLOR
 participant "d:DeleteCommand" as DeleteCommand LOGIC_COLOR
 participant "r:CommandResult" as CommandResult LOGIC_COLOR
 end box
@@ -31,17 +32,17 @@ deactivate DeleteCommandParser
 AddressBookParser -> DeleteCommandParser : parse("1,3-4")
 activate DeleteCommandParser
 
-note right of DeleteCommandParser
-Parses "1,3-4" into the ranges
-1-1 and 3-4.
-end note
+DeleteCommandParser -> IndexRangeParser : parse("1,3-4")
+activate IndexRangeParser
+IndexRangeParser --> DeleteCommandParser : ranges
+deactivate IndexRangeParser
 
-create IndexDeleteTarget
-DeleteCommandParser -> IndexDeleteTarget : new IndexDeleteTarget(ranges)
-activate IndexDeleteTarget
+create IndexPersonTarget
+DeleteCommandParser -> IndexPersonTarget : new IndexPersonTarget(ranges)
+activate IndexPersonTarget
 
-IndexDeleteTarget --> DeleteCommandParser : t
-deactivate IndexDeleteTarget
+IndexPersonTarget --> DeleteCommandParser : t
+deactivate IndexPersonTarget
 
 create DeleteCommand
 DeleteCommandParser -> DeleteCommand : new DeleteCommand(t)
@@ -63,16 +64,16 @@ deactivate AddressBookParser
 LogicManager -> DeleteCommand : execute(m)
 activate DeleteCommand
 
-DeleteCommand -> IndexDeleteTarget : resolve(m)
-activate IndexDeleteTarget
+DeleteCommand -> IndexPersonTarget : resolve(m)
+activate IndexPersonTarget
 
-IndexDeleteTarget -> Model : getFilteredPersonList()
+IndexPersonTarget -> Model : getFilteredPersonList()
 activate Model
 
-Model --> IndexDeleteTarget : displayedPeople
+Model --> IndexPersonTarget : displayedPeople
 deactivate Model
 
-note right of IndexDeleteTarget
+note right of IndexPersonTarget
 Validates every index against the
 same displayed-list snapshot.
 
@@ -80,8 +81,8 @@ Duplicate and overlapping ranges
 are resolved only once.
 end note
 
-IndexDeleteTarget --> DeleteCommand : peopleToDelete
-deactivate IndexDeleteTarget
+IndexPersonTarget --> DeleteCommand : peopleToDelete
+deactivate IndexPersonTarget
 
 loop for each person in peopleToDelete
     DeleteCommand -> Model : deletePerson(person)

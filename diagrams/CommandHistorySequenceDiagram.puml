@@ -12,13 +12,33 @@ CommandBox -> CommandHistory : add(commandText)
 activate CommandHistory
 note right of CommandHistory
 Stores the command unless it is a
-consecutive case-insensitive duplicate.
+consecutive exact duplicate.
 At most 100 commands are retained.
-Navigation resets to the blank entry.
+Navigation resets after the newest command.
+The saved draft is cleared.
 end note
 CommandHistory --> CommandBox
 deactivate CommandHistory
 deactivate CommandBox
+== Preserve a user-edited draft ==
+
+[-> CommandBox : command text changed
+activate CommandBox
+
+alt not displaying a history entry
+    CommandBox -> CommandHistory : saveDraft(newText)
+    activate CommandHistory
+    CommandHistory --> CommandBox
+    deactivate CommandHistory
+else displaying a history entry
+    note right of CommandBox
+    isDisplayingHistoryEntry prevents
+    the draft from being overwritten.
+    end note
+end
+
+deactivate CommandBox
+
 == Navigate to an older command ==
 
 [-> CommandBox : handleHistoryNavigation(upEvent)
@@ -54,15 +74,15 @@ activate CommandBox
 
 CommandBox -> CommandHistory : getNext()
 activate CommandHistory
-CommandHistory --> CommandBox : Optional.of("")
+CommandHistory --> CommandBox : Optional.of(draft)
 deactivate CommandHistory
 
-CommandBox -> CommandBox ++ : displayHistoryEntry("")
+CommandBox -> CommandBox ++ : displayHistoryEntry(draft)
 deactivate CommandBox
 
 note right of CommandBox
-The empty string restores the blank
-entry after the newest command.
+The saved draft is restored after the
+newest processed command.
 end note
 
 deactivate CommandBox
