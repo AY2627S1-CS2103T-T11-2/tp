@@ -596,13 +596,13 @@ person list.
 
    1. Prerequisites: Launch the application with the sample contacts.
 
-   1. Test case: `find "Alice Pauline" Kurz`<br>
+   1. Test case: `find n/"Alice Pauline",Kurz`<br>
       Expected: `Alice Pauline` and `Carl Kurz` are displayed because each matches at least one search term.
 
-   1. Test case: `find "Alice Pauline" "Carl Kurz"`<br>
+   1. Test case: `find n/"Alice Pauline","Carl Kurz"`<br>
       Expected: `Alice Pauline` and `Carl Kurz` are displayed.
 
-   1. Incorrect command: `find Alice "Pauline`<br>
+   1. Incorrect command: `find n/Alice,"Pauline`<br>
       Expected: The displayed list remains unchanged. The status message shows the `find` command usage.
 
    1. Incorrect command: `" "`<br>

@@ -2,8 +2,10 @@ package seedu.address.logic.parser;
 
 import static seedu.address.logic.Messages.MESSAGE_INVALID_COMMAND_FORMAT;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_GROUP;
+import static seedu.address.logic.parser.CliSyntax.PREFIX_NAME;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_SUBJECT;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_TAG;
+import static seedu.address.logic.parser.CliSyntax.PREFIX_TELEGRAM_HANDLE;
 import static seedu.address.model.person.FindPredicate.TagMatchMode.ALL;
 import static seedu.address.model.person.FindPredicate.TagMatchMode.ANY;
 
@@ -23,13 +25,14 @@ import seedu.address.model.person.Group;
 import seedu.address.model.person.NameContainsSearchTermsPredicate;
 import seedu.address.model.person.Person;
 import seedu.address.model.person.Subject;
+import seedu.address.model.person.TelegramHandle;
 import seedu.address.model.tag.Tag;
 
 /**
  * Parses input arguments and creates a new FindCommand object
  */
 public class FindCommandParser implements Parser<FindCommand> {
-    private static final Pattern SEARCH_TERM_PATTERN = Pattern.compile("\\\"([^\\\"]*)\\\"|([^\\s\\\"]+)");
+    private static final Pattern NAME_TERM_PATTERN = Pattern.compile("\"([^\"]*)\"|([^\\s\",]+)");
 
     /**
      * Parses the given {@code String} of arguments in the context of the FindCommand
@@ -40,41 +43,49 @@ public class FindCommandParser implements Parser<FindCommand> {
     public FindCommand parse(String args) throws ParseException {
         String trimmedArgs = args.trim();
         ArgumentMultimap argMultimap = ArgumentTokenizer.tokenize(
-                " " + trimmedArgs, PREFIX_SUBJECT, PREFIX_GROUP, PREFIX_TAG);
+                " " + trimmedArgs, PREFIX_NAME, PREFIX_TELEGRAM_HANDLE, PREFIX_SUBJECT, PREFIX_GROUP, PREFIX_TAG);
 
         if (trimmedArgs.isEmpty()) {
             throw new ParseException(
                     String.format(MESSAGE_INVALID_COMMAND_FORMAT, FindCommand.MESSAGE_USAGE));
         }
 
+        if (!argMultimap.getPreamble().isEmpty()) {
+            throw new ParseException(
+                    String.format(MESSAGE_INVALID_COMMAND_FORMAT, FindCommand.MESSAGE_USAGE));
+        }
+
+        Optional<String> nameValue = argMultimap.getValue(PREFIX_NAME);
+        Optional<String> telegramHandleValue = argMultimap.getValue(PREFIX_TELEGRAM_HANDLE);
         Optional<String> subjectValue = argMultimap.getValue(PREFIX_SUBJECT);
         Optional<String> groupValue = argMultimap.getValue(PREFIX_GROUP);
+        boolean hasName = nameValue.isPresent();
+        boolean hasTelegramHandle = telegramHandleValue.isPresent();
         boolean hasSubject = subjectValue.isPresent();
         boolean hasGroup = groupValue.isPresent();
         boolean hasTag = !argMultimap.getAllValues(PREFIX_TAG).isEmpty();
 
-        if (hasSubject || hasGroup || hasTag) {
-            return parseCriteria(argMultimap, subjectValue, groupValue);
+        if (!hasName && !hasTelegramHandle && !hasSubject && !hasGroup && !hasTag) {
+            throw new ParseException(
+                    String.format(MESSAGE_INVALID_COMMAND_FORMAT, FindCommand.MESSAGE_USAGE));
         }
 
-        return new FindCommand(parseNamePredicate(trimmedArgs));
+        return parseCriteria(argMultimap, nameValue, telegramHandleValue, subjectValue, groupValue);
     }
 
     /**
-     * Parses name terms consisting of keywords and quoted phrases.
+     * Parses comma-separated name terms consisting of keywords and quoted phrases.
      */
     private Predicate<Person> parseNamePredicate(String nameInput) throws ParseException {
         List<String> keywords = new ArrayList<>();
         List<String> phrases = new ArrayList<>();
-        String trimmedNameInput = nameInput.trim();
-        Matcher matcher = SEARCH_TERM_PATTERN.matcher(trimmedNameInput);
-        int previousMatchEnd = 0;
+        String[] terms = nameInput.split(",", -1);
 
-        while (matcher.find()) {
-            if (!trimmedNameInput.substring(previousMatchEnd, matcher.start()).isBlank()) {
+        for (String term : terms) {
+            Matcher matcher = NAME_TERM_PATTERN.matcher(term.trim());
+            if (!matcher.matches()) {
                 throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, FindCommand.MESSAGE_USAGE));
             }
-
             String phrase = matcher.group(1);
             if (phrase != null) {
                 if (phrase.isBlank()) {
@@ -84,27 +95,35 @@ public class FindCommandParser implements Parser<FindCommand> {
             } else {
                 keywords.add(matcher.group(2));
             }
-            previousMatchEnd = matcher.end();
-        }
-        if (!trimmedNameInput.substring(previousMatchEnd).isBlank()) {
-            throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, FindCommand.MESSAGE_USAGE));
         }
 
         return new NameContainsSearchTermsPredicate(keywords, phrases);
     }
 
     /**
-     * Parses optional name, subject, group, and tag filters.
+     * Parses optional name, Telegram handle, subject, group, and tag filters.
      * A person must match every supplied criterion type. Tags separated by commas use OR, while tags separated by
      * ampersands use AND.
      */
-    private FindCommand parseCriteria(ArgumentMultimap argMultimap, Optional<String> subjectValue,
-                                      Optional<String> groupValue) throws ParseException {
-        argMultimap.verifyNoDuplicatePrefixesFor(PREFIX_SUBJECT, PREFIX_GROUP, PREFIX_TAG);
+    private FindCommand parseCriteria(ArgumentMultimap argMultimap, Optional<String> nameValue,
+                                      Optional<String> telegramHandleValue, Optional<String> subjectValue,
+                                      Optional<String> groupValue)
+            throws ParseException {
+        argMultimap.verifyNoDuplicatePrefixesFor(PREFIX_NAME, PREFIX_TELEGRAM_HANDLE, PREFIX_SUBJECT, PREFIX_GROUP,
+                PREFIX_TAG);
 
         Optional<Predicate<Person>> namePredicate = Optional.empty();
-        if (!argMultimap.getPreamble().isEmpty()) {
-            namePredicate = Optional.of(parseNamePredicate(argMultimap.getPreamble()));
+        if (nameValue.isPresent()) {
+            namePredicate = Optional.of(parseNamePredicate(nameValue.get()));
+        }
+
+        Optional<TelegramHandle> telegramHandle = Optional.empty();
+        if (telegramHandleValue.isPresent()) {
+            String value = telegramHandleValue.get();
+            if (value.isBlank()) {
+                throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, FindCommand.MESSAGE_USAGE));
+            }
+            telegramHandle = Optional.of(ParserUtil.parseTelegramHandle(value));
         }
 
         Optional<Subject> subject = Optional.empty();
@@ -126,6 +145,6 @@ public class FindCommandParser implements Parser<FindCommand> {
             tagMatchMode = tagFilter.contains("&") ? ALL : ANY;
         }
 
-        return new FindCommand(new FindPredicate(namePredicate, subject, group, tags, tagMatchMode));
+        return new FindCommand(new FindPredicate(namePredicate, telegramHandle, subject, group, tags, tagMatchMode));
     }
 }

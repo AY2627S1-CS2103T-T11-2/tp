@@ -1,7 +1,9 @@
 package seedu.address.logic.parser;
 
 import static seedu.address.logic.Messages.MESSAGE_INVALID_COMMAND_FORMAT;
+import static seedu.address.logic.parser.CliSyntax.PREFIX_NAME;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_TAG;
+import static seedu.address.logic.parser.CliSyntax.PREFIX_TELEGRAM_HANDLE;
 import static seedu.address.logic.parser.CommandParserTestUtil.assertParseFailure;
 import static seedu.address.logic.parser.CommandParserTestUtil.assertParseSuccess;
 import static seedu.address.logic.parser.ParserUtil.MESSAGE_INVALID_TAG_FILTER;
@@ -20,6 +22,7 @@ import seedu.address.model.person.FindPredicate;
 import seedu.address.model.person.Group;
 import seedu.address.model.person.NameContainsSearchTermsPredicate;
 import seedu.address.model.person.Subject;
+import seedu.address.model.person.TelegramHandle;
 import seedu.address.model.tag.Tag;
 
 public class FindCommandParserTest {
@@ -33,40 +36,32 @@ public class FindCommandParserTest {
 
     @Test
     public void parse_validKeywordArgs_returnsFindCommand() {
-        // no leading and trailing whitespaces
-        FindCommand expectedFindCommand =
-                new FindCommand(new NameContainsSearchTermsPredicate(List.of("Alice", "Bob"), List.of()));
-        assertParseSuccess(parser, "Alice Bob", expectedFindCommand);
+        FindCommand expectedFindCommand = commandWithName(List.of("Alice", "Bob"), List.of());
+        assertParseSuccess(parser, "n/Alice,Bob", expectedFindCommand);
 
-        // multiple whitespaces between keywords
-        assertParseSuccess(parser, " \n Alice \n \t Bob  \t", expectedFindCommand);
+        // Whitespace around commas and the complete criterion is ignored.
+        assertParseSuccess(parser, " \n n/Alice, \t Bob  \t", expectedFindCommand);
     }
 
     @Test
     public void parse_validPhraseArgs_returnsFindCommand() {
-        // no leading and trailing whitespaces
-        FindCommand expectedFindCommand =
-                new FindCommand(new NameContainsSearchTermsPredicate(List.of(), List.of("Alice Chen")));
-        assertParseSuccess(parser, "\"Alice Chen\"", expectedFindCommand);
+        FindCommand expectedFindCommand = commandWithName(List.of(), List.of("Alice Chen"));
+        assertParseSuccess(parser, "n/\"Alice Chen\"", expectedFindCommand);
 
-        // surrounding whitespace is ignored
-        assertParseSuccess(parser, " \n \"Alice Chen\"  \t", expectedFindCommand);
+        assertParseSuccess(parser, " \n n/\"Alice Chen\"  \t", expectedFindCommand);
 
-        FindCommand expectedPhraseWithRepeatedSpaces =
-                new FindCommand(new NameContainsSearchTermsPredicate(List.of(), List.of("Alice   Chen")));
-        assertParseSuccess(parser, "\"Alice   Chen\"", expectedPhraseWithRepeatedSpaces);
+        FindCommand expectedPhraseWithRepeatedSpaces = commandWithName(List.of(), List.of("Alice   Chen"));
+        assertParseSuccess(parser, "n/\"Alice   Chen\"", expectedPhraseWithRepeatedSpaces);
     }
 
     @Test
     public void parse_validMixedArgs_returnsFindCommand() {
-        FindCommand expectedFindCommand = new FindCommand(
-                new NameContainsSearchTermsPredicate(List.of("Tan"), List.of("Alice Chen")));
-        assertParseSuccess(parser, "\"Alice Chen\" Tan", expectedFindCommand);
-        assertParseSuccess(parser, "Tan \"Alice Chen\"", expectedFindCommand);
+        FindCommand expectedFindCommand = commandWithName(List.of("Tan"), List.of("Alice Chen"));
+        assertParseSuccess(parser, "n/\"Alice Chen\",Tan", expectedFindCommand);
+        assertParseSuccess(parser, "n/Tan,\"Alice Chen\"", expectedFindCommand);
 
-        FindCommand expectedMultiplePhrases = new FindCommand(
-                new NameContainsSearchTermsPredicate(List.of(), List.of("Alice Chen", "Bob Tan")));
-        assertParseSuccess(parser, "\"Alice Chen\" \"Bob Tan\"", expectedMultiplePhrases);
+        FindCommand expectedMultiplePhrases = commandWithName(List.of(), List.of("Alice Chen", "Bob Tan"));
+        assertParseSuccess(parser, "n/\"Alice Chen\",\"Bob Tan\"", expectedMultiplePhrases);
     }
 
     @Test
@@ -87,12 +82,12 @@ public class FindCommandParserTest {
         FindCommand phraseAndSubjectCommand = new FindCommand(new FindPredicate(
                 Optional.of(new NameContainsSearchTermsPredicate(List.of(), List.of("john"))),
                 Optional.of(new Subject("CS3434")), Optional.empty(), Set.of()));
-        assertParseSuccess(parser, "\"john\" s/CS3434", phraseAndSubjectCommand);
+        assertParseSuccess(parser, "n/\"john\" s/CS3434", phraseAndSubjectCommand);
 
         FindCommand keywordsAndAllFiltersCommand = new FindCommand(new FindPredicate(
                 Optional.of(new NameContainsSearchTermsPredicate(List.of("John", "Jane"), List.of())),
                 Optional.of(new Subject("CS3434")), Optional.of(new Group("T11")), Set.of()));
-        assertParseSuccess(parser, "John Jane s/CS3434 g/T11", keywordsAndAllFiltersCommand);
+        assertParseSuccess(parser, "n/John,Jane s/CS3434 g/T11", keywordsAndAllFiltersCommand);
     }
 
     @Test
@@ -115,7 +110,26 @@ public class FindCommandParserTest {
                 Optional.of(new NameContainsSearchTermsPredicate(List.of("John"), List.of())),
                 Optional.of(new Subject("CS3434")), Optional.of(new Group("T11")),
                 Set.of(new Tag("consultation"))));
-        assertParseSuccess(parser, "John s/CS3434 g/T11 t/consultation", allFiltersCommand);
+        assertParseSuccess(parser, "n/John s/CS3434 g/T11 t/consultation", allFiltersCommand);
+    }
+
+    @Test
+    public void parse_telegramHandleFilter_returnsFindCommand() {
+        FindCommand telegramCommand = new FindCommand(new FindPredicate(
+                Optional.empty(), Optional.of(new TelegramHandle("@alice_tan")),
+                Optional.empty(), Optional.empty(), Set.of()));
+
+        assertParseSuccess(parser, "h/@alice_tan", telegramCommand);
+    }
+
+    @Test
+    public void parse_telegramHandleCombinedWithOtherFilters_returnsFindCommand() {
+        FindCommand combinedCommand = new FindCommand(new FindPredicate(
+                Optional.of(new NameContainsSearchTermsPredicate(List.of("Alice"), List.of())),
+                Optional.of(new TelegramHandle("@alice_tan")), Optional.of(new Subject("CS3434")),
+                Optional.of(new Group("T11")), Set.of(new Tag("consultation"))));
+
+        assertParseSuccess(parser, "n/Alice h/@alice_tan s/CS3434 g/T11 t/consultation", combinedCommand);
     }
 
     @Test
@@ -129,17 +143,50 @@ public class FindCommandParserTest {
     }
 
     @Test
+    public void parse_invalidTelegramHandleFilter_throwsParseException() {
+        String expectedMessage = String.format(MESSAGE_INVALID_COMMAND_FORMAT, FindCommand.MESSAGE_USAGE);
+
+        assertParseFailure(parser, "h/", expectedMessage);
+        assertParseFailure(parser, "h/alice_tan", TelegramHandle.MESSAGE_CONSTRAINTS);
+        assertParseFailure(parser, "h/@alice_tan h/@bob_tan",
+                Messages.getErrorMessageForDuplicatePrefixes(PREFIX_TELEGRAM_HANDLE));
+    }
+
+    @Test
     public void parse_phraseArgWithoutFullQuotations_throwsParseException() {
         String expectedMessage =
                 String.format(MESSAGE_INVALID_COMMAND_FORMAT, FindCommand.MESSAGE_USAGE);
 
-        assertParseFailure(parser, "\"chloe seow", expectedMessage);
-        assertParseFailure(parser, "chloe seow\"", expectedMessage);
-        assertParseFailure(parser, "chloe \"seow", expectedMessage);
-        assertParseFailure(parser, "chl\"oe", expectedMessage);
-        assertParseFailure(parser, "\"\"chloe seow\"\"", expectedMessage);
-        assertParseFailure(parser, "\"\"", expectedMessage);
-        assertParseFailure(parser, "\"", expectedMessage);
+        assertParseFailure(parser, "n/\"chloe seow", expectedMessage);
+        assertParseFailure(parser, "n/chloe seow\"", expectedMessage);
+        assertParseFailure(parser, "n/chl\"oe", expectedMessage);
+        assertParseFailure(parser, "n/\"\"chloe seow\"\"", expectedMessage);
+        assertParseFailure(parser, "n/\"\"", expectedMessage);
+        assertParseFailure(parser, "n/\"", expectedMessage);
+    }
+
+    @Test
+    public void parse_invalidNameExpression_throwsParseException() {
+        String expectedMessage = String.format(MESSAGE_INVALID_COMMAND_FORMAT, FindCommand.MESSAGE_USAGE);
+
+        assertParseFailure(parser, "n/", expectedMessage);
+        assertParseFailure(parser, "n/Alice,", expectedMessage);
+        assertParseFailure(parser, "n/,Alice", expectedMessage);
+        assertParseFailure(parser, "n/Alice,,Bob", expectedMessage);
+        assertParseFailure(parser, "n/Alice Bob", expectedMessage);
+        assertParseFailure(parser, "Alice", expectedMessage);
+    }
+
+    @Test
+    public void parse_duplicateNamePrefix_throwsParseException() {
+        assertParseFailure(parser, "n/Alice n/Bob",
+                Messages.getErrorMessageForDuplicatePrefixes(PREFIX_NAME));
+    }
+
+    private FindCommand commandWithName(List<String> keywords, List<String> phrases) {
+        return new FindCommand(new FindPredicate(
+                Optional.of(new NameContainsSearchTermsPredicate(keywords, phrases)),
+                Optional.empty(), Optional.empty(), Set.of()));
     }
 
 }
