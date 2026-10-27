@@ -205,6 +205,10 @@ The `Storage` component,
 * is implemented by `StorageManager`, which delegates the actual JSON file access to `JsonAddressBookStorage` and `JsonUserPrefsStorage` (one class per data file).
 * depends on some classes in the `Model` component (because the `Storage` component's job is to save/retrieve objects that belong to the `Model`)
 
+`FileUtil` writes replacement content to a temporary file in the destination directory before moving it over the
+destination. It uses an atomic replacement when supported by the file system and otherwise falls back to a regular
+replacement. If writing or moving fails, it attempts to remove the temporary file.
+
 `JsonAdaptedPerson` deliberately reads and writes a person's `TelegramHandle` using the existing JSON `"address"`
 property; it does not introduce a `"telegramHandle"` property. When loading an older record, it replaces a non-empty
 physical address that does not begin with `@` with an empty `TelegramHandle` in memory, while preserving
