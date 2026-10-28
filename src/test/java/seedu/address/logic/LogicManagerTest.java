@@ -121,7 +121,7 @@ public class LogicManagerTest {
 
         assertCommandSuccess("add n/Alice Tan p/91234567 e/alice@example.com h/@alice_tan "
                         + "s/Mathematics g/T11",
-                "New person added: Alice Tan; Phone: 9123 4567; Email: alice@example.com; "
+                "New student added: Alice Tan; Phone: 9123 4567; Email: alice@example.com; "
                         + "Telegram: @alice_tan; Subject: Mathematics; Group: T11; Tags: ",
                 expectedModel);
 
