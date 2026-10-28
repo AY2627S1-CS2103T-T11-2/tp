@@ -12,7 +12,7 @@ import java.util.Locale;
  */
 public class Tag {
 
-    public static final String MESSAGE_CONSTRAINTS = "Tag names should be alphanumeric";
+    public static final String MESSAGE_CONSTRAINTS = "Tag names should be alphanumeric, and should not contain spaces";
     public static final String VALIDATION_REGEX = "\\p{Alnum}+";
 
     public final String tagName;

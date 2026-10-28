@@ -1,7 +1,6 @@
 package seedu.address.logic.commands;
 
 import static java.util.Objects.requireNonNull;
-import static seedu.address.commons.util.AppUtil.checkArgument;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_EMAIL;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_GROUP;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_NAME;
@@ -10,7 +9,7 @@ import static seedu.address.logic.parser.CliSyntax.PREFIX_SUBJECT;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_TAG;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_TELEGRAM_HANDLE;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
@@ -45,8 +44,9 @@ public class EditCommand extends Command {
             + "Name, phone, email, and Telegram handle can only be edited when one person is selected.\n"
             + "Existing values will be overwritten by the input values.\n"
             + "Parameters: INDEX_OR_RANGE[,INDEX_OR_RANGE]... "
-            + "Omitted fields stay unchanged. Use p/ or h/ alone to clear phone or Telegram handle. "
-            + "Each empty t/ removes one tag from the end; repeat t/ to remove more tags.\n"
+            + "Omitted fields stay unchanged; empty values are rejected. "
+            + "Use t/TAG to add a tag, or t/OLD_TAG,NEW_TAG to rename one. "
+            + "Tag operations run left to right and matching ignores case.\n"
             + "[" + PREFIX_NAME + "NAME] "
             + "[" + PREFIX_PHONE + "PHONE] "
             + "[" + PREFIX_EMAIL + "EMAIL] "
@@ -61,6 +61,7 @@ public class EditCommand extends Command {
 
     public static final String MESSAGE_EDIT_PERSON_SUCCESS = "Edited person: %1$s";
     public static final String MESSAGE_NOT_EDITED = "At least one field to edit must be provided.";
+    public static final String MESSAGE_EMPTY_FIELD = "Edit values cannot be empty. Use delete to clear fields.";
     public static final String MESSAGE_DUPLICATE_PERSON = "This person already exists in the address book.";
     public static final String MESSAGE_EDIT_PERSONS_SUCCESS = "Edited %1$d persons:\n%2$s";
     public static final String MESSAGE_INVALID_BULK_EDIT = "Only subject, group, and tags can be edited "
@@ -154,10 +155,10 @@ public class EditCommand extends Command {
             throw new CommandException(MESSAGE_INVALID_BULK_EDIT);
         }
 
-        List<Person> editedPeople =
-                peopleToEdit.stream()
-                        .map(person -> createEditedPerson(person, editPersonDescriptor))
-                        .toList();
+        List<Person> editedPeople = new ArrayList<>();
+        for (Person person : peopleToEdit) {
+            editedPeople.add(createEditedPerson(person, editPersonDescriptor));
+        }
 
         String editedPeopleSummary = editedPeople.stream()
                 .map(Messages::format)
@@ -179,7 +180,8 @@ public class EditCommand extends Command {
      * Creates and returns a {@code Person} with the details of {@code personToEdit}
      * edited with {@code editPersonDescriptor}.
      */
-    private static Person createEditedPerson(Person personToEdit, EditPersonDescriptor editPersonDescriptor) {
+    private static Person createEditedPerson(Person personToEdit, EditPersonDescriptor editPersonDescriptor)
+            throws CommandException {
         requireNonNull(personToEdit);
         requireNonNull(editPersonDescriptor);
 
@@ -190,11 +192,9 @@ public class EditCommand extends Command {
                 .orElse(personToEdit.getTelegramHandle());
         Subject updatedSubject = editPersonDescriptor.getSubject().orElse(personToEdit.getSubject());
         Group updatedGroup = editPersonDescriptor.getGroup().orElse(personToEdit.getGroup());
-        Set<Tag> updatedTags = editPersonDescriptor.getTags().orElse(personToEdit.getTags());
-        if (editPersonDescriptor.getTagRemovalCount() > 0) {
-            List<Tag> existingTags = List.copyOf(updatedTags);
-            int remainingCount = Math.max(0, existingTags.size() - editPersonDescriptor.getTagRemovalCount());
-            updatedTags = new LinkedHashSet<>(existingTags.subList(0, remainingCount));
+        Set<Tag> updatedTags = new LinkedHashSet<>(personToEdit.getTags());
+        for (TagEdit tagEdit : editPersonDescriptor.getTagEdits()) {
+            updatedTags = tagEdit.applyTo(updatedTags);
         }
 
         return new Person(updatedName, updatedPhone, updatedEmail, updatedTelegramHandle, updatedTags,
@@ -231,9 +231,8 @@ public class EditCommand extends Command {
     }
 
     /**
-     * Stores the details to edit the person with. Each supplied field replaces the corresponding value.
-     * Null means unchanged; empty phone or Telegram handle values clear those fields.
-     * Tags can be replaced in entry order or removed from the end using a removal count.
+     * Stores replacement field values and ordered tag additions or renames.
+     * Null field values mean unchanged. Tag operations preserve all unrelated tags.
      */
     public static class EditPersonDescriptor {
         private Name name;
@@ -242,14 +241,13 @@ public class EditCommand extends Command {
         private Subject subject;
         private Group group;
         private TelegramHandle telegramHandle;
-        private Set<Tag> tags;
-        private int tagRemovalCount;
+        private List<TagEdit> tagEdits = List.of();
 
         public EditPersonDescriptor() {}
 
         /**
          * Copy constructor.
-         * A defensive copy of {@code tags} is used internally.
+         * An immutable copy of the ordered tag edits is used internally.
          */
         public EditPersonDescriptor(EditPersonDescriptor toCopy) {
             setName(toCopy.name);
@@ -258,16 +256,15 @@ public class EditCommand extends Command {
             setSubject(toCopy.subject);
             setGroup(toCopy.group);
             setTelegramHandle(toCopy.telegramHandle);
-            setTags(toCopy.tags);
-            tagRemovalCount = toCopy.tagRemovalCount;
+            setTagEdits(toCopy.tagEdits);
         }
 
         /**
          * Returns true if at least one field is edited.
          */
         public boolean isAnyFieldEdited() {
-            return CollectionUtil.isAnyNonNull(name, phone, email, subject, group, telegramHandle, tags)
-                    || tagRemovalCount > 0;
+            return CollectionUtil.isAnyNonNull(name, phone, email, subject, group, telegramHandle)
+                    || !tagEdits.isEmpty();
         }
 
         /**
@@ -331,34 +328,18 @@ public class EditCommand extends Command {
 
 
         /**
-         * Sets {@code tags} to this object's {@code tags}.
-         * A defensive copy of {@code tags} is used internally.
+         * Sets the tags to add, preserving their entry order.
          */
         public void setTags(Set<Tag> tags) {
-            this.tags = (tags != null) ? new LinkedHashSet<>(tags) : null;
-            tagRemovalCount = 0;
+            tagEdits = tags.stream().map(tag -> new TagEdit(null, tag.tagName)).toList();
         }
 
-        /**
-         * Sets the positive number of tags to remove from the end instead of replacing tags.
-         */
-        public void setTagRemovalCount(int tagRemovalCount) {
-            checkArgument(tagRemovalCount > 0, "Tag removal count must be positive.");
-            this.tagRemovalCount = tagRemovalCount;
-            tags = null;
+        public void setTagEdits(List<TagEdit> tagEdits) {
+            this.tagEdits = List.copyOf(tagEdits);
         }
 
-        public int getTagRemovalCount() {
-            return tagRemovalCount;
-        }
-
-        /**
-         * Returns an unmodifiable tag set, which throws {@code UnsupportedOperationException}
-         * if modification is attempted.
-         * Returns {@code Optional#empty()} if {@code tags} is null.
-         */
-        public Optional<Set<Tag>> getTags() {
-            return (tags != null) ? Optional.of(Collections.unmodifiableSet(tags)) : Optional.empty();
+        public List<TagEdit> getTagEdits() {
+            return tagEdits;
         }
 
         @Override
@@ -378,9 +359,7 @@ public class EditCommand extends Command {
                     && Objects.equals(subject, otherEditPersonDescriptor.subject)
                     && Objects.equals(group, otherEditPersonDescriptor.group)
                     && Objects.equals(telegramHandle, otherEditPersonDescriptor.telegramHandle)
-                    && Objects.equals(tags == null ? null : List.copyOf(tags),
-                            otherEditPersonDescriptor.tags == null ? null : List.copyOf(otherEditPersonDescriptor.tags))
-                    && tagRemovalCount == otherEditPersonDescriptor.tagRemovalCount;
+                    && tagEdits.equals(otherEditPersonDescriptor.tagEdits);
         }
 
         @Override
@@ -392,8 +371,7 @@ public class EditCommand extends Command {
                     .add("telegramHandle", telegramHandle)
                     .add("subject", subject)
                     .add("group", group)
-                    .add("tags", tags)
-                    .add("tagRemovalCount", tagRemovalCount)
+                    .add("tagEdits", tagEdits)
                     .toString();
         }
     }
