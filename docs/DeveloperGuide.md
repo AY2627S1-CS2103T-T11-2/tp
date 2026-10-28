@@ -152,7 +152,9 @@ Command-specific parsers remain responsible for wrapping parsing failures in the
 
 `ParserUtil` performs shared contact-field normalization before constructing the corresponding model value object.
 It trims names and collapses consecutive internal whitespace, while `Name` permits single spaces, hyphens, and
-apostrophes between alphanumeric words. `Phone` requires exactly eight digits, accepts single spaces or hyphens
+apostrophes between alphanumeric words or single-letter initials, and `D/O` between name words. The model value objects enforce maximum lengths
+of 100 characters for names, subjects, and groups, 50 for tags, and 254 for email addresses, so command parsing and
+JSON reload apply the same constraints. `Phone` requires exactly eight digits, accepts single spaces or hyphens
 between digit groups, and stores numbers as `xxxx xxxx`. Country codes, `+`, and consecutive separators are rejected.
 `TelegramHandle` treats an empty value as absent; a non-empty
 value must begin with `@`, followed by 5 to 32 letters, digits, or underscores, with no leading underscore.

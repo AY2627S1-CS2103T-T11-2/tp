@@ -41,6 +41,8 @@ public class NameContainsSearchTermsPredicateTest {
         assertTrue(predicate.test(new PersonBuilder().withName("Bob Tan").build()));
         assertTrue(new NameContainsSearchTermsPredicate(List.of(), List.of("Alice   Chen")).test(
                 new PersonBuilder().withName("Alice Chen").build()));
+        assertTrue(new NameContainsSearchTermsPredicate(List.of(), List.of("Binte D/O")).test(
+                new PersonBuilder().withName("Abdul Binte D/O Rahmud").build()));
     }
 
     @Test

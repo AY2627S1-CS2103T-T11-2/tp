@@ -9,15 +9,20 @@ import static seedu.address.commons.util.AppUtil.checkArgument;
  */
 public class Name {
 
+    public static final int MAX_LENGTH = 100;
+
     public static final String MESSAGE_CONSTRAINTS =
-            "Names should contain alphanumeric words separated by single spaces, hyphens, or apostrophes, "
-                    + "and should not be blank";
+            "Names should contain at most " + MAX_LENGTH + " characters. They may contain alphanumeric words "
+                    + "or single-letter initials ending in a period, separated by single spaces, hyphens, or "
+                    + "apostrophes, and may include D/O between words";
 
     /*
      * A separator must occur only between alphanumeric words. This prevents leading, trailing, and repeated
      * separators while allowing names such as {@code Jean-Luc} and {@code O'Connor}.
      */
-    public static final String VALIDATION_REGEX = "[\\p{Alnum}]+(?:[ '-][\\p{Alnum}]+)*";
+    private static final String NAME_WORD = "(?:[\\p{Alnum}]+(?:[-'][\\p{Alnum}]+)*|[A-Za-z]\\.)";
+    public static final String VALIDATION_REGEX = NAME_WORD + "(?: " + NAME_WORD + ")*"
+            + "(?: D/O " + NAME_WORD + "(?: " + NAME_WORD + ")*)?";
 
     public final String fullName;
 
@@ -36,7 +41,7 @@ public class Name {
      * Returns true if a given string is a valid name.
      */
     public static boolean isValidName(String test) {
-        return test.matches(VALIDATION_REGEX);
+        return test.length() <= MAX_LENGTH && test.matches(VALIDATION_REGEX);
     }
 
     @Override

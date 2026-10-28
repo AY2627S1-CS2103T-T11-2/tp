@@ -106,6 +106,16 @@ public class EditCommandParserTest {
     }
 
     @Test
+    public void parse_nameWithRelationshipQualifier_success() {
+        EditPersonDescriptor descriptor = new EditPersonDescriptorBuilder()
+                .withName("Abdul Binte D/O Rahmud").build();
+
+        assertParseSuccess(parser, "1 n/Abdul Binte D/O Rahmud", new EditCommand(INDEX_FIRST_PERSON, descriptor));
+        assertParseFailure(parser, "1 g/Group D/O", MESSAGE_INVALID_FORMAT);
+        assertParseFailure(parser, "1 n/Abdul D/ Rahmud", MESSAGE_INVALID_FORMAT);
+    }
+
+    @Test
     public void parse_groupContainingSlashes_success() {
         for (String group : List.of("T11/T12", "T11 x / typo", "T11 https://example.com")) {
             EditPersonDescriptor descriptor = new EditPersonDescriptorBuilder().withGroup(group).build();

@@ -33,6 +33,10 @@ public class NameTest {
         assertFalse(Name.isValidName("Jane-")); // ends with a separator
         assertFalse(Name.isValidName("O''Connor")); // repeated apostrophes
         assertFalse(Name.isValidName("Mary  Jane")); // repeated spaces
+        assertFalse(Name.isValidName("Abdul D/ Rahmud")); // incomplete relationship qualifier
+        assertFalse(Name.isValidName("Abdul D/O")); // relationship qualifier must be between words
+        assertFalse(Name.isValidName("Abdul X/O Rahmud")); // unsupported slash-containing component
+        assertFalse(Name.isValidName("a".repeat(Name.MAX_LENGTH + 1))); // exceeds maximum length
 
         // valid name
         assertTrue(Name.isValidName("peter jack")); // alphabets only
@@ -42,6 +46,11 @@ public class NameTest {
         assertTrue(Name.isValidName("David Roger Jackson Ray Jr 2nd")); // long names
         assertTrue(Name.isValidName("Jean-Luc Tan")); // hyphenated name
         assertTrue(Name.isValidName("O'Connor")); // apostrophe in name
+        assertTrue(Name.isValidName("S. Jay"));
+        assertTrue(Name.isValidName("A. R. Rahman"));
+        assertTrue(Name.isValidName("Lee Mei-Ling"));
+        assertTrue(Name.isValidName("Abdul Binte D/O Rahmud"));
+        assertTrue(Name.isValidName("a".repeat(Name.MAX_LENGTH))); // exactly maximum length
     }
 
     @Test

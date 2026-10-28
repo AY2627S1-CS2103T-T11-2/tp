@@ -12,8 +12,6 @@ import static seedu.address.logic.parser.CliSyntax.PREFIX_TAG;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_TELEGRAM_HANDLE;
 
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import seedu.address.logic.commands.EditCommand;
 import seedu.address.logic.commands.EditCommand.EditPersonDescriptor;
@@ -28,7 +26,6 @@ public class EditCommandParser implements Parser<EditCommand> {
 
     private static final List<Prefix> EDIT_PREFIXES = List.of(PREFIX_NAME, PREFIX_PHONE, PREFIX_EMAIL,
             PREFIX_TELEGRAM_HANDLE, PREFIX_SUBJECT, PREFIX_GROUP, PREFIX_TAG, PREFIX_LEGACY_ADDRESS);
-    private static final Pattern PARAMETER_PREFIX = Pattern.compile("(?<!\\S)[A-Za-z][A-Za-z0-9_-]*/(?!/)");
 
     /**
      * Parses the given {@code String} of arguments in the context of the EditCommand
@@ -48,7 +45,9 @@ public class EditCommandParser implements Parser<EditCommand> {
             throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, EditCommand.MESSAGE_USAGE), pe);
         }
 
-        verifyNoUnknownPrefixes(args);
+        if (ArgumentTokenizer.containsUnknownPrefix(args, EDIT_PREFIXES.toArray(Prefix[]::new))) {
+            throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, EditCommand.MESSAGE_USAGE));
+        }
 
         if (argMultimap.getValue(PREFIX_LEGACY_ADDRESS).isPresent()) {
             throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, EditCommand.MESSAGE_USAGE));
@@ -97,19 +96,6 @@ public class EditCommandParser implements Parser<EditCommand> {
         }
 
         return new EditCommand(target, editPersonDescriptor);
-    }
-
-    /**
-     * Rejects unrecognized parameter-like tokens instead of silently storing them in a field value.
-     * Embedded slashes and URLs remain valid value text.
-     */
-    private void verifyNoUnknownPrefixes(String args) throws ParseException {
-        Matcher matcher = PARAMETER_PREFIX.matcher(args);
-        while (matcher.find()) {
-            if (!EDIT_PREFIXES.contains(new Prefix(matcher.group()))) {
-                throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, EditCommand.MESSAGE_USAGE));
-            }
-        }
     }
 
     /**

@@ -58,6 +58,13 @@ public class JsonAdaptedPersonTest {
     }
 
     @Test
+    public void constructorAndToModelType_nameWithRelationshipQualifier_preservesValue() throws Exception {
+        Person student = new PersonBuilder(BENSON).withName("Abdul Binte D/O Rahmud").build();
+
+        assertEquals(student, new JsonAdaptedPerson(student).toModelType());
+    }
+
+    @Test
     public void toModelType_legacyPersonWithoutSubjectAndGroup_usesDefaults() throws Exception {
         JsonAdaptedPerson legacyPerson = new JsonAdaptedPerson(
                 VALID_NAME, VALID_PHONE, VALID_EMAIL, VALID_TELEGRAM_HANDLE, null, null, VALID_TAGS);

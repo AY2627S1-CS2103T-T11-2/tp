@@ -9,8 +9,11 @@ import static seedu.address.commons.util.AppUtil.checkArgument;
  */
 public class Subject {
 
+    public static final int MAX_LENGTH = 100;
+
     public static final String MESSAGE_CONSTRAINTS =
-            "Subjects should only contain alphanumeric characters and spaces, and should not be blank";
+            "Subjects should contain at most " + MAX_LENGTH
+                    + " alphanumeric characters and spaces, and should not be blank";
     public static final String VALIDATION_REGEX = "[\\p{Alnum}][\\p{Alnum} ]*";
     public final String subject;
 
@@ -26,7 +29,7 @@ public class Subject {
     }
 
     public static boolean isValidSubject(String test) {
-        return test.matches(VALIDATION_REGEX);
+        return test.length() <= MAX_LENGTH && test.matches(VALIDATION_REGEX);
     }
 
     @Override

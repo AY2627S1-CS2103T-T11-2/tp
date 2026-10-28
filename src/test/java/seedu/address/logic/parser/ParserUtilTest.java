@@ -85,6 +85,12 @@ public class ParserUtilTest {
     @Test
     public void parseName_repeatedWhitespace_returnsNormalizedName() throws Exception {
         assertEquals(new Name("Rachel Walker"), ParserUtil.parseName("Rachel   Walker"));
+        assertEquals(new Name("Tan Wei Ming"), ParserUtil.parseName("  Tan  Wei   Ming  "));
+    }
+
+    @Test
+    public void parseName_relationshipQualifier_returnsCompleteName() throws Exception {
+        assertEquals(new Name("Abdul Binte D/O Rahmud"), ParserUtil.parseName("Abdul Binte D/O Rahmud"));
     }
 
     @Test

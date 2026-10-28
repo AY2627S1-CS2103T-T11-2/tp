@@ -85,6 +85,32 @@ public class AddCommandParserTest {
     }
 
     @Test
+    public void parse_nameWithRelationshipQualifier_success() {
+        Person expectedPerson = new PersonBuilder()
+                .withName("Abdul Binte D/O Rahmud")
+                .withPhone("")
+                .withEmail("abdul@example.com")
+                .withTelegramHandle("")
+                .withSubject("CS2103T")
+                .withGroup("T11")
+                .withTags()
+                .build();
+
+        assertParseSuccess(parser,
+                " n/Abdul Binte D/O Rahmud e/abdul@example.com s/CS2103T g/T11",
+                new AddCommand(expectedPerson));
+    }
+
+    @Test
+    public void parse_relationshipQualifierOutsideName_failure() {
+        String expectedMessage = String.format(MESSAGE_INVALID_COMMAND_FORMAT, AddCommand.MESSAGE_USAGE);
+
+        assertParseFailure(parser, " n/Abdul Rahmud e/abdul@example.com s/CS2103T g/T11 D/O", expectedMessage);
+        assertParseFailure(parser, " n/Abdul D/ Rahmud e/abdul@example.com s/CS2103T g/T11", expectedMessage);
+        assertParseFailure(parser, REQUIRED_BOB_FIELDS + " x/unknown", expectedMessage);
+    }
+
+    @Test
     public void parse_emptyOptionalFields_success() {
         Person expectedPerson = new PersonBuilder(BOB)
                 .withPhone("")

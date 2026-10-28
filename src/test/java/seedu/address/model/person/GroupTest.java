@@ -22,8 +22,10 @@ public class GroupTest {
     public void isValidGroup() {
         assertFalse(Group.isValidGroup(""));
         assertFalse(Group.isValidGroup(" "));
+        assertFalse(Group.isValidGroup("G".repeat(Group.MAX_LENGTH + 1)));
         assertTrue(Group.isValidGroup("G01"));
         assertTrue(Group.isValidGroup("Tutorial Group 1"));
+        assertTrue(Group.isValidGroup("G".repeat(Group.MAX_LENGTH)));
     }
 
     @Test
