@@ -3,6 +3,7 @@ package seedu.address.ui;
 import java.nio.file.Path;
 import java.util.logging.Logger;
 
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Menu;
@@ -132,6 +133,7 @@ public class MainWindow extends UiPart<Stage> {
 
         commandBox = new CommandBox(this::executeCommand);
         commandBoxPlaceholder.getChildren().add(commandBox.getRoot());
+        helpWindow.setOnClose(this::focusCommandBox);
 
         preventMenuHoverFromActivatingNavigation();
     }
@@ -172,6 +174,15 @@ public class MainWindow extends UiPart<Stage> {
             helpWindow.show();
         } else {
             helpWindow.focus();
+        }
+    }
+
+    /**
+     * Restores keyboard-first command entry after the help window closes.
+     */
+    private void focusCommandBox() {
+        if (commandBox != null && primaryStage.isShowing()) {
+            Platform.runLater(commandBox::focusInput);
         }
     }
 

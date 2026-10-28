@@ -1,5 +1,6 @@
 package seedu.address.ui;
 
+import java.util.Locale;
 import java.util.logging.Logger;
 
 import javafx.fxml.FXML;
@@ -7,6 +8,8 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.stage.Stage;
 import seedu.address.commons.core.LogsCenter;
 
@@ -16,10 +19,15 @@ import seedu.address.commons.core.LogsCenter;
 public class HelpWindow extends UiPart<Stage> {
 
     public static final String USERGUIDE_URL = "https://se-education.org/addressbook-level3/UserGuide.html";
-    public static final String HELP_MESSAGE = "Refer to the user guide: " + USERGUIDE_URL;
+    public static final String HELP_MESSAGE = "Refer to the user guide (Pressing \"Enter\" copies URL): "
+            + USERGUIDE_URL;
 
     private static final Logger logger = LogsCenter.getLogger(HelpWindow.class);
     private static final String FXML = "HelpWindow.fxml";
+    private static final boolean IS_MAC_OS = System.getProperty("os.name")
+            .toLowerCase(Locale.ROOT).contains("mac");
+
+    private Runnable onClose = () -> { };
 
     @FXML
     private Button copyButton;
@@ -35,6 +43,9 @@ public class HelpWindow extends UiPart<Stage> {
     public HelpWindow(Stage root) {
         super(FXML, root);
         helpMessage.setText(HELP_MESSAGE);
+        configureKeyboardShortcuts();
+        // This fires for every closing route, including the window manager's close control.
+        getRoot().setOnHidden(event -> onClose.run());
     }
 
     /**
@@ -83,12 +94,35 @@ public class HelpWindow extends UiPart<Stage> {
     }
 
     /**
+     * Runs {@code onClose} after the help window has been hidden by any route.
+     */
+    public void setOnClose(Runnable onClose) {
+        this.onClose = onClose;
+    }
+
+    /**
      * Focuses on the help window.
      */
     public void focus() {
         getRoot().setIconified(false);
         getRoot().toFront();
         getRoot().requestFocus();
+    }
+
+    /**
+     * Adds application-level fallbacks for conventional window-close shortcuts. Native window-manager close
+     * behaviour is deliberately left unchanged.
+     */
+    private void configureKeyboardShortcuts() {
+        getRoot().getScene().addEventFilter(KeyEvent.KEY_PRESSED, event -> {
+            boolean isMacCloseShortcut = IS_MAC_OS && event.getCode() == KeyCode.W && event.isMetaDown();
+            boolean isAltF4 = !IS_MAC_OS && event.getCode() == KeyCode.F4 && event.isAltDown();
+
+            if (isMacCloseShortcut || isAltF4) {
+                hide();
+                event.consume();
+            }
+        });
     }
 
     /**

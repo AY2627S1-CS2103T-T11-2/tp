@@ -149,4 +149,11 @@ public class CommandBox extends UiPart<Region> {
     boolean isInputFocused() {
         return commandTextField.isFocused();
     }
+
+    /**
+     * Gives keyboard focus to the command input.
+     */
+    void focusInput() {
+        commandTextField.requestFocus();
+    }
 }
