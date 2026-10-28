@@ -33,6 +33,8 @@ import seedu.address.model.tag.Tag;
  */
 public class FindCommandParser implements Parser<FindCommand> {
     private static final Pattern NAME_TERM_PATTERN = Pattern.compile("\"([^\"]*)\"|([^\\s\",]+)");
+    private static final List<Prefix> FIND_PREFIXES = List.of(PREFIX_NAME, PREFIX_TELEGRAM_HANDLE,
+            PREFIX_SUBJECT, PREFIX_GROUP, PREFIX_TAG);
 
     /**
      * Parses the given {@code String} of arguments in the context of the FindCommand
@@ -43,9 +45,10 @@ public class FindCommandParser implements Parser<FindCommand> {
     public FindCommand parse(String args) throws ParseException {
         String trimmedArgs = args.trim();
         ArgumentMultimap argMultimap = ArgumentTokenizer.tokenize(
-                " " + trimmedArgs, PREFIX_NAME, PREFIX_TELEGRAM_HANDLE, PREFIX_SUBJECT, PREFIX_GROUP, PREFIX_TAG);
+                " " + trimmedArgs, FIND_PREFIXES.toArray(Prefix[]::new));
 
-        if (trimmedArgs.isEmpty()) {
+        if (trimmedArgs.isEmpty()
+                || ArgumentTokenizer.containsUnknownPrefix(trimmedArgs, FIND_PREFIXES.toArray(Prefix[]::new))) {
             throw new ParseException(
                     String.format(MESSAGE_INVALID_COMMAND_FORMAT, FindCommand.MESSAGE_USAGE));
         }

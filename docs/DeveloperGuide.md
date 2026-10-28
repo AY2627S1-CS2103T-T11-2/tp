@@ -385,7 +385,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 **MSS**
 
-1. TA requests to add a student with a name and optional particulars.
+1. TA requests to add a student with a name, email, subject, and group, plus any optional particulars.
 2. TutorTrack validates the supplied particulars.
 3. TutorTrack adds the student.
 4. TutorTrack confirms that the student was added.
@@ -564,7 +564,42 @@ testers are expected to do more *exploratory* testing.
    1. Other incorrect delete commands to try: `delete`, `delete x`, `...` (where x is larger than the list size)<br>
       Expected: Similar to previous.
 
+1. Deleting a contact from a filtered list
+
+   1. Prerequisites: Filter the displayed person list using `find n/Alice`.
+
+   1. Test case: `delete 1`<br>
+      Expected: The first contact in the displayed list is deleted. The list then shows all remaining contacts.
+
 1. _{ more test cases … }_
+
+### Adding students
+
+1. Adding a student with all fields
+
+   1. Test case: `add n/Alice Tan p/91234567 e/alice@example.com h/@alice_tan s/Mathematics g/Sec 3A t/Student`<br>
+      Expected: Alice is added. The phone is displayed as `9123 4567`, and all supplied fields are shown.
+
+1. Adding a student without optional fields
+
+   1. Test case: `add n/Bob Lee e/bob@example.com s/Physics g/J1A`<br>
+      Expected: Bob is added without a phone number, Telegram handle, or tags; no empty contact labels are shown.
+
+1. Adding a student whose name contains initials or a short abbreviation
+
+   1. Test case: `add n/Aisyah Bte. Ahmad e/aisyah@example.com s/Mathematics g/T11`<br>
+      Expected: Aisyah is added with the name stored as `Aisyah Bte. Ahmad`.
+
+   1. Test case: Replace the name above with `John..Tan`, `.John`, or `John.`.<br>
+      Expected: No student is added. The status message shows the name constraints.
+
+1. Rejecting malformed input without changing data
+
+   1. Test case: `add n/Charlie Lim e/charlie@example.com s/Mathematics g/T11 x/typo`<br>
+      Expected: No student is added. The status message shows the `add` command usage because `x/` is unknown.
+
+   1. Test case: Repeat either successful command above with the same name but different contact details.<br>
+      Expected: No second student is added. The status message reports that the student already exists.
 
 ### Edit command
 
@@ -579,7 +614,8 @@ The following diagram shows parsing, validation, tag-removal requests, and const
 The parser rejects unknown parameter-like tokens such as `x/typo`, the legacy `a/` prefix,
 and repeated non-tag prefixes. Shared value objects validate supplied fields: `Phone` requires
 eight digits and stores `xxxx xxxx`, while `Email` accepts hyphens inside domain labels,
-including the final label, whose total length must be at least two characters.
+including the final label, whose total length must be at least two characters. `Name` accepts
+periods only after one-to-three-letter initials or abbreviations that precede another name word.
 
 For backward compatibility, an index expression that selects exactly one index produces
 an `EditCommand` using the existing index-based constructor. This preserves the original
@@ -617,9 +653,11 @@ so changes to the filtered list cannot cause later selected people to be skipped
 
 <puml src="diagrams/EditSequenceDiagram.puml" alt="Bulk edit execution and saving sequence diagram" />
 
-Both single and bulk edits leave the current filter active, matching `delete`. The filtered
-list is reevaluated as people are replaced; edited people that no longer match disappear
-from the view. `LogicManager` saves the address book after successful execution.
+Both single and bulk edits leave the current filter active. The filtered list is reevaluated
+as people are replaced, so edited people that no longer match disappear from the view. In
+contrast, `delete` resolves indexes against the currently displayed list and resets a successful
+deletion to show all remaining people. `LogicManager` saves the address book after successful
+execution.
 
 ### Finding persons
 

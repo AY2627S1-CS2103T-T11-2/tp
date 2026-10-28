@@ -2,6 +2,7 @@ package seedu.address.logic;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static seedu.address.logic.Messages.MESSAGE_INVALID_COMMAND_FORMAT;
 import static seedu.address.logic.Messages.MESSAGE_INVALID_PERSON_DISPLAYED_INDEX;
 import static seedu.address.logic.Messages.MESSAGE_UNKNOWN_COMMAND;
 import static seedu.address.logic.commands.CommandTestUtil.EMAIL_DESC_AMY;
@@ -26,6 +27,7 @@ import org.junit.jupiter.api.io.TempDir;
 import seedu.address.logic.commands.AddCommand;
 import seedu.address.logic.commands.CommandResult;
 import seedu.address.logic.commands.EditCommand;
+import seedu.address.logic.commands.FindCommand;
 import seedu.address.logic.commands.ListCommand;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.logic.parser.exceptions.ParseException;
@@ -205,6 +207,20 @@ public class LogicManagerTest {
 
         assertEquals(remainingPeople, model.getFilteredPersonList());
         assertEquals(remainingPeople, model.getAddressBook().getPersonList());
+    }
+
+    @Test
+    public void execute_invalidFind_keepsDisplayedList() throws Exception {
+        Person alice = new PersonBuilder().withName("Alice Tan").build();
+        Person bob = new PersonBuilder().withName("Bob").build();
+        model.addPerson(alice);
+        model.addPerson(bob);
+        logic.execute("find n/Alice");
+        List<Person> displayedPeople = List.copyOf(model.getFilteredPersonList());
+
+        String expectedMessage = String.format(MESSAGE_INVALID_COMMAND_FORMAT, FindCommand.MESSAGE_USAGE);
+        assertThrows(ParseException.class, expectedMessage, () -> logic.execute("find g/T11 x/typo"));
+        assertEquals(displayedPeople, model.getFilteredPersonList());
     }
 
     @Test

@@ -1,8 +1,10 @@
 package seedu.address.ui;
 
 
+import javafx.beans.binding.Bindings;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
@@ -60,7 +62,19 @@ public class PersonCard extends UiPart<Region> {
         setVisibleAndManaged(phone, !person.getPhone().isEmpty());
         setVisibleAndManaged(telegramHandle, !person.getTelegramHandle().isEmpty());
         person.getTags().stream()
-                .forEach(tag -> tags.getChildren().add(new Label(tag.tagName)));
+                .forEach(tag -> tags.getChildren().add(createTagLabel(tag.tagName)));
+    }
+
+    /**
+     * Creates a tag label that wraps within the card and exposes its complete text on hover.
+     */
+    private Label createTagLabel(String tagText) {
+        Label tagLabel = new Label(tagText);
+        tagLabel.setWrapText(true);
+        tagLabel.setMinWidth(0);
+        tagLabel.maxWidthProperty().bind(Bindings.max(1, tags.widthProperty()));
+        tagLabel.setTooltip(new Tooltip(tagText));
+        return tagLabel;
     }
 
     /**
