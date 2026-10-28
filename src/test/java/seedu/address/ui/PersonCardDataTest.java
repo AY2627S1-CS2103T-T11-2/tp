@@ -21,7 +21,7 @@ public class PersonCardDataTest {
                 person, PersonCardData.CopyableDetail.EMAIL));
         assertEquals("@person_handle", PersonCardData.getCopyValue(
                 person, PersonCardData.CopyableDetail.TELEGRAM_HANDLE));
-        assertEquals("9123 4567", PersonCardData.getCopyValue(
+        assertEquals("91234567", PersonCardData.getCopyValue(
                 person, PersonCardData.CopyableDetail.PHONE));
     }
 

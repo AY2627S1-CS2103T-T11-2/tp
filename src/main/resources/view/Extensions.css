@@ -212,13 +212,11 @@
 .contact-name {
     -fx-font-family: "Segoe UI Semibold";
     -fx-font-size: 21px;
-    -fx-text-fill: #ffffff;
 }
 
 .contact-index {
     -fx-font-family: "Segoe UI Semibold";
     -fx-font-size: 21px;
-    -fx-text-fill: #3e7b91;
 }
 
 .contact-details {
@@ -233,25 +231,20 @@
     -fx-padding: 0 0 0 24;
 }
 
-/* Keeps field icons and their text visually grouped without constraining wrapping. */
-.field-column > .hbox {
-    -fx-spacing: 4;
-}
-
 .field-title {
     -fx-font-family: "Segoe UI Semibold";
     -fx-font-size: 12px;
-    -fx-text-fill: #3e7b91;
 }
 
 .field-value {
     -fx-font-family: "Segoe UI";
     -fx-font-size: 15px;
-    -fx-text-fill: #3e7b91;
 }
 
-.contact-icon-outline {
+.contact-icon {
     -fx-fill: transparent;
+    -fx-stroke: #3e7b91;
+    -fx-stroke-width: 1.8;
 }
 
 .copy-button {
