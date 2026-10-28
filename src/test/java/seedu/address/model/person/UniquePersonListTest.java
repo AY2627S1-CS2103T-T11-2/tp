@@ -46,6 +46,15 @@ public class UniquePersonListTest {
     }
 
     @Test
+    public void contains_personWithNameDifferingOnlyByCase_returnsTrue() {
+        uniquePersonList.add(ALICE);
+        Person aliceWithUpperCaseName = new PersonBuilder(ALICE)
+                .withName(ALICE.getName().toString().toUpperCase()).build();
+
+        assertTrue(uniquePersonList.contains(aliceWithUpperCaseName));
+    }
+
+    @Test
     public void add_nullPerson_throwsNullPointerException() {
         assertThrows(NullPointerException.class, () -> uniquePersonList.add(null));
     }
@@ -54,6 +63,15 @@ public class UniquePersonListTest {
     public void add_duplicatePerson_throwsDuplicatePersonException() {
         uniquePersonList.add(ALICE);
         assertThrows(DuplicatePersonException.class, () -> uniquePersonList.add(ALICE));
+    }
+
+    @Test
+    public void add_personWithNameDifferingOnlyByCase_throwsDuplicatePersonException() {
+        uniquePersonList.add(ALICE);
+        Person aliceWithLowerCaseName = new PersonBuilder(ALICE)
+                .withName(ALICE.getName().toString().toLowerCase()).build();
+
+        assertThrows(DuplicatePersonException.class, () -> uniquePersonList.add(aliceWithLowerCaseName));
     }
 
     @Test
@@ -92,6 +110,19 @@ public class UniquePersonListTest {
     }
 
     @Test
+    public void setPerson_capitalizationOnlyNameEdit_success() {
+        uniquePersonList.add(ALICE);
+        Person aliceWithUpperCaseName = new PersonBuilder(ALICE)
+                .withName(ALICE.getName().toString().toUpperCase()).build();
+
+        uniquePersonList.setPerson(ALICE, aliceWithUpperCaseName);
+
+        assertEquals(List.of(aliceWithUpperCaseName), uniquePersonList.asUnmodifiableObservableList());
+        assertEquals(ALICE.getName().toString().toUpperCase(),
+                uniquePersonList.asUnmodifiableObservableList().getFirst().getName().toString());
+    }
+
+    @Test
     public void setPerson_editedPersonHasDifferentIdentity_success() {
         uniquePersonList.add(ALICE);
         uniquePersonList.setPerson(ALICE, BOB);
@@ -105,6 +136,16 @@ public class UniquePersonListTest {
         uniquePersonList.add(ALICE);
         uniquePersonList.add(BOB);
         assertThrows(DuplicatePersonException.class, () -> uniquePersonList.setPerson(ALICE, BOB));
+    }
+
+    @Test
+    public void setPerson_editedPersonHasNonUniqueNameDifferingOnlyByCase_throwsDuplicatePersonException() {
+        uniquePersonList.add(ALICE);
+        uniquePersonList.add(BOB);
+        Person aliceWithLowerCaseName = new PersonBuilder(BOB)
+                .withName(ALICE.getName().toString().toLowerCase()).build();
+
+        assertThrows(DuplicatePersonException.class, () -> uniquePersonList.setPerson(BOB, aliceWithLowerCaseName));
     }
 
     @Test

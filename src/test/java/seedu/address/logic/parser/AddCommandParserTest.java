@@ -32,6 +32,8 @@ import static seedu.address.logic.parser.CommandParserTestUtil.assertParseFailur
 import static seedu.address.logic.parser.CommandParserTestUtil.assertParseSuccess;
 import static seedu.address.testutil.TypicalPersons.BOB;
 
+import java.util.List;
+
 import org.junit.jupiter.api.Test;
 
 import seedu.address.logic.Messages;
@@ -82,6 +84,27 @@ public class AddCommandParserTest {
                 .build();
 
         assertParseSuccess(parser, REQUIRED_BOB_FIELDS, new AddCommand(expectedPerson));
+    }
+
+    @Test
+    public void parse_nameWithInitials_success() {
+        Person expectedPerson = new PersonBuilder(BOB)
+                .withName("A. R. Rahman")
+                .withPhone("")
+                .withTelegramHandle("")
+                .withSubject("CS2103T")
+                .withGroup("T11")
+                .withTags()
+                .build();
+
+        assertParseSuccess(parser, " n/A. R. Rahman" + EMAIL_DESC_BOB + SUBJECT_DESC_CS2103T + GROUP_DESC_T11,
+                new AddCommand(expectedPerson));
+    }
+
+    @Test
+    public void parse_nameWithMalformedPeriods_failure() {
+        assertParseFailure(parser, " n/John..Tan" + EMAIL_DESC_BOB + SUBJECT_DESC_CS2103T + GROUP_DESC_T11,
+                Name.MESSAGE_CONSTRAINTS);
     }
 
     @Test
@@ -195,6 +218,34 @@ public class AddCommandParserTest {
         String expectedMessage = String.format(MESSAGE_INVALID_COMMAND_FORMAT, AddCommand.MESSAGE_USAGE);
         assertParseFailure(parser, REQUIRED_BOB_FIELDS + " a/Clementi", expectedMessage);
         assertParseFailure(parser, REQUIRED_BOB_FIELDS + " a/", expectedMessage);
+    }
+
+    @Test
+    public void parse_unknownPrefix_failure() {
+        String expectedMessage = String.format(MESSAGE_INVALID_COMMAND_FORMAT, AddCommand.MESSAGE_USAGE);
+        for (String input : List.of(REQUIRED_BOB_FIELDS + " x/typo",
+                NAME_DESC_BOB + " x/typo" + EMAIL_DESC_BOB + SUBJECT_DESC_CS2103T + GROUP_DESC_T11,
+                REQUIRED_BOB_FIELDS + " typo/value",
+                REQUIRED_BOB_FIELDS + " X/typo",
+                REQUIRED_BOB_FIELDS + " x/",
+                REQUIRED_BOB_FIELDS + "\tx/typo")) {
+            assertParseFailure(parser, input, expectedMessage);
+        }
+    }
+
+    @Test
+    public void parse_groupContainingSlashes_success() {
+        for (String group : List.of("T11/T12", "T11 x / typo", "T11 https://example.com")) {
+            Person expectedPerson = new PersonBuilder(BOB)
+                    .withPhone("")
+                    .withTelegramHandle("")
+                    .withSubject("CS2103T")
+                    .withGroup(group)
+                    .withTags()
+                    .build();
+            assertParseSuccess(parser, NAME_DESC_BOB + EMAIL_DESC_BOB + SUBJECT_DESC_CS2103T + " g/" + group,
+                    new AddCommand(expectedPerson));
+        }
     }
 
     @Test

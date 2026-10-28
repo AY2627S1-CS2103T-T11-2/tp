@@ -10,6 +10,7 @@ import static seedu.address.logic.parser.CliSyntax.PREFIX_SUBJECT;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_TAG;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_TELEGRAM_HANDLE;
 
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -29,6 +30,9 @@ import seedu.address.model.tag.Tag;
  */
 public class AddCommandParser implements Parser<AddCommand> {
 
+    private static final List<Prefix> ADD_PREFIXES = List.of(PREFIX_NAME, PREFIX_PHONE, PREFIX_EMAIL,
+            PREFIX_TELEGRAM_HANDLE, PREFIX_SUBJECT, PREFIX_GROUP, PREFIX_TAG, PREFIX_LEGACY_ADDRESS);
+
     /**
      * Parses the given {@code String} of arguments in the context of the AddCommand
      * and returns an AddCommand object for execution.
@@ -36,11 +40,11 @@ public class AddCommandParser implements Parser<AddCommand> {
      */
     public AddCommand parse(String args) throws ParseException {
         ArgumentMultimap argMultimap =
-                ArgumentTokenizer.tokenize(args, PREFIX_NAME, PREFIX_PHONE, PREFIX_EMAIL, PREFIX_TELEGRAM_HANDLE,
-                        PREFIX_SUBJECT, PREFIX_GROUP, PREFIX_TAG, PREFIX_LEGACY_ADDRESS);
+                ArgumentTokenizer.tokenize(args, ADD_PREFIXES.toArray(Prefix[]::new));
 
         if (!arePrefixesPresent(argMultimap, PREFIX_NAME, PREFIX_EMAIL, PREFIX_SUBJECT, PREFIX_GROUP)
                 || argMultimap.getValue(PREFIX_LEGACY_ADDRESS).isPresent()
+                || ArgumentTokenizer.containsUnknownPrefix(args, ADD_PREFIXES.toArray(Prefix[]::new))
                 || !argMultimap.getPreamble().isEmpty()) {
             throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, AddCommand.MESSAGE_USAGE));
         }

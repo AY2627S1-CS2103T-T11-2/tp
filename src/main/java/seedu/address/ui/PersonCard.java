@@ -1,8 +1,10 @@
 package seedu.address.ui;
 
 
+import javafx.beans.binding.Bindings;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
+import javafx.scene.control.Tooltip;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.FlowPane;
@@ -74,11 +76,15 @@ public class PersonCard extends UiPart<Region> {
     }
 
     /**
-     * Creates a styled label for the specified tag.
+     * Creates a styled tag label that wraps within the card and shows its full text on hover.
      */
     private Label createTagLabel(String tagName) {
         Label tag = new Label(tagName);
         tag.getStyleClass().add("tag-" + tagName.toLowerCase());
+        tag.setWrapText(true);
+        tag.setMinWidth(0);
+        tag.maxWidthProperty().bind(Bindings.max(1, tags.widthProperty()));
+        tag.setTooltip(new Tooltip(tagName));
         return tag;
     }
 
