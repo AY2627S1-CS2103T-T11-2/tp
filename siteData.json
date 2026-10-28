@@ -98,7 +98,7 @@
         "listing-all-persons-list": "Listing all persons: list",
         "editing-persons-edit": "Editing persons: edit",
         "locating-persons-find": "Locating persons: find",
-        "deleting-contacts-delete": "Deleting contacts: delete",
+        "deleting-contacts-or-optional-fields-delete": "Deleting contacts or optional fields: delete",
         "clearing-all-entries-clear": "Clearing all entries: clear",
         "exiting-the-program-exit": "Exiting the program: exit",
         "saving-the-data": "Saving the data",
