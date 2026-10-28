@@ -87,6 +87,17 @@ public class EditCommandParserTest {
     }
 
     @Test
+    public void parse_nameWithAbbreviation_success() {
+        EditPersonDescriptor descriptor = new EditPersonDescriptorBuilder().withName("Aisyah Bte. Ahmad").build();
+        assertParseSuccess(parser, "1 n/Aisyah Bte. Ahmad", new EditCommand(INDEX_FIRST_PERSON, descriptor));
+    }
+
+    @Test
+    public void parse_nameWithTrailingPeriod_failure() {
+        assertParseFailure(parser, "1 n/John.", Name.MESSAGE_CONSTRAINTS);
+    }
+
+    @Test
     public void parse_repeatedEmptyTags_success() {
         EditPersonDescriptor descriptor = new EditPersonDescriptorBuilder().withTagRemovalCount(2).build();
         assertParseSuccess(parser, "1 t/ t/", new EditCommand(INDEX_FIRST_PERSON, descriptor));

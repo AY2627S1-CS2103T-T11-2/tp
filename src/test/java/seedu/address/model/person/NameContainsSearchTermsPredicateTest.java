@@ -44,6 +44,14 @@ public class NameContainsSearchTermsPredicateTest {
     }
 
     @Test
+    public void test_nameWithInitial_returnsTrue() {
+        Person person = new PersonBuilder().withName("S. Jay").build();
+
+        assertTrue(new NameContainsSearchTermsPredicate(List.of("Jay"), List.of()).test(person));
+        assertTrue(new NameContainsSearchTermsPredicate(List.of(), List.of("S. Jay")).test(person));
+    }
+
+    @Test
     public void test_matchesNeitherKeywordNorPhrase_returnsFalse() {
         NameContainsSearchTermsPredicate predicate =
                 new NameContainsSearchTermsPredicate(List.of("Tan"), List.of("Alice Chen"));

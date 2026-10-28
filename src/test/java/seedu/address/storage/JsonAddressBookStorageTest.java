@@ -129,6 +129,20 @@ public class JsonAddressBookStorageTest {
         assertEquals("JoHn TaN", readBack.getPersonList().getFirst().getName().toString());
         assertEquals(original, new AddressBook(readBack));
     }
+  
+    @Test
+    public void saveAndReadAddressBook_nameWithInitials_preservesName() throws Exception {
+        Path filePath = testFolder.resolve("InitialsAddressBook.json");
+        Person person = new PersonBuilder().withName("M. K. Subramaniam").build();
+        AddressBook original = new AddressBook();
+        original.addPerson(person);
+        JsonAddressBookStorage storage = new JsonAddressBookStorage(filePath);
+
+        storage.saveAddressBook(original);
+        ReadOnlyAddressBook readBack = storage.readAddressBook().orElseThrow();
+
+        assertEquals(person, readBack.getPersonList().getFirst());
+    }
 
     @Test
     public void saveAddressBook_nullAddressBook_throwsNullPointerException() {
