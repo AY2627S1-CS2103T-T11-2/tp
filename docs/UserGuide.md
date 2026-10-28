@@ -20,9 +20,9 @@ TutorTrack is a **desktop application for tutors to manage student contacts, opt
 
 1. Download the latest `.jar` file from [here](https://github.com/AY2627S1-CS2103T-T11-2/tp/releases).
 
-1. Copy the file to the folder you want to use as the _home folder_ for your AddressBook.
+1. Copy the file to the folder you want to use as the _home folder_ for TutorTrack.
 
-1. Open a terminal, `cd` to the folder containing the JAR file, and run `java -jar addressbook.jar`.<br>
+1. Open a terminal, `cd` to the folder containing the JAR file, and run `java -jar tutortrack.jar`.<br>
    A GUI similar to the one below should appear in a few seconds. Note how the app contains some sample data.<br>
    ![Ui](images/Ui.png)
 
@@ -74,7 +74,10 @@ TutorTrack is a **desktop application for tutors to manage student contacts, opt
 
 ### Viewing help: `help`
 
-Opens a help window with a summary of the available commands and a link to the full User Guide.
+Opens a help window with a summary of the available commands and a link to the full User Guide. Close it using the
+window's native close control, <kbd>Command</kbd>+<kbd>W</kbd> on macOS, or <kbd>Alt</kbd>+<kbd>F4</kbd> where
+supported by your operating system. Focus then returns to the command box.
+Press <kbd>Enter</kbd> while the Help window is open to copy the User Guide URL to the clipboard.
 
 Format: `help`
 
@@ -312,18 +315,18 @@ Format: `exit`
 
 ### Saving the data
 
-AddressBook automatically saves data after every command. You do not need to save manually.
+TutorTrack automatically saves data after every command. You do not need to save manually.
 
 ### Editing the data file
 
-AddressBook data is saved automatically as a JSON file `[JAR file location]/data/addressbook.json`. Advanced users are welcome to update data directly by editing that data file.
+TutorTrack data is saved automatically as a JSON file `[JAR file location]/data/tutortrack.json`. Advanced users are welcome to update data directly by editing that data file.
 
 <box type="warning" seamless>
 
 **Caution:**
 
 * **Back up first.** Editing the data file directly is for advanced users; create a backup before making changes.
-* **Invalid data.** If a change makes the file invalid, AddressBook starts with an empty address book at the next run.
+* **Invalid data.** If a change makes the file invalid, TutorTrack starts with an empty address book at the next run.
   The invalid file remains on disk until you run a command, which saves the in-memory data.
 * **Older data.** A non-empty physical address in the JSON `"address"` field does not cause a student record to be
   rejected. TutorTrack loads the record with an empty Telegram handle instead. Values beginning with `@` must also
@@ -343,7 +346,7 @@ _Details coming soon ..._
 ## FAQ
 
 **Q**: How do I transfer my data to another computer?<br>
-**A**: Install the app on the other computer and overwrite the data file it creates with the data file from your previous AddressBook home folder.
+**A**: Install TutorTrack on the other computer and overwrite the data file it creates with the data file from your previous TutorTrack home folder.
 
 ---
 
