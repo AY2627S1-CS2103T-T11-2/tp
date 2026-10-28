@@ -25,12 +25,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import seedu.address.logic.commands.AddCommand;
+import seedu.address.logic.commands.ClearCommand;
 import seedu.address.logic.commands.CommandResult;
 import seedu.address.logic.commands.EditCommand;
 import seedu.address.logic.commands.FindCommand;
 import seedu.address.logic.commands.ListCommand;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.logic.parser.exceptions.ParseException;
+import seedu.address.model.AddressBook;
 import seedu.address.model.Model;
 import seedu.address.model.ModelManager;
 import seedu.address.model.ReadOnlyAddressBook;
@@ -76,6 +78,31 @@ public class LogicManagerTest {
     public void execute_validCommand_success() throws Exception {
         String listCommand = ListCommand.COMMAND_WORD;
         assertCommandSuccess(listCommand, ListCommand.MESSAGE_SUCCESS, model);
+    }
+
+    @Test
+    public void execute_clear_requiresPriorConfirmationRequest() throws Exception {
+        model.addPerson(AMY);
+        Model expectedModel = new ModelManager(model.getAddressBook(), new UserPrefs());
+
+        assertCommandSuccess("clear " + ClearCommand.CONFIRMATION_KEYWORD,
+                ClearCommand.MESSAGE_NO_CONFIRMATION_PENDING, expectedModel);
+        assertCommandSuccess("clear", ClearCommand.MESSAGE_CONFIRMATION_REQUIRED, expectedModel);
+
+        expectedModel.setAddressBook(new AddressBook());
+        assertCommandSuccess("clear " + ClearCommand.CONFIRMATION_KEYWORD,
+                ClearCommand.MESSAGE_SUCCESS, expectedModel);
+    }
+
+    @Test
+    public void execute_clearConfirmationRequest_isCancelledByAnotherCommand() throws Exception {
+        model.addPerson(AMY);
+        Model expectedModel = new ModelManager(model.getAddressBook(), new UserPrefs());
+
+        assertCommandSuccess("clear", ClearCommand.MESSAGE_CONFIRMATION_REQUIRED, expectedModel);
+        assertCommandSuccess(ListCommand.COMMAND_WORD, ListCommand.MESSAGE_SUCCESS, expectedModel);
+        assertCommandSuccess("clear " + ClearCommand.CONFIRMATION_KEYWORD,
+                ClearCommand.MESSAGE_NO_CONFIRMATION_PENDING, expectedModel);
     }
 
     @Test

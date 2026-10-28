@@ -7,6 +7,7 @@ import java.util.logging.Logger;
 import javafx.collections.ObservableList;
 import seedu.address.commons.core.GuiSettings;
 import seedu.address.commons.core.LogsCenter;
+import seedu.address.logic.commands.ClearCommand;
 import seedu.address.logic.commands.Command;
 import seedu.address.logic.commands.CommandResult;
 import seedu.address.logic.commands.exceptions.CommandException;
@@ -30,6 +31,7 @@ public class LogicManager implements Logic {
     private final Model model;
     private final Storage storage;
     private final AddressBookParser addressBookParser;
+    private boolean isClearConfirmationPending;
 
     /**
      * Constructs a {@code LogicManager} with the given {@code Model} and {@code Storage}.
@@ -44,8 +46,28 @@ public class LogicManager implements Logic {
     public CommandResult execute(String commandText) throws CommandException, ParseException {
         logger.info("----------------[USER COMMAND][" + commandText + "]");
 
+        Command command;
+        try {
+            command = addressBookParser.parseCommand(commandText);
+        } catch (ParseException e) {
+            isClearConfirmationPending = false;
+            throw e;
+        }
+
+        if (command instanceof ClearCommand clearCommand) {
+            if (!clearCommand.isConfirmed()) {
+                isClearConfirmationPending = true;
+                return clearCommand.execute(model);
+            }
+            if (!isClearConfirmationPending) {
+                return new CommandResult(ClearCommand.MESSAGE_NO_CONFIRMATION_PENDING);
+            }
+            isClearConfirmationPending = false;
+        } else {
+            isClearConfirmationPending = false;
+        }
+
         CommandResult commandResult;
-        Command command = addressBookParser.parseCommand(commandText);
         commandResult = command.execute(model);
 
         try {

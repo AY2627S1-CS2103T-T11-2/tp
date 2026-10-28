@@ -50,7 +50,7 @@
               <Label styleClass="commandTableAction" text="Add" GridPane.rowIndex="1" />
               <Label styleClass="commandTableFormat" text="add n/NAME e/EMAIL s/SUBJECT g/GROUP [p/PHONE] [h/TELEGRAM_HANDLE] [t/TAG]...&#10;" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="1" />
               <Label styleClass="commandTableAction" text="Clear" GridPane.rowIndex="2" />
-              <Label styleClass="commandTableFormat" text="clear" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+              <Label styleClass="commandTableFormat" text="clear, then clear confirm" GridPane.columnIndex="1" GridPane.rowIndex="2" />
               <Label styleClass="commandTableAction" text="Delete" GridPane.rowIndex="3" />
               <Label styleClass="commandTableFormat" text="delete INDEX_OR_RANGE[,INDEX_OR_RANGE]...&#10;" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="3" />
               <Label styleClass="commandTableAction" text="Edit" GridPane.rowIndex="4" />

@@ -1,6 +1,7 @@
 package seedu.address.logic.parser;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.logic.Messages.MESSAGE_INVALID_COMMAND_FORMAT;
 import static seedu.address.logic.Messages.MESSAGE_UNKNOWN_COMMAND;
@@ -60,8 +61,14 @@ public class AddressBookParserTest {
 
     @Test
     public void parseCommand_clear() throws Exception {
-        assertTrue(parser.parseCommand(ClearCommand.COMMAND_WORD) instanceof ClearCommand);
-        assertTrue(parser.parseCommand(ClearCommand.COMMAND_WORD + " 3") instanceof ClearCommand);
+        ClearCommand request = (ClearCommand) parser.parseCommand(ClearCommand.COMMAND_WORD);
+        ClearCommand confirmation = (ClearCommand) parser.parseCommand(
+                ClearCommand.COMMAND_WORD + " " + ClearCommand.CONFIRMATION_KEYWORD);
+
+        assertFalse(request.isConfirmed());
+        assertTrue(confirmation.isConfirmed());
+        String expectedMessage = String.format(MESSAGE_INVALID_COMMAND_FORMAT, ClearCommand.MESSAGE_USAGE);
+        assertThrows(ParseException.class, expectedMessage, () -> parser.parseCommand(ClearCommand.COMMAND_WORD + " 3"));
     }
 
     @Test
