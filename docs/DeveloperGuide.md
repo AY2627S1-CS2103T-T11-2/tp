@@ -4,7 +4,7 @@
   pageNav: 3
 ---
 
-# AB-3 Developer Guide
+# TutorTrack Developer Guide
 
 <!-- * Table of Contents -->
 <page-nav-print />
@@ -379,7 +379,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 ### Use cases
 
-(For all use cases below, the **System** is the `AddressBook` and the **Actor** is the `user`, unless specified otherwise)
+(For all use cases below, the **System** is the `TutorTrack` and the **Actor** is the `user`, unless specified otherwise)
 
 **Use case: Add a student**
 
