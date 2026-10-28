@@ -151,8 +151,9 @@ Edits one or more persons in the currently displayed list.
 
 Format: `edit INDEX_OR_RANGE[,INDEX_OR_RANGE]... [n/NAME] [p/PHONE] [e/EMAIL] [h/TELEGRAM_HANDLE] [s/SUBJECT] [g/GROUP] [t/TAG]... [t/OLD_TAG,NEW_TAG]...`
 
-At least one field must be supplied. Omitted fields remain unchanged. Supplied non-tag fields replace their
-existing values. Empty values, including whitespace-only values, are rejected; use `delete` to clear optional fields.
+At least one field must be supplied. Omitted fields remain unchanged.
+Fields are replaced by default. Tags can be added using `t/tag`, while a specific tag name can be edited using `edit <index> t/<old_tag>, <new_tag>`.
+Empty values, including whitespace-only values, are rejected; use `delete` to clear optional fields.
 
 #### Selecting persons
 
@@ -185,7 +186,7 @@ existing values. Empty values, including whitespace-only values, are rejected; u
   comma in a rename is trimmed.
 - `t/TAG` adds a tag while preserving existing tags. Matching ignores case: adding `t/student` when `Student`
   exists keeps the existing spelling `Student`.
-- `t/OLD_TAG,NEW_TAG` renames a tag, matching `OLD_TAG` without case and displaying the exact capitalization of
+- `t/OLD_TAG, NEW_TAG` renames a tag, matching `OLD_TAG` without case and displaying the exact capitalization of
   `NEW_TAG`. For example, `t/STUDENT, ONLINE` replaces `Student` with `ONLINE`.
 - If the replacement tag already exists, the two tags merge into one using the replacement's capitalization.
   The renamed tag retains its position; any duplicate destination tag is removed.
