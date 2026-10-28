@@ -12,17 +12,22 @@ public class Name {
     public static final int MAX_LENGTH = 100;
 
     public static final String MESSAGE_CONSTRAINTS =
-            "Names should contain at most " + MAX_LENGTH + " characters. They may contain alphanumeric words "
-                    + "or single-letter initials ending in a period, separated by single spaces, hyphens, or "
-                    + "apostrophes, and may include D/O between words";
+            "Names should contain at most " + MAX_LENGTH + " characters, using alphanumeric words separated by "
+                    + "single spaces, with hyphens or apostrophes "
+                    + "within words. Initials or short abbreviations of up to three letters may end in a period "
+                    + "when followed by another name, and D/O may appear between name parts";
+
+    private static final String NAME_WORD = "[\\p{Alnum}]+(?:[-'][\\p{Alnum}]+)*";
+    private static final String INITIAL_OR_ABBREVIATION = "[\\p{Alpha}]{1,3}\\.";
+    private static final String NAME_PART = "(?:(?:" + NAME_WORD + "|" + INITIAL_OR_ABBREVIATION + ") )*"
+            + NAME_WORD;
 
     /*
-     * A separator must occur only between alphanumeric words. This prevents leading, trailing, and repeated
-     * separators while allowing names such as {@code Jean-Luc} and {@code O'Connor}.
+     * Hyphens and apostrophes must occur within an alphanumeric word. Periods are limited to initials and short
+     * abbreviations that precede another name word. This prevents leading, trailing, and repeated separators while
+     * allowing names such as {@code Jean-Luc}, {@code O'Connor}, {@code S. Jay}, and {@code Aisyah Bte. Ahmad}.
      */
-    private static final String NAME_WORD = "(?:[\\p{Alnum}]+(?:[-'][\\p{Alnum}]+)*|[A-Za-z]\\.)";
-    public static final String VALIDATION_REGEX = NAME_WORD + "(?: " + NAME_WORD + ")*"
-            + "(?: D/O " + NAME_WORD + "(?: " + NAME_WORD + ")*)?";
+    public static final String VALIDATION_REGEX = NAME_PART + "(?: D/O " + NAME_PART + ")?";
 
     public final String fullName;
 

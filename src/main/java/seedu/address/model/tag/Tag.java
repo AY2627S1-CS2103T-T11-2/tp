@@ -13,8 +13,8 @@ import java.util.Locale;
 public class Tag {
 
     public static final int MAX_LENGTH = 50;
-    public static final String MESSAGE_CONSTRAINTS = "Tag names should be non-blank, alphanumeric, and at most "
-            + MAX_LENGTH + " characters long";
+    public static final String MESSAGE_CONSTRAINTS = "Tag names should be non-blank, alphanumeric without spaces, "
+            + "and at most " + MAX_LENGTH + " characters long";
     public static final String VALIDATION_REGEX = "\\p{Alnum}+";
 
     public final String tagName;

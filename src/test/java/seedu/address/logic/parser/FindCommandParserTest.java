@@ -183,6 +183,31 @@ public class FindCommandParserTest {
                 Messages.getErrorMessageForDuplicatePrefixes(PREFIX_NAME));
     }
 
+    @Test
+    public void parse_unknownPrefix_throwsParseException() {
+        String expectedMessage = String.format(MESSAGE_INVALID_COMMAND_FORMAT, FindCommand.MESSAGE_USAGE);
+
+        assertParseFailure(parser, "g/T11 x/typo", expectedMessage);
+        assertParseFailure(parser, "g/T11 x/", expectedMessage);
+        assertParseFailure(parser, "n/Alice h/@alice_tan s/CS3434 g/T11 t/consultation x/typo",
+                expectedMessage);
+    }
+
+    @Test
+    public void parse_slashesThatAreNotPrefixes_returnsFindCommand() {
+        FindCommand slashGroupCommand = new FindCommand(new FindPredicate(
+                Optional.empty(), Optional.empty(), Optional.of(new Group("T11/T12")), Set.of()));
+        assertParseSuccess(parser, "g/T11/T12", slashGroupCommand);
+
+        FindCommand literalTextCommand = new FindCommand(new FindPredicate(
+                Optional.empty(), Optional.empty(), Optional.of(new Group("T11 x / typo")), Set.of()));
+        assertParseSuccess(parser, "g/T11 x / typo", literalTextCommand);
+
+        FindCommand urlCommand = new FindCommand(new FindPredicate(
+                Optional.empty(), Optional.empty(), Optional.of(new Group("https://example.com/T11")), Set.of()));
+        assertParseSuccess(parser, "g/https://example.com/T11", urlCommand);
+    }
+
     private FindCommand commandWithName(List<String> keywords, List<String> phrases) {
         return new FindCommand(new FindPredicate(
                 Optional.of(new NameContainsSearchTermsPredicate(keywords, phrases)),

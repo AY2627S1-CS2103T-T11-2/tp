@@ -188,6 +188,9 @@ The `Model` component,
 * stores the address book data i.e., all `Person` objects (which are contained in a `UniquePersonList` object).
 * represents a person's Telegram contact using `TelegramHandle`; an empty value represents an omitted handle.
 * stores non-empty phone numbers as eight digits with a single space after the fourth digit (`xxxx xxxx`).
+* identifies people by name using `Person.isSamePerson`. Identity comparison ignores letter case, while the `Name`
+  value object retains case-sensitive equality and preserves the spelling entered for storage and display. Therefore,
+  distinct people with the same name cannot coexist (issue #97 remains unresolved).
 * stores tags in a `LinkedHashSet`, preserving entry order through parsing, editing, JSON storage, and display.
   `Tag.equals` and `hashCode` are case-insensitive; the first spelling supplied is retained when duplicates occur.
 * stores the `Person` objects selected by the current filter, such as search results, in a separate _filtered_ list. It exposes this list as an unmodifiable `ObservableList<Person>` that the UI can observe and bind to, so the UI updates when the list changes.
@@ -225,6 +228,11 @@ the person. Values beginning with `@` must also satisfy the current Telegram-han
 cleared. This is not a migration and no backup is created. The original JSON remains unchanged until the next
 successfully executed command causes `LogicManager` to save the in-memory data, at which point the old physical
 address is overwritten with an empty `"address"` value.
+
+JSON files that already contain names differing only by capitalization, such as `John Tan` and `john tan`, now fail
+validation as duplicate data. Loading is all-or-nothing: TutorTrack does not silently discard, merge, or rewrite either
+record. An automatic migration would risk merging distinct students, so the safe recovery is to back up the JSON file
+and give one record a genuinely distinct name before loading it again.
 
 ### Common classes
 
@@ -387,7 +395,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 **MSS**
 
-1. TA requests to add a student with a name and optional particulars.
+1. TA requests to add a student with a name, email, subject, and group, plus any optional particulars.
 2. TutorTrack validates the supplied particulars.
 3. TutorTrack adds the student.
 4. TutorTrack confirms that the student was added.
@@ -400,7 +408,7 @@ Use case ends.
     * 2a1. TutorTrack shows the corresponding error message.
     * Use case ends.
 
-* 2b. A student with the same name already exists.
+* 2b. A student with the same name, ignoring letter case, already exists.
     * 2b1. TutorTrack shows an error message.
     * Use case ends.
 
@@ -427,9 +435,12 @@ Use case ends.
     * 3a1. TutorTrack shows the corresponding error message.
     * Use case ends.
 
-* 3b. The new name is already used by another student.
+* 3b. The new name is already used by another student, ignoring letter case.
     * 3b1. TutorTrack shows an error message.
     * Use case ends.
+
+Capitalization-only name edits refer to the same selected student and are accepted. The replacement `Name` is stored,
+so the newly entered capitalization appears in subsequent displays and saves.
 
 **Use case: Edit multiple students' common particulars**
 
@@ -566,7 +577,42 @@ testers are expected to do more *exploratory* testing.
    1. Other incorrect delete commands to try: `delete`, `delete x`, `...` (where x is larger than the list size)<br>
       Expected: Similar to previous.
 
+1. Deleting a contact from a filtered list
+
+   1. Prerequisites: Filter the displayed person list using `find n/Alice`.
+
+   1. Test case: `delete 1`<br>
+      Expected: The first contact in the displayed list is deleted. The list then shows all remaining contacts.
+
 1. _{ more test cases … }_
+
+### Adding students
+
+1. Adding a student with all fields
+
+   1. Test case: `add n/Alice Tan p/91234567 e/alice@example.com h/@alice_tan s/Mathematics g/Sec 3A t/Student`<br>
+      Expected: Alice is added. The phone is displayed as `9123 4567`, and all supplied fields are shown.
+
+1. Adding a student without optional fields
+
+   1. Test case: `add n/Bob Lee e/bob@example.com s/Physics g/J1A`<br>
+      Expected: Bob is added without a phone number, Telegram handle, or tags; no empty contact labels are shown.
+
+1. Adding a student whose name contains initials or a short abbreviation
+
+   1. Test case: `add n/Aisyah Bte. Ahmad e/aisyah@example.com s/Mathematics g/T11`<br>
+      Expected: Aisyah is added with the name stored as `Aisyah Bte. Ahmad`.
+
+   1. Test case: Replace the name above with `John..Tan`, `.John`, or `John.`.<br>
+      Expected: No student is added. The status message shows the name constraints.
+
+1. Rejecting malformed input without changing data
+
+   1. Test case: `add n/Charlie Lim e/charlie@example.com s/Mathematics g/T11 x/typo`<br>
+      Expected: No student is added. The status message shows the `add` command usage because `x/` is unknown.
+
+   1. Test case: Repeat either successful command above with the same name but different contact details.<br>
+      Expected: No second student is added. The status message reports that the student already exists.
 
 ### Edit command
 
@@ -581,12 +627,18 @@ The following diagram shows parsing, validation, tag-removal requests, and const
 The parser rejects unknown parameter-like tokens such as `x/typo`, the legacy `a/` prefix,
 and repeated non-tag prefixes. Shared value objects validate supplied fields: `Phone` requires
 eight digits and stores `xxxx xxxx`, while `Email` accepts hyphens inside domain labels,
-including the final label, whose total length must be at least two characters.
+including the final label, whose total length must be at least two characters. `Name` accepts
+periods only after one-to-three-letter initials or abbreviations that precede another name word.
 
 For backward compatibility, an index expression that selects exactly one index produces
 an `EditCommand` using the existing index-based constructor. This preserves the original
 single-person edit workflow and allows name, phone, email, Telegram handle, subject, group, and
 tags to be edited.
+
+Single-person duplicate validation uses `Person.isSamePerson`, as does `UniquePersonList.contains` and
+`UniquePersonList.setPerson`. Names are compared without regard to letter case. Because `setPerson` first checks
+whether the target and edited person have the same identity, capitalization-only edits are allowed; the edited
+`Person` still contains the newly supplied `Name`, preserving its capitalization.
 
 When multiple indexes are selected, `EditCommandParser` constructs an `IndexPersonTarget`. `IndexPersonTarget` implements the `PersonTarget` interface and
 resolves its ranges against the currently displayed person list when the command is
@@ -619,9 +671,11 @@ so changes to the filtered list cannot cause later selected people to be skipped
 
 <puml src="diagrams/EditSequenceDiagram.puml" alt="Bulk edit execution and saving sequence diagram" />
 
-Both single and bulk edits leave the current filter active, matching `delete`. The filtered
-list is reevaluated as people are replaced; edited people that no longer match disappear
-from the view. `LogicManager` saves the address book after successful execution.
+Both single and bulk edits leave the current filter active. The filtered list is reevaluated
+as people are replaced, so edited people that no longer match disappear from the view. In
+contrast, `delete` resolves indexes against the currently displayed list and resets a successful
+deletion to show all remaining people. `LogicManager` saves the address book after successful
+execution.
 
 ### Finding persons
 

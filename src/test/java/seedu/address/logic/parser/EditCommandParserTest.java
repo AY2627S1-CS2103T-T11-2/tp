@@ -87,14 +87,21 @@ public class EditCommandParserTest {
     }
 
     @Test
-    public void parse_repeatedEmptyTags_success() {
-        EditPersonDescriptor descriptor = new EditPersonDescriptorBuilder().withTagRemovalCount(2).build();
-        assertParseSuccess(parser, "1 t/ t/", new EditCommand(INDEX_FIRST_PERSON, descriptor));
-        assertParseSuccess(parser, "1 t/   t/ \t t/", new EditCommand(INDEX_FIRST_PERSON,
-                new EditPersonDescriptorBuilder().withTagRemovalCount(3).build()));
-        IndexPersonTarget target = new IndexPersonTarget(List.of(
-                new IndexRange(INDEX_FIRST_PERSON, INDEX_SECOND_PERSON)));
-        assertParseSuccess(parser, "1-2 t/ t/", new EditCommand(target, descriptor));
+    public void parse_nameWithAbbreviation_success() {
+        EditPersonDescriptor descriptor = new EditPersonDescriptorBuilder().withName("Aisyah Bte. Ahmad").build();
+        assertParseSuccess(parser, "1 n/Aisyah Bte. Ahmad", new EditCommand(INDEX_FIRST_PERSON, descriptor));
+    }
+
+    @Test
+    public void parse_nameWithTrailingPeriod_failure() {
+        assertParseFailure(parser, "1 n/John.", Name.MESSAGE_CONSTRAINTS);
+    }
+
+    @Test
+    public void parse_repeatedEmptyTags_failure() {
+        for (String input : List.of("1 t/ t/", "1 t/   t/ \t t/", "1-2 t/ t/")) {
+            assertParseFailure(parser, input, Tag.MESSAGE_CONSTRAINTS);
+        }
     }
 
     @Test
@@ -130,25 +137,12 @@ public class EditCommandParserTest {
         parser.parse("1 t/Student t/student t/STUDENT").execute(model);
 
         var tags = model.getFilteredPersonList().getFirst().getTags();
-        assertEquals(1, tags.size());
-        assertEquals("Student", tags.iterator().next().tagName);
+        assertEquals(List.of("old", "Student"), tags.stream().map(tag -> tag.tagName).toList());
     }
 
     @Test
-    public void parse_emptyTag_removesOnlyLastTag() throws Exception {
-        Model model = new ModelManager();
-        model.addPerson(new PersonBuilder().withTags("Student", "Online").build());
-        parser.parse("1 t/").execute(model);
-        assertEquals(List.of("Student"),
-                model.getFilteredPersonList().getFirst().getTags().stream().map(tag -> tag.tagName).toList());
-    }
-
-    @Test
-    public void parse_repeatedEmptyTags_clearsExistingTags() throws Exception {
-        Model model = new ModelManager();
-        model.addPerson(new PersonBuilder().withTags("Student", "Online").build());
-        parser.parse("1 t/ t/").execute(model);
-        assertEquals(0, model.getFilteredPersonList().getFirst().getTags().size());
+    public void parse_emptyTag_failure() {
+        assertParseFailure(parser, "1 t/", Tag.MESSAGE_CONSTRAINTS);
     }
 
     @Test
@@ -189,8 +183,7 @@ public class EditCommandParserTest {
         // invalid phone followed by valid email
         assertParseFailure(parser, "1" + INVALID_PHONE_DESC + EMAIL_DESC_AMY, Phone.MESSAGE_CONSTRAINTS);
 
-        // while parsing {@code PREFIX_TAG} alone will reset the tags of the {@code Person} being edited,
-        // parsing it together with a valid tag results in error
+        // Empty tag values are rejected even alongside valid additions.
         assertParseFailure(parser, "1" + TAG_DESC_FRIEND + TAG_DESC_HUSBAND + TAG_EMPTY, Tag.MESSAGE_CONSTRAINTS);
         assertParseFailure(parser, "1" + TAG_DESC_FRIEND + TAG_EMPTY + TAG_DESC_HUSBAND, Tag.MESSAGE_CONSTRAINTS);
         assertParseFailure(parser, "1" + TAG_EMPTY + TAG_DESC_FRIEND + TAG_DESC_HUSBAND, Tag.MESSAGE_CONSTRAINTS);
@@ -317,17 +310,6 @@ public class EditCommandParserTest {
     }
 
     @Test
-    public void parse_resetTags_success() {
-        Index targetIndex = INDEX_THIRD_PERSON;
-        String userInput = targetIndex.getOneBased() + TAG_EMPTY;
-
-        EditPersonDescriptor descriptor = new EditPersonDescriptorBuilder().withTagRemovalCount(1).build();
-        EditCommand expectedCommand = new EditCommand(targetIndex, descriptor);
-
-        assertParseSuccess(parser, userInput, expectedCommand);
-    }
-
-    @Test
     public void parse_multipleIndexesAllowedFields_success() {
         String userInput = "1-3"
                 + SUBJECT_DESC_AMY
@@ -339,7 +321,7 @@ public class EditCommandParserTest {
         EditPersonDescriptor descriptor = new EditPersonDescriptorBuilder()
                 .withSubject(VALID_SUBJECT_AMY)
                 .withGroup(VALID_GROUP_AMY)
-                .withTags(VALID_TAG_FRIEND, VALID_TAG_HUSBAND)
+                .withTags(VALID_TAG_FRIEND, VALID_TAG_FRIEND, VALID_TAG_HUSBAND)
                 .build();
 
         IndexPersonTarget target = new IndexPersonTarget(List.of(
@@ -355,9 +337,7 @@ public class EditCommandParserTest {
                 NAME_DESC_AMY,
                 PHONE_DESC_AMY,
                 EMAIL_DESC_AMY,
-                TELEGRAM_HANDLE_DESC_AMY,
-                " " + PREFIX_PHONE,
-                EMPTY_TELEGRAM_DESC);
+                TELEGRAM_HANDLE_DESC_AMY);
 
         for (String field : disallowedFields) {
             assertParseFailure(
@@ -368,17 +348,8 @@ public class EditCommandParserTest {
     }
 
     @Test
-    public void parse_multipleIndexesResetTags_success() {
-        EditPersonDescriptor descriptor =
-                new EditPersonDescriptorBuilder().withTagRemovalCount(1).build();
-
-        IndexPersonTarget target = new IndexPersonTarget(List.of(
-                new IndexRange(INDEX_FIRST_PERSON, INDEX_THIRD_PERSON)));
-
-        assertParseSuccess(
-                parser,
-                "1-3" + TAG_EMPTY,
-                new EditCommand(target, descriptor));
+    public void parse_multipleIndexesEmptyTags_failure() {
+        assertParseFailure(parser, "1-3" + TAG_EMPTY, Tag.MESSAGE_CONSTRAINTS);
     }
 
     @Test
@@ -395,28 +366,16 @@ public class EditCommandParserTest {
     }
 
     @Test
-    public void parse_clearPhone_success() {
-        EditPersonDescriptor descriptor = new EditPersonDescriptorBuilder().withPhone("").build();
-        EditCommand expectedCommand = new EditCommand(INDEX_FIRST_PERSON, descriptor);
-        assertParseSuccess(parser, "1 p/", expectedCommand);
-        assertParseSuccess(parser, "1 p/ \t ", expectedCommand);
+    public void parse_emptyPhone_failure() {
+        assertParseFailure(parser, "1 p/", EditCommand.MESSAGE_EMPTY_FIELD);
+        assertParseFailure(parser, "1 p/ \t ", EditCommand.MESSAGE_EMPTY_FIELD);
+        assertParseFailure(parser, "1-2 p/", EditCommand.MESSAGE_EMPTY_FIELD);
     }
 
     @Test
-    public void parse_clearTelegramHandle_success() {
-        EditPersonDescriptor descriptor = new EditPersonDescriptorBuilder().withTelegramHandle("").build();
-        EditCommand expectedCommand = new EditCommand(INDEX_FIRST_PERSON, descriptor);
-        assertParseSuccess(parser, "1 h/", expectedCommand);
-        assertParseSuccess(parser, "1 h/ \t ", expectedCommand);
-    }
-
-    @Test
-    public void parse_clearAllOptionalFields_success() {
-        EditPersonDescriptor descriptor = new EditPersonDescriptorBuilder()
-                .withPhone("").withTelegramHandle("").withTagRemovalCount(1).build();
-        EditCommand expectedCommand = new EditCommand(INDEX_FIRST_PERSON, descriptor);
-        assertParseSuccess(parser, "1 p/ h/ t/", expectedCommand);
-        assertParseSuccess(parser, "1 t/ \t h/ \t p/ \t ", expectedCommand);
+    public void parse_emptyTelegramHandle_failure() {
+        assertParseFailure(parser, "1 h/", EditCommand.MESSAGE_EMPTY_FIELD);
+        assertParseFailure(parser, "1 h/ \t ", EditCommand.MESSAGE_EMPTY_FIELD);
     }
 
     @Test

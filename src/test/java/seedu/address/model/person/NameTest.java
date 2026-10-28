@@ -37,6 +37,11 @@ public class NameTest {
         assertFalse(Name.isValidName("Abdul D/O")); // relationship qualifier must be between words
         assertFalse(Name.isValidName("Abdul X/O Rahmud")); // unsupported slash-containing component
         assertFalse(Name.isValidName("a".repeat(Name.MAX_LENGTH + 1))); // exceeds maximum length
+        assertFalse(Name.isValidName("John..Tan")); // repeated periods
+        assertFalse(Name.isValidName(".John")); // starts with a period
+        assertFalse(Name.isValidName("John.")); // ends with an abbreviation-like component
+        assertFalse(Name.isValidName("John.Tan")); // period is not followed by a space
+        assertFalse(Name.isValidName("Abcd. Tan")); // abbreviations are limited to three letters
 
         // valid name
         assertTrue(Name.isValidName("peter jack")); // alphabets only
@@ -46,11 +51,16 @@ public class NameTest {
         assertTrue(Name.isValidName("David Roger Jackson Ray Jr 2nd")); // long names
         assertTrue(Name.isValidName("Jean-Luc Tan")); // hyphenated name
         assertTrue(Name.isValidName("O'Connor")); // apostrophe in name
-        assertTrue(Name.isValidName("S. Jay"));
-        assertTrue(Name.isValidName("A. R. Rahman"));
-        assertTrue(Name.isValidName("Lee Mei-Ling"));
         assertTrue(Name.isValidName("Abdul Binte D/O Rahmud"));
         assertTrue(Name.isValidName("a".repeat(Name.MAX_LENGTH))); // exactly maximum length
+        assertTrue(Name.isValidName("S. Jay")); // initial
+        assertTrue(Name.isValidName("A. R. Rahman")); // multiple initials
+        assertTrue(Name.isValidName("M. K. Subramaniam")); // multiple initials with a long surname
+        assertTrue(Name.isValidName("John A. Tan")); // middle initial
+        assertTrue(Name.isValidName("Aisyah Bte. Ahmad")); // short abbreviation
+        assertTrue(Name.isValidName("Tan Wei Ming")); // common unpunctuated name
+        assertTrue(Name.isValidName("Lee Mei-Ling")); // common hyphenated name
+        assertTrue(Name.isValidName("Nur Aisyah Binte Ahmad")); // common unabbreviated name
     }
 
     @Test

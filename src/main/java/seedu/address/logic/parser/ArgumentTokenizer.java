@@ -35,16 +35,17 @@ public class ArgumentTokenizer {
     }
 
     /**
-     * Returns whether {@code argsString} contains a parameter-like prefix outside {@code allowedPrefixes}.
-     * An exact {@code D/O} token is treated as name text only while the active parameter is {@code namePrefix}.
+     * Returns true if {@code argsString} contains a parameter-like token that is not one of {@code prefixes}.
+     * Embedded slashes and URLs are not treated as parameter prefixes. An exact {@code D/O} token is treated as
+     * name text only while the active parameter is {@code n/}.
      */
     public static boolean containsUnknownPrefix(String argsString, Prefix... prefixes) {
-        List<Prefix> allowedPrefixes = List.of(prefixes);
+        List<Prefix> recognizedPrefixes = List.of(prefixes);
         Matcher matcher = PARAMETER_PREFIX.matcher(argsString);
         Prefix activePrefix = null;
         while (matcher.find()) {
             Prefix matchedPrefix = new Prefix(matcher.group());
-            if (allowedPrefixes.contains(matchedPrefix)) {
+            if (recognizedPrefixes.contains(matchedPrefix)) {
                 activePrefix = matchedPrefix;
             } else if (!isNameRelationshipQualifier(argsString, matcher, activePrefix)) {
                 return true;
@@ -62,7 +63,6 @@ public class ArgumentTokenizer {
                 && (qualifierEnd == argsString.length()
                         || Character.isWhitespace(argsString.charAt(qualifierEnd)));
     }
-
     /**
      * Finds all zero-based prefix positions in the given arguments string.
      *
