@@ -23,6 +23,7 @@ import static seedu.address.testutil.TypicalPersons.getTypicalAddressBook;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
 
@@ -47,7 +48,7 @@ public class EditCommandTest {
 
     @Test
     public void execute_allFieldsSpecifiedUnfilteredList_success() {
-        Person editedPerson = new PersonBuilder().build();
+        Person editedPerson = new PersonBuilder().withTags("friends").build();
         EditPersonDescriptor descriptor = new EditPersonDescriptorBuilder(editedPerson).build();
         EditCommand editCommand = new EditCommand(INDEX_FIRST_PERSON, descriptor);
 
@@ -113,39 +114,29 @@ public class EditCommandTest {
     }
 
     @Test
-    public void execute_clearPhone_preservesOtherFields() {
+    public void execute_editPhone_preservesOtherFields() {
         Person originalPerson = model.getFilteredPersonList().get(0);
-        Person editedPerson = new PersonBuilder(originalPerson).withPhone("").build();
-        EditPersonDescriptor descriptor = new EditPersonDescriptorBuilder().withPhone("").build();
+        Person editedPerson = new PersonBuilder(originalPerson).withPhone(VALID_PHONE_BOB).build();
+        EditPersonDescriptor descriptor = new EditPersonDescriptorBuilder().withPhone(VALID_PHONE_BOB).build();
 
         assertOptionalFieldsEdited(descriptor, editedPerson);
     }
 
     @Test
-    public void execute_clearTelegramHandle_preservesOtherFields() {
+    public void execute_editTelegramHandle_preservesOtherFields() {
         Person originalPerson = model.getFilteredPersonList().get(0);
-        Person editedPerson = new PersonBuilder(originalPerson).withTelegramHandle("").build();
-        EditPersonDescriptor descriptor = new EditPersonDescriptorBuilder().withTelegramHandle("").build();
-
-        assertOptionalFieldsEdited(descriptor, editedPerson);
-    }
-
-    @Test
-    public void execute_clearTags_preservesOtherFields() {
-        Person originalPerson = model.getFilteredPersonList().get(0);
-        Person editedPerson = new PersonBuilder(originalPerson).withTags().build();
-        EditPersonDescriptor descriptor = new EditPersonDescriptorBuilder().withTags().build();
-
-        assertOptionalFieldsEdited(descriptor, editedPerson);
-    }
-
-    @Test
-    public void execute_clearAllOptionalFields_preservesCompulsoryFields() {
-        Person originalPerson = model.getFilteredPersonList().get(0);
-        Person editedPerson = new PersonBuilder(originalPerson).withPhone("").withTelegramHandle("").withTags().build();
+        Person editedPerson = new PersonBuilder(originalPerson).withTelegramHandle(VALID_TELEGRAM_HANDLE_AMY).build();
         EditPersonDescriptor descriptor = new EditPersonDescriptorBuilder()
-                .withPhone("").withTelegramHandle("").withTags().build();
+                .withTelegramHandle(VALID_TELEGRAM_HANDLE_AMY).build();
 
+        assertOptionalFieldsEdited(descriptor, editedPerson);
+    }
+
+    @Test
+    public void execute_addTag_preservesExistingTagsAndOtherFields() {
+        Person originalPerson = model.getFilteredPersonList().get(0);
+        Person editedPerson = new PersonBuilder(originalPerson).withTags("friends", "Student").build();
+        EditPersonDescriptor descriptor = new EditPersonDescriptorBuilder().withTags("Student").build();
         assertOptionalFieldsEdited(descriptor, editedPerson);
     }
 
@@ -347,7 +338,8 @@ public class EditCommandTest {
                 .map(person -> new PersonBuilder(person)
                         .withSubject(VALID_SUBJECT_AMY)
                         .withGroup(VALID_GROUP_AMY)
-                        .withTags(VALID_TAG_FRIEND, VALID_TAG_HUSBAND)
+                        .withTags(Stream.concat(person.getTags().stream().map(tag -> tag.tagName),
+                                Stream.of(VALID_TAG_FRIEND, VALID_TAG_HUSBAND)).toArray(String[]::new))
                         .build())
                 .toList();
 
@@ -432,20 +424,4 @@ public class EditCommandTest {
             .hasSinglePersonOnlyFields());
     }
 
-    @Test
-    public void execute_multipleIndexesEmptyTags_clearsTags() throws CommandException {
-        Person unaffectedPerson = model.getFilteredPersonList().get(2);
-        EditPersonDescriptor descriptor = new EditPersonDescriptorBuilder()
-                .withTags()
-                .build();
-        IndexPersonTarget target = new IndexPersonTarget(List.of(
-                new IndexRange(INDEX_FIRST_PERSON, INDEX_SECOND_PERSON)));
-
-        CommandResult result = new EditCommand(target, descriptor).execute(model);
-
-        assertTrue(model.getFilteredPersonList().get(0).getTags().isEmpty());
-        assertTrue(model.getFilteredPersonList().get(1).getTags().isEmpty());
-        assertEquals(unaffectedPerson, model.getFilteredPersonList().get(2));
-        assertTrue(result.getFeedbackToUser().startsWith("Edited 2 persons:"));
-    }
 }

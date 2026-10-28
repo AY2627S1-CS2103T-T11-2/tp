@@ -10,9 +10,11 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 import seedu.address.commons.core.index.Index;
+import seedu.address.logic.Messages;
 import seedu.address.logic.commands.DeleteCommand;
 import seedu.address.logic.commands.IndexPersonTarget;
 import seedu.address.logic.commands.IndexRange;
+import seedu.address.model.tag.Tag;
 
 /**
  * Contains unit tests for {@link DeleteCommandParser}.
@@ -89,6 +91,32 @@ public class DeleteCommandParserTest {
                 DeleteCommand.MESSAGE_USAGE);
 
         assertParseFailure(parser, "1, 3-5,7", expectedMessage);
+    }
+
+    @Test
+    public void parse_compulsoryUnknownOrNonEmptyFields_failure() {
+        String expected = String.format(MESSAGE_INVALID_COMMAND_FORMAT, DeleteCommand.MESSAGE_USAGE);
+        for (String input : List.of("1 n/", "1 e/", "1 s/", "1 g/", "1 a/", "1 x/", "1 t/ t/Student x/",
+                "1 p/91234567", "1 h/@alice_tan", "1 p/ x/typo")) {
+            assertParseFailure(parser, input, expected);
+        }
+    }
+
+    @Test
+    public void parse_repeatedOptionalFields_failure() {
+        assertParseFailure(parser, "1 p/ p/",
+                Messages.getErrorMessageForDuplicatePrefixes(CliSyntax.PREFIX_PHONE));
+        assertParseFailure(parser, "1 p/extra p/",
+                Messages.getErrorMessageForDuplicatePrefixes(CliSyntax.PREFIX_PHONE));
+        assertParseFailure(parser, "1 h/ h/",
+                Messages.getErrorMessageForDuplicatePrefixes(CliSyntax.PREFIX_TELEGRAM_HANDLE));
+    }
+
+    @Test
+    public void parse_invalidTagNames_failure() {
+        for (String value : List.of("Two words", "Student,Online", "Invalid!")) {
+            assertParseFailure(parser, "1 t/" + value, Tag.MESSAGE_CONSTRAINTS);
+        }
     }
 
     /**
