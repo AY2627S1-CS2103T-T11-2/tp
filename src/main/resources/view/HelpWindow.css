@@ -1,25 +1,25 @@
 #copyButton, #helpMessage, #commandSummaryTitle, .commandTableHeader, .commandTableAction, .commandTableFormat {
-    -fx-text-fill: white;
+    -fx-text-fill: #24211D;
 }
 
 #copyButton {
-    -fx-background-color: #1599dc;
+    -fx-background-color: #C96E50;
 }
 
 #copyButton:hover {
-    -fx-background-color: #1599dc;
+    -fx-background-color: #B04A36;
 }
 
 #copyButton:armed {
-    -fx-background-color: #294c60;
+    -fx-background-color: #A85A41;
 }
 
 #helpMessageContainer {
-    -fx-background-color: #001b2e;
+    -fx-background-color: #F7F3EC;
 }
 
 #helpWindowContainer {
-    -fx-background-color: #001b2e;
+    -fx-background-color: #F7F3EC;
 }
 
 #commandSummaryTitle {

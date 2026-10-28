@@ -24,7 +24,7 @@ TutorTrack is a **desktop application for tutors to manage student records, opti
 
 1. Open a terminal, `cd` to the folder containing the JAR file, and run `java -jar tutortrack.jar`.<br>
    A GUI similar to the one below should appear in a few seconds. Note how the app contains some sample data.<br>
-   ![Ui](images/Ui.png)
+   ![TutorTrack initial screen](images/Ui.png)
 
 1. Type a command in the command box and press Enter to execute it. For example, type **`help`** and press Enter to open the help window.<br>
    Some example commands you can try:
@@ -210,6 +210,10 @@ Examples:
 * `edit 1-3 s/CS3240 g/T11 t/Graduate t/online` Updates the subject, group, and tags of the first three displayed students.
 * `find n/Alice` followed by `edit 1 g/T12` Updates the first matching student's group and keeps the name filter active.
 
+The following example shows a bulk edit that updates a group, adds a tag, and renames an existing tag.
+
+![Bulk edit result](images/EditUi.png)
+
 ### Locating students: `find`
 
 Finds students by name, Telegram handle, subject, group, tag, or a combination of these criteria.
@@ -244,7 +248,10 @@ Examples:
 * `find s/CS2103T g/T11` returns students in group `T11` whose subject is `CS2103T`.
 * `find t/highParticipation,needsHelp` returns students tagged `highParticipation` or `needsHelp`.
 * `find t/highParticipation&needsHelp` returns students tagged with both `highParticipation` and `needsHelp`.
-  ![result for 'find n/alex,david'](images/findAlexDavidResult.png)
+
+The following example shows a combined subject, group, and tag search.
+
+![Combined find result](images/FindUi.png)
 
 ### Deleting students or optional fields: `delete`
 

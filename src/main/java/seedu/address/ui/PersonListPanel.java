@@ -15,6 +15,7 @@ import seedu.address.model.person.Person;
  */
 public class PersonListPanel extends UiPart<Region> {
     private static final String FXML = "PersonListPanel.fxml";
+    private static final double PERSON_CARD_CELL_HEIGHT = 132;
     private final Logger logger = LogsCenter.getLogger(PersonListPanel.class);
 
     @FXML
@@ -26,6 +27,7 @@ public class PersonListPanel extends UiPart<Region> {
     public PersonListPanel(ObservableList<Person> personList) {
         super(FXML);
         personListView.setItems(personList);
+        personListView.setFixedCellSize(PERSON_CARD_CELL_HEIGHT);
         personListView.setCellFactory(listView -> new PersonListViewCell());
     }
 
