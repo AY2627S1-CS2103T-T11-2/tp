@@ -8,12 +8,9 @@ import static seedu.address.logic.parser.CliSyntax.PREFIX_SUBJECT;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_TAG;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_TELEGRAM_HANDLE;
 
-import java.util.Set;
-
 import seedu.address.logic.commands.AddCommand;
 import seedu.address.logic.commands.EditCommand.EditPersonDescriptor;
 import seedu.address.model.person.Person;
-import seedu.address.model.tag.Tag;
 
 /**
  * A utility class for Person.
@@ -56,14 +53,13 @@ public class PersonUtil {
                 sb.append(PREFIX_TELEGRAM_HANDLE).append(telegramHandle.value).append(" "));
         descriptor.getSubject().ifPresent(subject -> sb.append(PREFIX_SUBJECT).append(subject.subject).append(" "));
         descriptor.getGroup().ifPresent(group -> sb.append(PREFIX_GROUP).append(group.group).append(" "));
-        if (descriptor.getTags().isPresent()) {
-            Set<Tag> tags = descriptor.getTags().get();
-            if (tags.isEmpty()) {
-                sb.append(PREFIX_TAG);
-            } else {
-                tags.forEach(s -> sb.append(PREFIX_TAG).append(s.tagName).append(" "));
+        descriptor.getTagEdits().forEach(edit -> {
+            sb.append(PREFIX_TAG);
+            if (edit.oldName() != null) {
+                sb.append(edit.oldName()).append(",");
             }
-        }
+            sb.append(edit.newName()).append(" ");
+        });
         return sb.toString();
     }
 }

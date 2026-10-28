@@ -13,8 +13,14 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import javafx.application.Platform;
+import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.layout.FlowPane;
+import seedu.address.logic.commands.Command;
+import seedu.address.logic.commands.exceptions.CommandException;
+import seedu.address.logic.parser.AddressBookParser;
+import seedu.address.model.Model;
+import seedu.address.model.ModelManager;
 import seedu.address.model.person.Person;
 import seedu.address.testutil.PersonBuilder;
 
@@ -52,6 +58,29 @@ public class PersonCardTest {
             assertEquals(160, tagLabel.getMaxWidth());
             tags.resize(0, 40);
             assertEquals(1, tagLabel.getMaxWidth());
+        });
+    }
+
+    @Test
+    public void rename_caseOnlyChange_refreshesDisplayedTag() throws Exception {
+        Model model = new ModelManager();
+        model.addPerson(new PersonBuilder().withTags("Student").build());
+        Command rename = new AddressBookParser().parseCommand("edit 1 t/student,STUDENT");
+        runOnFxThread(() -> {
+            PersonListPanel panel = new PersonListPanel(model.getFilteredPersonList());
+            new Scene(panel.getRoot(), 500, 500);
+            panel.getRoot().applyCss();
+            panel.getRoot().layout();
+            assertTrue(panel.getRoot().lookupAll(".label").stream()
+                    .anyMatch(node -> node instanceof Label label && label.getText().equals("Student")));
+            try {
+                rename.execute(model);
+            } catch (CommandException exception) {
+                throw new AssertionError(exception);
+            }
+            panel.getRoot().layout();
+            assertTrue(panel.getRoot().lookupAll(".label").stream()
+                    .anyMatch(node -> node instanceof Label label && label.getText().equals("STUDENT")));
         });
     }
 

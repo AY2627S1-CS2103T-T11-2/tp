@@ -1,11 +1,9 @@
 package seedu.address.testutil;
 
-import java.util.LinkedHashSet;
-import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import seedu.address.logic.commands.EditCommand.EditPersonDescriptor;
+import seedu.address.logic.commands.TagEdit;
 import seedu.address.model.person.Email;
 import seedu.address.model.person.Group;
 import seedu.address.model.person.Name;
@@ -13,7 +11,6 @@ import seedu.address.model.person.Person;
 import seedu.address.model.person.Phone;
 import seedu.address.model.person.Subject;
 import seedu.address.model.person.TelegramHandle;
-import seedu.address.model.tag.Tag;
 
 /**
  * A utility class to help with building EditPersonDescriptor objects.
@@ -92,26 +89,16 @@ public class EditPersonDescriptorBuilder {
         return this;
     }
     /**
-     * Parses the {@code tags} into a {@code Set<Tag>} and sets it to the {@code EditPersonDescriptor}
+     * Sets tag additions in entry order on the {@code EditPersonDescriptor}
      * that we are building.
      */
     public EditPersonDescriptorBuilder withTags(String... tags) {
-        Set<Tag> tagSet = Stream.of(tags).map(Tag::new).collect(Collectors.toCollection(LinkedHashSet::new));
-        descriptor.setTags(tagSet);
-        return this;
-    }
-
-    /**
-     * Sets the number of tags to remove from the end.
-     */
-    public EditPersonDescriptorBuilder withTagRemovalCount(int count) {
-        descriptor.setTagRemovalCount(count);
+        descriptor.setTagEdits(Stream.of(tags).map(tag -> new TagEdit(null, tag)).toList());
         return this;
     }
 
     public EditPersonDescriptor build() {
         return descriptor;
     }
-
 
 }

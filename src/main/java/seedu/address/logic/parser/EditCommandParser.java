@@ -11,12 +11,14 @@ import static seedu.address.logic.parser.CliSyntax.PREFIX_SUBJECT;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_TAG;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_TELEGRAM_HANDLE;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import seedu.address.logic.commands.EditCommand;
 import seedu.address.logic.commands.EditCommand.EditPersonDescriptor;
 import seedu.address.logic.commands.IndexPersonTarget;
 import seedu.address.logic.commands.IndexRange;
+import seedu.address.logic.commands.TagEdit;
 import seedu.address.logic.parser.exceptions.ParseException;
 
 /**
@@ -60,12 +62,14 @@ public class EditCommandParser implements Parser<EditCommand> {
             editPersonDescriptor.setName(ParserUtil.parseName(argMultimap.getValue(PREFIX_NAME).get()));
         }
         if (argMultimap.getValue(PREFIX_PHONE).isPresent()) {
+            rejectEmptyValue(argMultimap.getValue(PREFIX_PHONE).get());
             editPersonDescriptor.setPhone(ParserUtil.parsePhone(argMultimap.getValue(PREFIX_PHONE).get()));
         }
         if (argMultimap.getValue(PREFIX_EMAIL).isPresent()) {
             editPersonDescriptor.setEmail(ParserUtil.parseEmail(argMultimap.getValue(PREFIX_EMAIL).get()));
         }
         if (argMultimap.getValue(PREFIX_TELEGRAM_HANDLE).isPresent()) {
+            rejectEmptyValue(argMultimap.getValue(PREFIX_TELEGRAM_HANDLE).get());
             editPersonDescriptor.setTelegramHandle(
                     ParserUtil.parseTelegramHandle(argMultimap.getValue(PREFIX_TELEGRAM_HANDLE).get()));
         }
@@ -107,20 +111,25 @@ public class EditCommandParser implements Parser<EditCommand> {
     }
 
     /**
-     * Parses tags in entry order. Each empty prefix requests removal of one tag from the end.
-     * Empty and non-empty values cannot be mixed.
+     * Parses ordered tag additions and renames without discarding repeated operations.
      */
     private void parseTagsForEdit(List<String> tags, EditPersonDescriptor descriptor) throws ParseException {
-        assert tags != null;
-
-        if (tags.isEmpty()) {
-            return;
+        List<TagEdit> edits = new ArrayList<>();
+        for (String value : tags) {
+            String[] names = value.split(",", -1);
+            if (names.length > 2) {
+                throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, EditCommand.MESSAGE_USAGE));
+            }
+            String oldName = names.length == 2 ? ParserUtil.parseTag(names[0]).tagName : null;
+            String newName = ParserUtil.parseTag(names[names.length - 1]).tagName;
+            edits.add(new TagEdit(oldName, newName));
         }
-        if (tags.stream().allMatch(String::isEmpty)) {
-            descriptor.setTagRemovalCount(tags.size());
-        } else {
-            descriptor.setTags(ParserUtil.parseTags(tags));
-        }
+        descriptor.setTagEdits(edits);
     }
 
+    private void rejectEmptyValue(String value) throws ParseException {
+        if (value.isEmpty()) {
+            throw new ParseException(EditCommand.MESSAGE_EMPTY_FIELD);
+        }
+    }
 }
