@@ -35,7 +35,6 @@ public class MainWindow extends UiPart<Stage> {
     private Stage primaryStage;
     private Logic logic;
     private Path dataFilePath;
-
     // Independent Ui parts residing in this Ui container
     private PersonListPanel personListPanel;
     private ResultDisplay resultDisplay;
@@ -71,7 +70,6 @@ public class MainWindow extends UiPart<Stage> {
         this.primaryStage = primaryStage;
         this.logic = logic;
         this.dataFilePath = dataFilePath;
-
         // Configure the UI
         setWindowDefaultSize(logic.getGuiSettings());
 
@@ -80,6 +78,7 @@ public class MainWindow extends UiPart<Stage> {
         helpWindow = new HelpWindow();
     }
 
+    /** Returns the stage that contains this window. */
     public Stage getPrimaryStage() {
         return primaryStage;
     }
@@ -202,6 +201,7 @@ public class MainWindow extends UiPart<Stage> {
         primaryStage.hide();
     }
 
+    /** Returns the panel displaying the current contact list. */
     public PersonListPanel getPersonListPanel() {
         return personListPanel;
     }
