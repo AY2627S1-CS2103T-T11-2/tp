@@ -3,6 +3,8 @@ package seedu.address.logic.parser;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -15,6 +17,8 @@ import java.util.stream.Collectors;
  */
 public class ArgumentTokenizer {
 
+    private static final Pattern PARAMETER_PREFIX = Pattern.compile("(?<!\\S)[A-Za-z][A-Za-z0-9_-]*/(?!/)");
+
     /**
      * Tokenizes an arguments string and returns an {@code ArgumentMultimap} object that maps prefixes to their
      * respective argument values. Only the given prefixes will be recognized in the arguments string.
@@ -26,6 +30,21 @@ public class ArgumentTokenizer {
     public static ArgumentMultimap tokenize(String argsString, Prefix... prefixes) {
         List<PrefixPosition> positions = findAllPrefixPositions(argsString, prefixes);
         return extractArguments(argsString, positions);
+    }
+
+    /**
+     * Returns true if {@code argsString} contains a parameter-like token that is not one of {@code prefixes}.
+     * Embedded slashes and URLs are not treated as parameter prefixes.
+     */
+    public static boolean containsUnknownPrefix(String argsString, Prefix... prefixes) {
+        List<Prefix> recognizedPrefixes = List.of(prefixes);
+        Matcher matcher = PARAMETER_PREFIX.matcher(argsString);
+        while (matcher.find()) {
+            if (!recognizedPrefixes.contains(new Prefix(matcher.group()))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

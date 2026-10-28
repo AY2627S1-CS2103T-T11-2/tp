@@ -105,15 +105,19 @@ The following validation rules apply:
 
 | Field | Prefix | Rules                                                                                                                                          |
 | --- |--------|------------------------------------------------------------------------------------------------------------------------------------------------|
-| Name | `n/`   | Must be non-blank. Alphanumeric words may be separated by single spaces, hyphens, or apostrophes; repeated spaces are normalized to one space. |
+| Name | `n/`   | Must be non-blank. Alphanumeric words may contain hyphens or apostrophes and are separated by single spaces. Initials and short abbreviations of up to three letters may end in a period when followed by another name, for example `S. Jay` or `Aisyah Bte. Ahmad`. Repeated spaces are normalized to one space. |
 | Phone | `p/`   | Optional. If provided, it must contain exactly 8 digits. A single space or hyphen is allowed between digit groups. Consecutive separators, country codes, and `+` are rejected. Numbers are stored and displayed as `xxxx xxxx`, for example `9123 4567`. |
 | Email | `e/`   | Must use the `local-part@domain` format. The local part must start and end with an alphanumeric character; `+`, `_`, `.`, and `-` are allowed only between alphanumeric characters. Domain labels may be separated by periods, may contain hyphens only between alphanumeric characters, and the final label must be at least 2 characters long. |
 | Telegram handle | `h/`   | Optional. If provided, it must begin with `@`, followed by 5 to 32 letters, digits, or underscores. The first character after `@` cannot be an underscore.                                                                                                                                                                                       |
 | Subject | `s/`   | Must be non-blank and contain only alphanumeric characters and spaces.                                                                                                                                                                                                                                                                           |
-| Group | `g/`   | Must be non-blank; any characters are allowed.                                                                                                                                                                                                                                                                                                   |
+| Group | `g/`   | Must be non-blank. Any characters are allowed except reserved parameter-like tokens described below.                                                                                                                                                                                                                                                                        |
 | Tag | `t/`   | Must be non-blank and contain only alphanumeric characters. Tags appear in the order entered, including after saving and reopening. Tags are unique ignoring case; repeated tags such as `Student` and `student` are stored once, using the first spelling supplied. |
 
 * Leading and trailing whitespace around each value is ignored. Whitespace-only phone and Telegram values are treated as empty.
+* Unknown parameter-like tokens such as `x/typo` are rejected. A token beginning at the start of the input or after
+  whitespace, with a letter followed by letters, digits, underscores, or hyphens and then `/`, is reserved for command
+  prefixes. To include literal text such as `x/typo` in a group, put a space before the slash: `g/T11 x /typo`.
+  Embedded slashes such as `g/T11/T12` and URLs such as `g/https://example.com` are accepted.
 * TutorTrack trims names and collapses consecutive internal whitespace before storing them. Two students
 are duplicates when their normalized names are exactly the same, including letter case. If an existing student has the
 same name, the new student is rejected even if the other details are different.
@@ -128,6 +132,7 @@ Examples:
 * `add n/Alice Tan p/91234567 e/alice@example.com h/@alice_tan s/Mathematics g/Sec 3A t/Student`
 * `add n/Bob Lee p/92345678 e/bob@example.com h/@bob_lee s/Physics g/J1A t/Student t/Online`
 * `add n/Jean-Luc O'Connor p/9123 4567 e/jean@example.com h/@jean_luc s/Physics g/J1A`
+* `add n/A. R. Rahman e/rahman@example.com s/Mathematics g/T11`
 * `add n/Charlie Lim e/charlie@example.com s/Mathematics g/Sec 3A` adds a student without a phone number, Telegram
   handle, or tags.
 
@@ -202,7 +207,7 @@ Examples:
 * `edit 1 p/1--- --2 3` Is rejected because phone separators cannot be consecutive.
 * `edit 1 p/912345678` Is rejected because phone numbers must have exactly eight digits.
 * `edit 1 g/T11 x/typo` Is rejected because `x/` is not a supported prefix.
-* `find Alice` followed by `edit 1 g/T12` Updates the first matching person's group and keeps the name filter active.
+* `find n/Alice` followed by `edit 1 g/T12` Updates the first matching person's group and keeps the name filter active.
 * `edit 1 n/` Is rejected because Name cannot be empty.
 * `edit 1 h/alice` Is rejected because Telegram handle needs to start with '@'.
 
@@ -267,7 +272,7 @@ Format: `delete INDEX_OR_RANGE[,INDEX_OR_RANGE]...`
 
 Examples:
 * `list` followed by `delete 2` deletes the 2nd person in the address book.
-* `find Betsy` followed by `delete 1` deletes the 1st person in the results of the `find` command.
+* `find n/Betsy` followed by `delete 1` deletes the 1st person in the results of the `find` command.
 * `list` followed by `delete 1,3,5` deletes the 1st, 3rd and 5th person in the address book.
 * `list` followed by `delete 1,3-5,6` deletes the 1st, 3rd, 4th, 5th and 6th person in the address book.
 
