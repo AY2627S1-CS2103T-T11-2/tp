@@ -1,0 +1,15 @@
+{
+  "persons": [ {
+    "name": "John Tan",
+    "phone": "91234567",
+    "email": "john@example.com",
+    "address": "@john_tan",
+    "tags": [ "student" ]
+  }, {
+    "name": "john tan",
+    "phone": "92345678",
+    "email": "other-john@example.com",
+    "address": "@other_john",
+    "tags": [ "student" ]
+  } ]
+}
