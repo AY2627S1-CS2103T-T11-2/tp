@@ -186,6 +186,9 @@ The `Model` component,
 * stores the address book data i.e., all `Person` objects (which are contained in a `UniquePersonList` object).
 * represents a person's Telegram contact using `TelegramHandle`; an empty value represents an omitted handle.
 * stores non-empty phone numbers as eight digits with a single space after the fourth digit (`xxxx xxxx`).
+* identifies people by name using `Person.isSamePerson`. Identity comparison ignores letter case, while the `Name`
+  value object retains case-sensitive equality and preserves the spelling entered for storage and display. Therefore,
+  distinct people with the same name cannot coexist (issue #97 remains unresolved).
 * stores tags in a `LinkedHashSet`, preserving entry order through parsing, editing, JSON storage, and display.
   `Tag.equals` and `hashCode` are case-insensitive; the first spelling supplied is retained when duplicates occur.
 * stores the `Person` objects selected by the current filter, such as search results, in a separate _filtered_ list. It exposes this list as an unmodifiable `ObservableList<Person>` that the UI can observe and bind to, so the UI updates when the list changes.
@@ -223,6 +226,11 @@ the person. Values beginning with `@` must also satisfy the current Telegram-han
 cleared. This is not a migration and no backup is created. The original JSON remains unchanged until the next
 successfully executed command causes `LogicManager` to save the in-memory data, at which point the old physical
 address is overwritten with an empty `"address"` value.
+
+JSON files that already contain names differing only by capitalization, such as `John Tan` and `john tan`, now fail
+validation as duplicate data. Loading is all-or-nothing: TutorTrack does not silently discard, merge, or rewrite either
+record. An automatic migration would risk merging distinct students, so the safe recovery is to back up the JSON file
+and give one record a genuinely distinct name before loading it again.
 
 ### Common classes
 
@@ -398,7 +406,7 @@ Use case ends.
     * 2a1. TutorTrack shows the corresponding error message.
     * Use case ends.
 
-* 2b. A student with the same name already exists.
+* 2b. A student with the same name, ignoring letter case, already exists.
     * 2b1. TutorTrack shows an error message.
     * Use case ends.
 
@@ -425,9 +433,12 @@ Use case ends.
     * 3a1. TutorTrack shows the corresponding error message.
     * Use case ends.
 
-* 3b. The new name is already used by another student.
+* 3b. The new name is already used by another student, ignoring letter case.
     * 3b1. TutorTrack shows an error message.
     * Use case ends.
+
+Capitalization-only name edits refer to the same selected student and are accepted. The replacement `Name` is stored,
+so the newly entered capitalization appears in subsequent displays and saves.
 
 **Use case: Edit multiple students' common particulars**
 
@@ -585,6 +596,11 @@ For backward compatibility, an index expression that selects exactly one index p
 an `EditCommand` using the existing index-based constructor. This preserves the original
 single-person edit workflow and allows name, phone, email, Telegram handle, subject, group, and
 tags to be edited.
+
+Single-person duplicate validation uses `Person.isSamePerson`, as does `UniquePersonList.contains` and
+`UniquePersonList.setPerson`. Names are compared without regard to letter case. Because `setPerson` first checks
+whether the target and edited person have the same identity, capitalization-only edits are allowed; the edited
+`Person` still contains the newly supplied `Name`, preserving its capitalization.
 
 When multiple indexes are selected, `EditCommandParser` constructs an `IndexPersonTarget`. `IndexPersonTarget` implements the `PersonTarget` interface and
 resolves its ranges against the currently displayed person list when the command is

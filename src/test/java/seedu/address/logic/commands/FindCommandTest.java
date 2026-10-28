@@ -75,6 +75,16 @@ public class FindCommandTest {
     }
 
     @Test
+    public void execute_lowerCaseKeyword_findsPersonWithCapitalizedName() {
+        NameContainsSearchTermsPredicate predicate = preparePredicate("alice");
+        FindCommand command = new FindCommand(predicate);
+        expectedModel.updateFilteredPersonList(predicate);
+
+        assertCommandSuccess(command, model, String.format(MESSAGE_PERSONS_LISTED_OVERVIEW, 1), expectedModel);
+        assertEquals(List.of(ALICE), model.getFilteredPersonList());
+    }
+
+    @Test
     public void toStringMethod() {
         NameContainsSearchTermsPredicate predicate =
                 new NameContainsSearchTermsPredicate(List.of("keyword"), List.of());

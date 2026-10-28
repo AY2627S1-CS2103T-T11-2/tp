@@ -115,8 +115,11 @@ The following validation rules apply:
 
 * Leading and trailing whitespace around each value is ignored. Whitespace-only phone and Telegram values are treated as empty.
 * TutorTrack trims names and collapses consecutive internal whitespace before storing them. Two students
-are duplicates when their normalized names are exactly the same, including letter case. If an existing student has the
-same name, the new student is rejected even if the other details are different.
+are duplicates when their normalized names are the same, ignoring letter case. If `John Tan` already exists,
+`john tan` and `JOHN TAN` are rejected even if the other details are different. The capitalization originally entered
+for an accepted student is preserved for storage and display.
+* Two distinct students with the same name still cannot coexist in TutorTrack; this limitation remains tracked by
+issue #97.
 
 <box type="tip" seamless>
 
@@ -188,6 +191,9 @@ existing values.
   also leaving `Student`. To remove both, use `edit 1 t/ t/`.
 - For bulk edits, the number of empty `t/` prefixes applies separately to each selected person's tags.
 - Tag comparisons ignore case: `edit 1 t/Student t/student` stores one tag, displayed as `Student`.
+- A name cannot be changed to another student's name, ignoring letter case. Changing only the selected student's
+  capitalization is allowed and the newly entered capitalization is stored and displayed; for example, changing
+  `John Tan` to `JOHN TAN` succeeds.
 
 Examples:
 
