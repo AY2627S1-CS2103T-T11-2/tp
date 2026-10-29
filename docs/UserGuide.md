@@ -6,7 +6,7 @@
 
 # TutorTrack User Guide
 
-TutorTrack is a **desktop application for tutors to manage student contacts, optimized for use through a Command Line Interface (CLI)** while retaining the benefits of a Graphical User Interface (GUI). If you type quickly, TutorTrack can help you manage student contacts faster than traditional GUI applications.
+TutorTrack is a **desktop application for tutors to manage student records, optimized for use through a Command Line Interface (CLI)** while retaining the benefits of a Graphical User Interface (GUI). If you type quickly, TutorTrack can help you manage student records faster than traditional GUI applications.
 
 <!-- * Table of Contents -->
 <page-nav-print />
@@ -20,11 +20,11 @@ TutorTrack is a **desktop application for tutors to manage student contacts, opt
 
 1. Download the latest `.jar` file from [here](https://github.com/AY2627S1-CS2103T-T11-2/tp/releases).
 
-1. Copy the file to the folder you want to use as the _home folder_ for your AddressBook.
+1. Copy the file to the folder you want to use as the _home folder_ for TutorTrack.
 
-1. Open a terminal, `cd` to the folder containing the JAR file, and run `java -jar addressbook.jar`.<br>
+1. Open a terminal, `cd` to the folder containing the JAR file, and run `java -jar tutortrack.jar`.<br>
    A GUI similar to the one below should appear in a few seconds. Note how the app contains some sample data.<br>
-   ![Ui](images/Ui.png)
+   ![TutorTrack initial screen](images/Ui.png)
 
 1. Type a command in the command box and press Enter to execute it. For example, type **`help`** and press Enter to open the help window.<br>
    Some example commands you can try:
@@ -33,9 +33,9 @@ TutorTrack is a **desktop application for tutors to manage student contacts, opt
 
    - `add n/John Doe p/98765432 e/johnd@example.com h/@john_doe s/Mathematics g/Sec 3A` : Adds a student named `John Doe` to TutorTrack.
 
-   * `delete 2,4-6` : Deletes the 2nd, 4th, 5th and 6th contacts shown in the current list.
+   * `delete 2,4-6` : Deletes the 2nd, 4th, 5th and 6th students shown in the current list.
 
-   - `clear` : Deletes all contacts.
+   - `clear` followed by `clear confirm` : Deletes all student records.
 
    - `exit` : Exits the app.
 
@@ -66,7 +66,7 @@ TutorTrack is a **desktop application for tutors to manage student contacts, opt
 - The old `a/` address prefix is no longer supported and is rejected by `add` and `edit`. Use
   `h/TELEGRAM_HANDLE` for Telegram handles.
 
-- Extraneous parameters for commands that take no parameters, such as `help`, `list`, `exit`, and `clear`, are ignored.<br>
+- Extraneous parameters for commands that take no parameters, such as `help`, `list`, and `exit`, are ignored.<br>
   For example, `help 123` is interpreted as `help`.
 
 - If you are using a PDF version of this document, be careful when copying and pasting commands that span multiple lines as space characters surrounding line-breaks may be omitted when copied over to the application.
@@ -74,7 +74,11 @@ TutorTrack is a **desktop application for tutors to manage student contacts, opt
 
 ### Viewing help: `help`
 
-Opens a help window with a summary of the available commands and a link to the full User Guide.
+- Opens a help window with a summary of the available commands and a link to the full User Guide.
+- Close it using the window's native close control, <kbd>Command</kbd>+<kbd>W</kbd> on macOS, or <kbd>Alt</kbd>+<kbd>F4</kbd> where
+supported by your operating system.
+- You can also open the Help window by selecting **Help** > **Help F1** or pressing <kbd>F1</kbd>.
+- Press <kbd>Enter</kbd> while the Help window is open to copy the User Guide URL to the clipboard.
 
 Format: `help`
 
@@ -89,7 +93,12 @@ When the command box is focused, you can reuse previously submitted commands:
 
 Commands are added to the history when submitted, including commands that fail.
 
-### Adding a person: `add`
+### Copying student details
+
+Use the copy icon beside a displayed email address, Telegram handle, or phone number to copy that detail to the
+clipboard.
+
+### Adding a student: `add`
 
 Adds a student to TutorTrack.
 
@@ -132,23 +141,23 @@ issue #97.
 </box>
 
 Examples:
-* `add n/Alice Tan p/91234567 e/alice@example.com h/@alice_tan s/Mathematics g/Sec 3A t/Student`
-* `add n/Bob Lee p/92345678 e/bob@example.com h/@bob_lee s/Physics g/J1A t/Student t/Online`
+* `add n/Alice Tan p/91234567 e/alice@example.com h/@alice_tan s/Mathematics g/Sec 3A t/NeedsHelp`
+* `add n/Bob Lee p/92345678 e/bob@example.com h/@bob_lee s/Physics g/J1A t/NeedsHelp t/Online`
 * `add n/Jean-Luc O'Connor p/9123 4567 e/jean@example.com h/@jean_luc s/Physics g/J1A`
 * `add n/A. R. Rahman e/rahman@example.com s/Mathematics g/T11`
 * `add n/Ravi S/O Kumar e/ravi@example.com s/CS2103T g/T11`
 * `add n/Charlie Lim e/charlie@example.com s/Mathematics g/Sec 3A` adds a student without a phone number, Telegram
   handle, or tags.
 
-### Listing all persons: `list`
+### Listing all students: `list`
 
-Shows a list of all persons in the address book.
+Shows a list of all students in TutorTrack.
 
 Format: `list`
 
-### Editing persons: `edit`
+### Editing students: `edit`
 
-Edits one or more persons in the currently displayed list.
+Edits one or more students in the currently displayed list.
 
 Format: `edit INDEX_OR_RANGE[,INDEX_OR_RANGE]... [n/NAME] [p/PHONE] [e/EMAIL] [h/TELEGRAM_HANDLE] [s/SUBJECT] [g/GROUP] [t/TAG]... [t/OLD_TAG,NEW_TAG]...`
 
@@ -156,45 +165,41 @@ At least one field must be supplied. Omitted fields remain unchanged.
 Fields are replaced by default. Tags can be added using `t/tag`, while a specific tag name can be edited using `edit <index> t/<old_tag>, <new_tag>`.
 Empty values, including whitespace-only values, are rejected; use `delete` to clear optional fields.
 
-#### Selecting persons
+#### Selecting students
 
 - `INDEX_OR_RANGE` is either an individual `INDEX` or an inclusive range written as `START_INDEX-END_INDEX`.
-- The indexes refer to the index numbers in the currently displayed person list. Each index must be a positive integer: 1, 2, 3, ...
+- The indexes refer to the index numbers in the currently displayed student list. Each index must be a positive integer: 1, 2, 3, ...
 - Commas can combine individual indexes and ranges, for example `1,3-5,7`.
 - Spaces are not allowed inside the index expression. For example, use `1,3-5`, not `1, 3 - 5`.
-- Duplicate and overlapping indexes select each person only once.
-- All indexes are validated before any person is edited. If any index is invalid, nobody is edited.
-- The current filter stays active after an edit, including a bulk edit. Edited persons disappear from the displayed
+- Duplicate and overlapping indexes select each student only once.
+- All indexes are validated before any student is edited. If any index is invalid, nobody is edited.
+- The current filter stays active after an edit, including a bulk edit. Edited students disappear from the displayed
   list if they no longer match the filter. Use `list` to show everyone again.
 
 #### Fields available
 
-| Selected persons | Allowed fields |
+| Selected students | Allowed fields |
 | --- | --- |
-| One person | `n/`, `p/`, `e/`, `h/`, `s/`, `g/`, `t/` |
-| Multiple persons | `s/`, `g/`, `t/` only |
+| One student | `n/`, `p/`, `e/`, `h/`, `s/`, `g/`, `t/` |
+| Multiple students | `s/`, `g/`, `t/` only |
 
 - Only one subject and one group can be supplied in each command.
-- Unknown parameter-like tokens such as `x/typo` are rejected, including inside group values. A token beginning at
-  the start of the input or after whitespace, with a letter followed by letters, digits, underscores, or hyphens and
-  then `/`, is reserved for command prefixes. Only `n/`, `p/`, `e/`, `h/`, `s/`, `g/`, and `t/` are supported.
-  To include literal text such as `x/typo` in a group, put a space before the slash: `g/T11 x /typo`.
-  Embedded slashes such as `g/T11/T12` and URLs such as `g/https://example.com` are accepted.
+- Unknown prefixes and slashes in group values follow the same rules as [adding a student](#adding-a-student-add).
 
 #### Editing tags and clearing fields
 
 - Tags contain only letters and digits; internal spaces are not allowed. Whitespace around tag values and the
   comma in a rename is trimmed.
-- `t/TAG` adds a tag while preserving existing tags. Matching ignores case: adding `t/student` when `Student`
-  exists keeps the existing spelling `Student`.
+- `t/TAG` adds a tag while preserving existing tags. Matching ignores case: adding `t/online` when `Online`
+  exists keeps the existing spelling `Online`.
 - `t/OLD_TAG, NEW_TAG` renames a tag, matching `OLD_TAG` without case and displaying the exact capitalization of
-  `NEW_TAG`. For example, `t/STUDENT, ONLINE` replaces `Student` with `ONLINE`.
+  `NEW_TAG`. For example, `t/needshelp, ONLINE` replaces `NeedsHelp` with `ONLINE`.
 - If the replacement tag already exists, the two tags merge into one using the replacement's capitalization.
   The renamed tag retains its position; any duplicate destination tag is removed.
 - Additions and renames run left to right. `edit 1 t/New t/New,Updated` adds `Updated` while retaining unrelated tags.
 - If any rename source is missing, the entire command fails and nobody is changed, including for bulk edits.
 - Empty `t/`, `p/`, and `h/` are rejected by `edit`. Use `delete 1 t/`, `delete 1 p/`, or `delete 1 h/` to clear them.
-- Other field formats and whitespace normalization follow the rules in [Adding a person](#adding-a-person-add).
+- Other field formats and whitespace normalization follow the rules in [Adding a student](#adding-a-student-add).
 - A name cannot be changed to another student's name, ignoring letter case. Changing only the selected student's
   capitalization is allowed and the newly entered capitalization is stored and displayed; for example, changing
   `John Tan` to `JOHN TAN` succeeds.
@@ -202,23 +207,18 @@ Empty values, including whitespace-only values, are rejected; use `delete` to cl
 Examples:
 
 * `edit 1 p/91234567 e/johndoe@example.com h/@johndoe` Edits the phone number, email address and Telegram handle
-    of the 1st person to be `9123 4567`, `johndoe@example.com` and `@johndoe` respectively.
-* `edit 2 n/Betsy Crower t/student,Graduate` Changes the name and renames `Student` to `Graduate`.
-* `edit 1-3 s/CS3240 g/T11 t/student t/online` Updates the subject, group, and tags of the first three displayed persons.
-* `edit 1 t/Student t/Online` Adds `Student` and `Online`, preserving existing tags.
-* `edit 1 t/student,ONLINE` Renames `Student` to `ONLINE`, merging with any existing `Online` tag.
-* `edit 1 t/` Is rejected because edit values cannot be empty.
-* `edit 1 e/alice@x.a-b` Sets a valid email with a hyphenated final domain label of at least two characters.
-* `edit 1 p/1--- --2 3` Is rejected because phone separators cannot be consecutive.
-* `edit 1 p/912345678` Is rejected because phone numbers must have exactly eight digits.
-* `edit 1 g/T11 x/typo` Is rejected because `x/` is not a supported prefix.
-* `find n/Alice` followed by `edit 1 g/T12` Updates the first matching person's group and keeps the name filter active.
-* `edit 1 n/` Is rejected because Name cannot be empty.
-* `edit 1 h/alice` Is rejected because Telegram handle needs to start with '@'.
+    of the 1st student to be `9123 4567`, `johndoe@example.com` and `@johndoe` respectively.
+* `edit 2 n/Betsy Crower t/online,Graduate` Changes the name and replaces the tag `Online` to `Graduate`.
+* `edit 1-3 s/CS3240 g/T11 t/Graduate t/online` Updates the subject, group, and tags of the first three displayed students.
+* `find n/Alice` followed by `edit 1 g/T12` Updates the first matching student's group and keeps the name filter active.
 
-### Locating persons: `find`
+The following example shows a bulk edit that updates a group, adds a tag, and renames an existing tag.
 
-Finds persons by name, Telegram handle, subject, group, tag, or a combination of these criteria.
+![Bulk edit result](images/EditUi.png)
+
+### Locating students: `find`
+
+Finds students by name, Telegram handle, subject, group, tag, or a combination of these criteria.
 
 Formats:
 
@@ -228,52 +228,47 @@ Formats:
 - At least one name, Telegram handle, subject, group, or tag criterion must be provided.
 - All searches are case-insensitive; for example, `n/hans` matches `Hans`, `g/t11` matches `T11`, and
   `t/needshelp` matches `needsHelp`.
-- Separate multiple name terms with commas. A person matching any name term is returned (an `OR` search).
+- Separate multiple name terms with commas. A student matching any name term is returned (an `OR` search).
 - An unquoted keyword matches only a complete name component. Spaces, hyphens, and apostrophes separate components;
   for example, `n/Jean` matches `Jean-Luc`, while `n/Han` does not match `Hans`.
 - A quoted phrase performs a substring match; for example, `n/"lex Ye"` matches `Alex Yeoh`.
 - A Telegram handle must include its leading `@` and is matched exactly, ignoring letter case.
 - Subject, group, and tag filters require an exact match, ignoring letter case.
 - Only one of each prefix can be supplied.
-- Within `TAG_EXPRESSION`, separate tags with `,` for `OR`; for example, `t/lowAttendance,needsHelp` matches a
-  person with either tag.
-- Within `TAG_EXPRESSION`, separate tags with `&` for `AND`; for example, `t/lowAttendance&needsHelp` matches only a
-  person with both tags.
+- Within `TAG_EXPRESSION`, separate tags with `,` for an `OR` search; for example, `t/lowAttendance,needsHelp` matches a
+  student with either the `lowAttendance` or `needsHelp` tag.
+- Within `TAG_EXPRESSION`, separate tags with `&` for an `AND` search; for example, `t/lowAttendance&needsHelp` matches only a
+  student with both the `lowAttendance` and `needsHelp` tags.
 - `,` and `&` cannot be used together in the same tag expression.
-- When name, Telegram handle, subject, group, or tag criteria are combined, a person must match every supplied
+- When a name, Telegram handle, subject, group, or tag criteria are combined, a student must match every supplied
   criterion type
   (an `AND` search).
 
 Examples:
-* `find n/John` returns `john` and `John Doe`.
 * `find n/alex,david` returns `Alex Yeoh` and `David Li`.<br>
-* `find n/"Alex Yeoh"` returns names containing the phrase `Alex Yeoh`, ignoring case.
 * `find n/"Alex Yeoh",David` returns names containing either the phrase `Alex Yeoh` or the keyword `David`.
-* `find h/@alice_tan` returns the person whose Telegram handle is `@alice_tan`.
-* `find s/CS2103T` returns persons whose subject is `CS2103T`.
-* `find g/T11` returns persons whose group is `T11`.
-* `find s/CS2103T g/T11` returns persons in group `T11` whose subject is `CS2103T`.
-* `find n/"John" s/CS3434` returns persons whose names contain `John` and whose subject is `CS3434`.
-* `find t/needsHelp` returns persons tagged `needsHelp`.
-* `find t/highParticipation,needsHelp` returns persons tagged `highParticipation` or `needsHelp`.
-* `find t/highParticipation&needsHelp` returns persons tagged with both `highParticipation` and `needsHelp`.
-* `find n/"John" h/@john_doe s/CS3434 g/T11 t/highParticipation` returns persons matching all five criterion types.
-  ![result for 'find n/alex,david'](images/findAlexDavidResult.png)
+* `find s/CS2103T g/T11` returns students in group `T11` whose subject is `CS2103T`.
+* `find t/highParticipation,needsHelp` returns students tagged `highParticipation` or `needsHelp`.
+* `find t/highParticipation&needsHelp` returns students tagged with both `highParticipation` and `needsHelp`.
 
-### Deleting contacts or optional fields: `delete`
+The following example shows a combined subject, group, and tag search.
 
-Without field prefixes, deletes one or more contacts. With field prefixes, clears only the specified optional fields.
+![Combined find result](images/FindUi.png)
+
+### Deleting students or optional fields: `delete`
+
+Without field prefixes, deletes one or more students. With field prefixes, clears only the specified optional fields.
 
 Format: `delete INDEX_OR_RANGE[,INDEX_OR_RANGE]... [p/] [h/] [t/TAG]...`
 
 * `INDEX_OR_RANGE` is either an individual `INDEX` or an inclusive range written as `START_INDEX-END_INDEX`.
 
-* The index refers to the index number shown in the displayed person list.
+* The index refers to the index number shown in the displayed student list.
 * The index **must be a positive integer** 1, 2, 3, ...
 * Commas can be used to combine individual indexes and ranges.
 * Spaces are not allowed around commas or hyphens. For example, use `delete 1,3-5` not `delete 1, 3 - 5`.
-* Duplicate and overlapping indexes are deleted only once. For example, `delete 1-3,2-4` deletes contacts 1 through 4.
-* All indexes are validated before any contact is deleted. If any index is invalid, no contacts are deleted.
+* Duplicate and overlapping indexes are deleted only once. For example, `delete 1-3,2-4` deletes students 1 through 4.
+* All indexes are validated before any student is deleted. If any index is invalid, no students are deleted.
 
 #### Deleting optional fields
 
@@ -284,26 +279,27 @@ Format: `delete INDEX_OR_RANGE[,INDEX_OR_RANGE]... [p/] [h/] [t/TAG]...`
 - An empty `t/` clears all tags, even when named tags in the same command do not exist:
   `delete 1 t/ t/Missing` clears all tags.
 - Name (`n/`), email (`e/`), subject (`s/`), and group (`g/`) are compulsory and cannot be deleted.
-- Field deletions support the same indexes and ranges as contact deletion. All indexes and requested tags are
-  validated before anyone is changed. Unless clearing all tags, a missing requested tag on any selected contact
-  rejects the entire command. For example, `delete 1-3 t/Student` fails without changing anyone if only contacts
+- Field deletions support the same indexes and ranges as deleting students. All indexes and requested tags are
+  validated before any changes are made. Unless clearing all tags, a missing requested tag for any selected student
+  rejects the entire command. For example, `delete 1-3 t/Online` fails without making changes if only students
   1 and 2 have that tag.
-- Field deletion preserves the current filter. Whole-contact deletion shows all remaining contacts.
+- Deleting fields preserves the current filter. Deleting student records shows all remaining students.
 
 
 Examples:
-* `list` followed by `delete 2` deletes the 2nd person in the address book.
-* `find n/Betsy` followed by `delete 1` deletes the 1st person in the results of the `find` command.
-* `list` followed by `delete 1,3,5` deletes the 1st, 3rd and 5th person in the address book.
-* `list` followed by `delete 1,3-5,6` deletes the 1st, 3rd, 4th, 5th and 6th person in the address book.
-* `delete 1 p/ h/ t/Online t/Student` clears phone and Telegram handle and removes those two tags.
-* `delete 1-3 t/` clears all tags for the first three displayed contacts.
+* `find n/Betsy` followed by `delete 1` deletes the 1st student in the results of the `find` command.
+* `list` followed by `delete 1,3-5,6` deletes the 1st, 3rd, 4th, 5th and 6th students in TutorTrack.
+* `delete 1 p/ h/ t/Online t/needsHelp` clears phone and Telegram handle and removes those two tags.
+* `delete 1-3 t/` clears all tags for the first three displayed students.
 
 ### Clearing all entries: `clear`
 
-Clears all entries from the address book.
+Requests confirmation before clearing all student records from TutorTrack.
 
-Format: `clear`
+Format: `clear`, followed by `clear confirm`
+
+`clear` does not delete any student records. It asks for confirmation; enter `clear confirm` next to delete all student records.
+Any other parameter is rejected, and entering another command cancels the pending confirmation.
 
 ### Exiting the program: `exit`
 
@@ -313,12 +309,15 @@ Format: `exit`
 
 ### Saving the data
 
-AddressBook automatically saves data after every command. You do not need to save manually.
+TutorTrack automatically saves data after successfully executing a command. You do not need to save manually.
 
 ### Editing the data file
 
-AddressBook data is saved automatically as a JSON file `[JAR file location]/data/addressbook.json`. Advanced users are welcome to update data directly by editing that data file.
+TutorTrack data is saved automatically as a JSON file `[JAR file location]/data/tutortrack.json`. Advanced users are welcome to update data directly by editing that data file.
 
+If you used an earlier version that saved data as `[JAR file location]/addressbook.json` or `[JAR file location]/data/addressbook.json`,
+TutorTrack automatically copies that file to `[JAR file location]/data/tutortrack.json` the first time it starts. The original `addressbook.json`
+file is kept as a backup. If the copy cannot be made, TutorTrack continues using the original file so your data is still loaded.
 <box type="warning" seamless>
 
 **Caution:**
@@ -336,35 +335,30 @@ AddressBook data is saved automatically as a JSON file `[JAR file location]/data
   when you are confident that the changes are valid.
 </box>
 
-### Archiving data files `[coming in v2.0]`
-
-_Details coming soon ..._
-
 ---
 
 ## FAQ
 
 **Q**: How do I transfer my data to another computer?<br>
-**A**: Install the app on the other computer and overwrite the data file it creates with the data file from your previous AddressBook home folder.
+**A**: Install TutorTrack on the other computer and overwrite the data file it creates with the data file from your previous TutorTrack home folder.
 
 ---
 
 ## Known issues
 
 1. **When using multiple screens**, if you move the application to a secondary screen, and later switch to using only the primary screen, the GUI will open off-screen. The remedy is to delete the `preferences.json` file created by the application before running the application again.
-2. **If you minimize the Help Window** and then run the `help` command (or use the `Help` menu, or the keyboard shortcut `F1`) again, the original Help Window will remain minimized, and no new Help Window will appear. The remedy is to manually restore the minimized Help Window.
 
 ---
 
 ## Command summary
 
-| Action | Format / Example |
-| ------ | ---------------- |
-| **Add** | `add n/NAME [p/PHONE] e/EMAIL [h/TELEGRAM_HANDLE] s/SUBJECT g/GROUP [t/TAG]...` |
-| **Clear** | `clear` |
-| **Delete** | `delete INDEX_OR_RANGE[,INDEX_OR_RANGE]... [p/] [h/] [t/TAG]...`<br> e.g., `delete 1,3-5,7` |
-| **Edit** | `edit INDEX_OR_RANGE[,INDEX_OR_RANGE]... [n/NAME] [p/PHONE] [e/EMAIL] [h/TELEGRAM_HANDLE] [s/SUBJECT] [g/GROUP] [t/TAG]...`<br>e.g., `edit 1,3-5 s/CS3240 g/T11 t/student` |
-| **Find** | `find [n/NAME_TERM[,NAME_TERM]...] [h/TELEGRAM_HANDLE] [s/SUBJECT] [g/GROUP] [t/TAG_EXPRESSION]` |
-| **List** | `list` |
-| **Help** | `help` |
-| **Exit** | `exit` |
+| Action | Format / Example                                                                                                                                                          |
+| ------ |---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **Add** | `add n/NAME e/EMAIL s/SUBJECT g/GROUP [h/TELEGRAM_HANDLE] [p/PHONE] [t/TAG]...`                                                                                           |
+| **Clear** | `clear`, then `clear confirm`                                                                                                                                             |
+| **Delete** | `delete INDEX_OR_RANGE[,INDEX_OR_RANGE]... [p/] [h/] [t/TAG]...`<br> e.g., `delete 1,3-5,7 t/`                                                                            |
+| **Edit** | `edit INDEX_OR_RANGE[,INDEX_OR_RANGE]... [n/NAME] [p/PHONE] [e/EMAIL] [h/TELEGRAM_HANDLE] [s/SUBJECT] [g/GROUP] [t/TAG]...`<br>e.g., `edit 1,3-5 s/CS3240 g/T11 t/online` |
+| **Find** | `find [n/NAME_TERM[,NAME_TERM]...] [h/TELEGRAM_HANDLE] [s/SUBJECT] [g/GROUP] [t/TAG_EXPRESSION]`                                                                          |
+| **List** | `list`                                                                                                                                                                    |
+| **Help** | `help`                                                                                                                                                                    |
+| **Exit** | `exit`                                                                                                                                                                    |

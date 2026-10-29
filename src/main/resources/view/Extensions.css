@@ -1,20 +1,334 @@
 
 .error {
-    -fx-text-fill: #d06651 !important; /* The error class should always override the default text-fill style */
-}
-
-.list-cell:empty {
-    /* Empty cells will not have alternating colours */
-    -fx-background: #383838;
+    -fx-text-fill: #B04A36 !important; /* The error class should always override the default text-fill style */
 }
 
 .tag-selector {
     -fx-border-width: 1;
-    -fx-border-color: white;
+    -fx-border-color: #D9C7B5;
     -fx-border-radius: 3;
     -fx-background-radius: 3;
 }
 
 .tooltip-text {
-    -fx-text-fill: white;
+    -fx-text-fill: #24211D;
+}
+
+/* Reference dark directory interface */
+.app-shell {
+    -fx-background-color: #F7F3EC;
+}
+
+.menu-bar {
+    -fx-background-color: #F7F3EC;
+    -fx-padding: 7 14 7 14;
+}
+
+.menu-bar .label {
+    -fx-font-family: "Segoe UI";
+    -fx-font-size: 14px;
+    -fx-text-fill: #24211D;
+    -fx-opacity: 1;
+}
+
+/* A single divider separates the File and Help menu buttons. */
+.menu-bar .file-menu {
+    -fx-border-color: transparent #D9C7B5 transparent transparent;
+    -fx-border-width: 0 1 0 0;
+    -fx-border-insets: 5 0 5 0;
+}
+
+/* Menu applies the custom class to its generated MenuButton. */
+.menu-bar .menu-button.file-menu {
+    -fx-border-color: transparent #D9C7B5 transparent transparent;
+}
+
+/* Small, consistent menu interaction states. */
+.menu-bar .menu-button:hover {
+    -fx-background-color: #F5D9CB;
+}
+
+.menu-bar .menu-button:showing {
+    -fx-background-color: #C96E50;
+}
+
+.menu-bar .menu-button:showing > .label {
+    -fx-text-fill: #FFFDF9;
+}
+
+.context-menu {
+    -fx-background-color: #FFFDF9;
+    -fx-border-color: #D9C7B5;
+    -fx-padding: 0;
+}
+
+.context-menu .menu-item .label,
+.context-menu .menu-item .accelerator-text {
+    -fx-text-fill: #24211D;
+    -fx-opacity: 1;
+}
+
+.context-menu .menu-item:hover {
+    -fx-background-color: #F5D9CB;
+}
+
+.context-menu .menu-item:focused {
+    -fx-background-color: #C96E50;
+}
+
+.context-menu .menu-item:focused .label {
+    -fx-text-fill: #FFFDF9;
+}
+
+.scroll-bar {
+    -fx-background-color: #F7F3EC;
+}
+
+.scroll-bar .track {
+    -fx-background-color: #F0E8DF;
+    -fx-background-radius: 8;
+}
+
+.scroll-bar .thumb {
+    -fx-background-color: #C7B8AA;
+    -fx-background-insets: 4;
+    -fx-background-radius: 8;
+}
+
+.scroll-bar .thumb:hover {
+    -fx-background-color: #F5D9CB;
+}
+
+.scroll-bar .thumb:pressed {
+    -fx-background-color: #C96E50;
+}
+
+.scroll-bar .increment-button,
+.scroll-bar .decrement-button {
+    -fx-background-color: #F7F3EC;
+}
+
+/* Fill scrollbar junctions for both ScrollPane and ListView's VirtualFlow. */
+.scroll-pane > .corner,
+.virtual-flow > .corner,
+.list-view .corner {
+    -fx-background-color: #F7F3EC;
+    -fx-background-insets: 0;
+}
+
+.contact-list-area {
+    -fx-background-color: #F7F3EC;
+    -fx-border-width: 0;
+}
+
+.status-bar {
+    -fx-background-color: #F7F3EC;
+    -fx-border-color: #D9C7B5 transparent transparent transparent;
+    -fx-border-width: 1 0 0 0;
+}
+
+.contact-list-area .stack-pane,
+.contact-list-area .list-view,
+.contact-list-area .list-view .virtual-flow,
+.contact-list-area .list-view .virtual-flow .clipped-container,
+.contact-list-area .list-view .virtual-flow .sheet,
+.contact-list-area .list-cell:empty {
+    -fx-background-color: #F7F3EC;
+}
+
+#resultDisplay, #resultDisplay .content {
+    -fx-background-color: #F9F4ED;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+    -fx-text-fill: #24211D;
+}
+
+#commandBoxPlaceholder, #resultDisplayPlaceholder {
+    -fx-background-color: #F7F3EC;
+}
+
+.command-area {
+    -fx-background-color: #F7F3EC;
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+}
+
+#resultDisplayPlaceholder {
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+}
+
+#placeHolder {
+    -fx-background-color: #F9F4ED;
+    -fx-border-color: #D9C7B5;
+    -fx-border-width: 1;
+}
+
+.command-shell {
+    -fx-background-color: #FCF0EA;
+    -fx-border-color: #D6A58F;
+    -fx-border-radius: 9;
+    -fx-background-radius: 9;
+    -fx-padding: 0 16 0 16;
+    -fx-min-height: 56;
+    -fx-pref-height: 56;
+}
+
+.command-symbol {
+    -fx-font-family: "Segoe UI Semibold";
+    -fx-font-size: 29px;
+    -fx-text-fill: #C96E50;
+}
+
+.command-shell #commandTextField {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-border-color: transparent;
+    -fx-border-insets: 0;
+    -fx-border-width: 1;
+    -fx-font-family: "Segoe UI Semibold";
+    -fx-font-size: 17px;
+    -fx-text-fill: #24211D;
+    -fx-prompt-text-fill: #7A6657;
+    -fx-padding: 0;
+}
+
+.contact-list-area .list-view {
+    -fx-padding: 0;
+}
+
+.contact-list-area .list-cell, .contact-list-area .list-cell:filled:even,
+.contact-list-area .list-cell:filled:odd {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+    -fx-padding: 0 0 12 0;
+}
+
+.contact-list-area .list-cell:filled:selected,
+.contact-list-area .list-cell:filled:selected:focused {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-border-color: transparent;
+}
+
+#cardPane {
+    -fx-background-color: #FFFCF8;
+    -fx-background-radius: 9;
+    -fx-border-color: #E9DED2;
+    -fx-border-width: 1;
+}
+
+.contact-list-area .list-cell:filled:hover #cardPane {
+    -fx-background-color: #FDF1E9;
+    -fx-border-color: #E9DED2;
+}
+
+.contact-list-area .list-cell:filled:selected #cardPane,
+.contact-list-area .list-cell:filled:selected:focused #cardPane {
+    -fx-background-color: #C96E50;
+    -fx-border-color: #C96E50;
+}
+
+.contact-list-area .list-cell:filled:selected .label,
+.contact-list-area .list-cell:filled:selected:focused .label {
+    -fx-text-fill: #FFFDF9;
+}
+
+.contact-list-area .list-cell:filled:selected .contact-icon,
+.contact-list-area .list-cell:filled:selected .copy-icon,
+.contact-list-area .list-cell:filled:selected:focused .contact-icon,
+.contact-list-area .list-cell:filled:selected:focused .copy-icon {
+    -fx-stroke: #FFFDF9;
+}
+
+.contact-list-area .list-cell:filled:selected .contact-details,
+.contact-list-area .list-cell:filled:selected:focused .contact-details {
+    -fx-border-color: #F6CCBA;
+}
+
+.contact-list-area .list-cell:filled:selected .field-column,
+.contact-list-area .list-cell:filled:selected:focused .field-column {
+    -fx-border-color: transparent transparent transparent #F6CCBA;
+}
+
+.contact-name {
+    -fx-font-family: "Segoe UI Semibold";
+    -fx-font-size: 21px;
+}
+
+.contact-index {
+    -fx-font-family: "Segoe UI Semibold";
+    -fx-font-size: 21px;
+}
+
+.contact-details {
+    -fx-padding: 9 0 0 0;
+    -fx-border-color: #F0E8DF;
+    -fx-border-width: 1 0 0 0;
+}
+
+.field-column {
+    -fx-border-color: transparent transparent transparent #F0E8DF;
+    -fx-border-width: 0 0 0 1;
+    -fx-padding: 0 0 0 24;
+}
+
+.field-title {
+    -fx-font-family: "Segoe UI Semibold";
+    -fx-font-size: 12px;
+}
+
+.field-value {
+    -fx-font-family: "Segoe UI";
+    -fx-font-size: 15px;
+}
+
+.contact-icon {
+    -fx-fill: transparent;
+    -fx-stroke: #8A786B;
+    -fx-stroke-width: 1.8;
+}
+
+.copy-button {
+    -fx-background-color: transparent;
+    -fx-background-radius: 4;
+    -fx-border-color: transparent;
+    -fx-padding: 2 4 2 4;
+}
+
+.copy-button:hover {
+    -fx-background-color: #F5D9CB;
+}
+
+.copy-button:focused {
+    -fx-border-color: #C96E50;
+    -fx-border-width: 1;
+}
+
+.copy-button:hover .copy-icon {
+    -fx-stroke: #C96E50;
+}
+
+.copy-icon {
+    -fx-scale-x: 1;
+    -fx-scale-y: 1;
+    -fx-fill: transparent;
+    -fx-stroke: #8A786B;
+    -fx-stroke-width: 1.8;
+}
+
+#tags {
+    -fx-hgap: 9;
+    -fx-vgap: 3;
+}
+
+#tags .label {
+    -fx-font-family: "Segoe UI Semibold";
+    -fx-font-size: 13px;
+    -fx-text-fill: #FFFDF9;
+    -fx-background-color: #5D7A61;
+    -fx-background-radius: 18;
+    -fx-padding: 5 12 5 12;
 }

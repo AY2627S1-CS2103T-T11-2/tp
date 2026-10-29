@@ -40,8 +40,8 @@ public class EditCommand extends Command {
     public static final String COMMAND_WORD = "edit";
 
     public static final String MESSAGE_USAGE = COMMAND_WORD
-            + ": Edits one or more persons identified by indexes in the displayed person list. "
-            + "Name, phone, email, and Telegram handle can only be edited when one person is selected.\n"
+            + ": Edits one or more students identified by indexes in the displayed student list. "
+            + "Name, phone, email, and Telegram handle can only be edited when one student is selected.\n"
             + "Existing values will be overwritten by the input values.\n"
             + "Parameters: INDEX_OR_RANGE[,INDEX_OR_RANGE]... "
             + "Omitted fields stay unchanged; empty values are rejected. "
@@ -59,13 +59,13 @@ public class EditCommand extends Command {
             + PREFIX_GROUP + "T11 "
             + PREFIX_TAG + "student";
 
-    public static final String MESSAGE_EDIT_PERSON_SUCCESS = "Edited person: %1$s";
+    public static final String MESSAGE_EDIT_PERSON_SUCCESS = "Edited student: %1$s";
     public static final String MESSAGE_NOT_EDITED = "At least one field to edit must be provided.";
     public static final String MESSAGE_EMPTY_FIELD = "Edit values cannot be empty. Use delete to clear fields.";
-    public static final String MESSAGE_DUPLICATE_PERSON = "This person already exists in the address book.";
-    public static final String MESSAGE_EDIT_PERSONS_SUCCESS = "Edited %1$d persons:\n%2$s";
+    public static final String MESSAGE_DUPLICATE_PERSON = "This student already exists in TutorTrack.";
+    public static final String MESSAGE_EDIT_PERSONS_SUCCESS = "Edited %1$d students:\n%2$s";
     public static final String MESSAGE_INVALID_BULK_EDIT = "Only subject, group, and tags can be edited "
-            + "for multiple persons.";
+            + "for multiple students.";
 
     private final Index index;
     private final PersonTarget target;

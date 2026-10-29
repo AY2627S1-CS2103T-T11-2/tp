@@ -3,6 +3,7 @@ package seedu.address.ui;
 import java.nio.file.Path;
 import java.util.logging.Logger;
 
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Menu;
@@ -34,7 +35,6 @@ public class MainWindow extends UiPart<Stage> {
     private Stage primaryStage;
     private Logic logic;
     private Path dataFilePath;
-
     // Independent Ui parts residing in this Ui container
     private PersonListPanel personListPanel;
     private ResultDisplay resultDisplay;
@@ -70,7 +70,6 @@ public class MainWindow extends UiPart<Stage> {
         this.primaryStage = primaryStage;
         this.logic = logic;
         this.dataFilePath = dataFilePath;
-
         // Configure the UI
         setWindowDefaultSize(logic.getGuiSettings());
 
@@ -79,6 +78,7 @@ public class MainWindow extends UiPart<Stage> {
         helpWindow = new HelpWindow();
     }
 
+    /** Returns the stage that contains this window. */
     public Stage getPrimaryStage() {
         return primaryStage;
     }
@@ -132,6 +132,7 @@ public class MainWindow extends UiPart<Stage> {
 
         commandBox = new CommandBox(this::executeCommand);
         commandBoxPlaceholder.getChildren().add(commandBox.getRoot());
+        helpWindow.setOnClose(this::focusCommandBox);
 
         preventMenuHoverFromActivatingNavigation();
     }
@@ -175,6 +176,15 @@ public class MainWindow extends UiPart<Stage> {
         }
     }
 
+    /**
+     * Restores keyboard-first command entry after the help window closes.
+     */
+    private void focusCommandBox() {
+        if (commandBox != null && primaryStage.isShowing()) {
+            Platform.runLater(commandBox::focusInput);
+        }
+    }
+
     void show() {
         primaryStage.show();
     }
@@ -191,6 +201,7 @@ public class MainWindow extends UiPart<Stage> {
         primaryStage.hide();
     }
 
+    /** Returns the panel displaying the current contact list. */
     public PersonListPanel getPersonListPanel() {
         return personListPanel;
     }

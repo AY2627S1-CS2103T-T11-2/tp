@@ -1,8 +1,10 @@
 package seedu.address;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.Optional;
 import java.util.logging.Logger;
 
@@ -37,7 +39,11 @@ public class MainApp extends Application {
 
     private static final Logger logger = LogsCenter.getLogger(MainApp.class);
     private static final Path USER_PREFS_FILE_PATH = Paths.get("preferences.json");
-    private static final Path ADDRESS_BOOK_FILE_PATH = Paths.get("data", "addressbook.json");
+    private static final Path ADDRESS_BOOK_FILE_PATH = Paths.get("data", "tutortrack.json");
+    private static final Path[] LEGACY_ADDRESS_BOOK_FILE_PATHS = {
+        Paths.get("data", "addressbook.json"),
+        Paths.get("addressbook.json")
+    };
 
     protected Ui ui;
     protected Logic logic;
@@ -48,9 +54,11 @@ public class MainApp extends Application {
 
     @Override
     public void init() throws Exception {
-        logger.info("=============================[ Initializing AddressBook ]===========================");
+        logger.info("=============================[ Initializing TutorTrack ]============================");
         super.init();
-        initComponents(USER_PREFS_FILE_PATH, ADDRESS_BOOK_FILE_PATH);
+        Path addressBookFilePath = migrateLegacyDataFileIfNeeded(
+                ADDRESS_BOOK_FILE_PATH, LEGACY_ADDRESS_BOOK_FILE_PATHS);
+        initComponents(USER_PREFS_FILE_PATH, addressBookFilePath);
     }
 
     /**
@@ -78,6 +86,39 @@ public class MainApp extends Application {
     }
 
     /**
+     * Copies data from a pre-TutorTrack filename when the new data file has not yet been created.
+     * The old file is retained as a backup. If copying fails, the old file is used so that existing
+     * data remains available instead of being replaced with sample data.
+     */
+    static Path migrateLegacyDataFileIfNeeded(Path dataFilePath, Path... legacyDataFilePaths) {
+        if (Files.exists(dataFilePath)) {
+            return dataFilePath;
+        }
+
+        for (Path legacyDataFilePath : legacyDataFilePaths) {
+            if (!Files.exists(legacyDataFilePath)) {
+                continue;
+            }
+
+            try {
+                Path parentDirectory = dataFilePath.getParent();
+                if (parentDirectory != null) {
+                    Files.createDirectories(parentDirectory);
+                }
+                Files.copy(legacyDataFilePath, dataFilePath, StandardCopyOption.COPY_ATTRIBUTES);
+                logger.info("Migrated existing data from " + legacyDataFilePath + " to " + dataFilePath + ".");
+                return dataFilePath;
+            } catch (IOException e) {
+                logger.warning("Could not migrate data from " + legacyDataFilePath + " to " + dataFilePath
+                        + ". Continuing to use the legacy data file: " + StringUtil.getDetails(e));
+                return legacyDataFilePath;
+            }
+        }
+
+        return dataFilePath;
+    }
+
+    /**
      * Returns a {@code ModelManager} with the data from {@code storage}'s address book and {@code userPrefs}. <br>
      * The data from the sample address book will be used instead if {@code storage}'s address book is not found.
      *
@@ -89,7 +130,7 @@ public class MainApp extends Application {
         Optional<ReadOnlyAddressBook> addressBookOptional = storage.readAddressBook();
         if (addressBookOptional.isEmpty()) {
             logger.info("Creating a new data file " + storage.getAddressBookFilePath()
-                    + " populated with a sample AddressBook.");
+                    + " populated with sample TutorTrack data.");
         }
         ReadOnlyAddressBook initialData = addressBookOptional.orElseGet(SampleDataUtil::getSampleAddressBook);
         return new ModelManager(initialData, userPrefs);
@@ -147,7 +188,7 @@ public class MainApp extends Application {
 
     @Override
     public void start(Stage primaryStage) {
-        logger.info("Starting AddressBook " + MainApp.VERSION);
+        logger.info("Starting TutorTrack " + MainApp.VERSION);
         if (dataLoadingErrorMessage != null) {
             Alert alert = new Alert(Alert.AlertType.ERROR, dataLoadingErrorMessage);
             alert.setTitle("TutorTrack");
@@ -161,7 +202,7 @@ public class MainApp extends Application {
 
     @Override
     public void stop() {
-        logger.info("============================ [ Stopping AddressBook ] =============================");
+        logger.info("============================= [ Stopping TutorTrack ] =============================");
         if (model == null) {
             return;
         }

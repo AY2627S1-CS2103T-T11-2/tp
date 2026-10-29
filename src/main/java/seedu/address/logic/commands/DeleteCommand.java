@@ -30,10 +30,10 @@ public class DeleteCommand extends Command {
     public static final String COMMAND_WORD = "delete";
 
     public static final String MESSAGE_USAGE = COMMAND_WORD
-            + ": Deletes people identified by indexes in the "
-            + "displayed person list.\n"
+            + ": Deletes students identified by indexes in the "
+            + "displayed student list.\n"
             + "Parameters: INDEX_OR_RANGE[,INDEX_OR_RANGE]... [p/] [h/] [t/TAG]...\n"
-            + "With field prefixes, clears phone, Telegram handle, or named tags instead of deleting contacts. "
+            + "With field prefixes, clears phone, Telegram handle, or named tags instead of deleting students. "
             + "An empty t/ clears all tags, overriding named tag deletions. "
             + "Tag matching ignores case; missing tags reject the entire command. "
             + "Name, email, subject, and group cannot be deleted.\n"
@@ -43,11 +43,11 @@ public class DeleteCommand extends Command {
             + "Example: " + COMMAND_WORD + " 1,3-5,7";
 
     public static final String MESSAGE_DELETE_PERSONS_SUCCESS =
-            "Deleted %1$d persons:\n%2$s";
+            "Deleted %1$d students:\n%2$s";
 
-    public static final String MESSAGE_DELETE_PERSON_SUCCESS = "Deleted person: %1$s";
+    public static final String MESSAGE_DELETE_PERSON_SUCCESS = "Deleted student: %1$s";
 
-    public static final String MESSAGE_DELETE_FIELDS_SUCCESS = "Cleared fields for %1$d persons:\n%2$s";
+    public static final String MESSAGE_DELETE_FIELDS_SUCCESS = "Cleared fields for %1$d students:\n%2$s";
 
     private final PersonTarget target;
     private final FieldsToDelete fields;
