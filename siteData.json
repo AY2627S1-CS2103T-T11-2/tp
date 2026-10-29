@@ -38,9 +38,9 @@
     },
     {
       "src": "DeveloperGuide.md",
+      "title": "Developer Guide",
       "headings": {
-        "layout-default-md-title-and-quot-developer-guide-and-quot-pagenav-3": "**---\nlayout: default.md\ntitle: &quot;Developer Guide&quot;\npageNav: 3",
-        "ab-3-developer-guide": "AB-3 Developer Guide",
+        "tutortrack-developer-guide": "TutorTrack Developer Guide",
         "acknowledgements": "Acknowledgements",
         "setting-up-getting-started": "Setting up, getting started",
         "design": "Design",
@@ -94,16 +94,16 @@
         "features": "Features",
         "viewing-help-help": "Viewing help: help",
         "navigating-command-history": "Navigating command history",
-        "adding-a-person-add": "Adding a person: add",
-        "listing-all-persons-list": "Listing all persons: list",
-        "editing-persons-edit": "Editing persons: edit",
-        "locating-persons-find": "Locating persons: find",
-        "deleting-contacts-or-optional-fields-delete": "Deleting contacts or optional fields: delete",
+        "copying-student-details": "Copying student details",
+        "adding-a-student-add": "Adding a student: add",
+        "listing-all-students-list": "Listing all students: list",
+        "editing-students-edit": "Editing students: edit",
+        "locating-students-find": "Locating students: find",
+        "deleting-students-or-optional-fields-delete": "Deleting students or optional fields: delete",
         "clearing-all-entries-clear": "Clearing all entries: clear",
         "exiting-the-program-exit": "Exiting the program: exit",
         "saving-the-data": "Saving the data",
         "editing-the-data-file": "Editing the data file",
-        "archiving-data-files-coming-in-v2-0": "Archiving data files [coming in v2.0]",
         "faq": "FAQ",
         "known-issues": "Known issues",
         "command-summary": "Command summary"
@@ -114,7 +114,7 @@
       "src": "index.md",
       "title": "",
       "headings": {
-        "addressbook-level-3": "AddressBook Level-3"
+        "tutortrack": "TutorTrack"
       },
       "headingKeywords": {}
     },
@@ -122,7 +122,7 @@
       "src": "team/johndoe.md",
       "title": "John Doe's Project Portfolio Page",
       "headings": {
-        "project-addressbook-level-3": "Project: AddressBook Level 3"
+        "project-tutortrack": "Project: TutorTrack"
       },
       "headingKeywords": {}
     }
