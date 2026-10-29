@@ -13,6 +13,8 @@
 
 ## **Acknowledgements**
 
+TutorTrack is based on [AddressBook-Level3](https://se-education.org/addressbook-level3/) by the [SE-EDU initiative](https://se-education.org). It uses [JavaFX](https://openjfx.io/), [Jackson](https://github.com/FasterXML/jackson), and [JUnit 5](https://junit.org/junit5/).
+
 --------------------------------------------------------------------------------------------------------------------
 
 ## **Setting up, getting started**
@@ -33,7 +35,7 @@ The following provides a quick overview of the main components and their interac
 
 **Main components of the architecture**
 
-**`Main`** (consisting of classes [`Main`](https://github.com/se-edu/addressbook-level3/tree/master/src/main/java/seedu/address/Main.java) and [`MainApp`](https://github.com/se-edu/addressbook-level3/tree/master/src/main/java/seedu/address/MainApp.java)) is in charge of the app launch and shut down.
+**`Main`** (consisting of classes [`Main`](https://github.com/AY2627S1-CS2103T-T11-2/tp/tree/master/src/main/java/seedu/address/Main.java) and [`MainApp`](https://github.com/AY2627S1-CS2103T-T11-2/tp/tree/master/src/main/java/seedu/address/MainApp.java)) is in charge of the app launch and shut down.
 * At app launch, it initializes the other components in the correct sequence, and connects them up with each other.
 * At shut down, it shuts down the other components and invokes cleanup methods where necessary.
 
@@ -65,13 +67,13 @@ The sections below give more details of each component.
 
 ### UI component
 
-The **API** of this component is specified in [`Ui.java`](https://github.com/se-edu/addressbook-level3/tree/master/src/main/java/seedu/address/ui/Ui.java)
+The **API** of this component is specified in [`Ui.java`](https://github.com/AY2627S1-CS2103T-T11-2/tp/tree/master/src/main/java/seedu/address/ui/Ui.java)
 
 <puml src="diagrams/UiClassDiagram.puml" alt="Structure of the UI Component"/>
 
 The UI consists of a `MainWindow` and its parts, such as `CommandBox`, `ResultDisplay`, `PersonListPanel`, and `StatusBarFooter`. All of these, including `MainWindow`, inherit from the abstract `UiPart` class, which captures common behavior among classes that represent visible GUI parts.
 
-The `UI` component uses the JavaFX UI framework. The layouts of these UI parts are defined in matching `.fxml` files in `src/main/resources/view`. For example, [`MainWindow.fxml`](https://github.com/se-edu/addressbook-level3/tree/master/src/main/resources/view/MainWindow.fxml) specifies the layout of [`MainWindow`](https://github.com/se-edu/addressbook-level3/tree/master/src/main/java/seedu/address/ui/MainWindow.java).
+The `UI` component uses the JavaFX UI framework. The layouts of these UI parts are defined in matching `.fxml` files in `src/main/resources/view`. For example, [`MainWindow.fxml`](https://github.com/AY2627S1-CS2103T-T11-2/tp/tree/master/src/main/resources/view/MainWindow.fxml) specifies the layout of [`MainWindow`](https://github.com/AY2627S1-CS2103T-T11-2/tp/tree/master/src/main/java/seedu/address/ui/MainWindow.java).
 
 The `UI` component,
 
@@ -91,20 +93,18 @@ using regular unit tests.
 
 The following sequence diagram shows how `CommandBox` records and retrieves commands:
 
-<puml src="diagrams/CommandHistorySequenceDiagram.puml"
-      alt="Command history navigation sequence diagram" />
+<puml src="diagrams/CommandHistorySequenceDiagram.puml" alt="Command history navigation sequence diagram" />
 
 #### Help window
 
 The `help` command returns a `CommandResult` that requests the UI to show the `HelpWindow`. The window displays a
 compact command summary and lets users copy the User Guide URL. The following sequence diagram shows this flow:
 
-<puml src="diagrams/HelpCommandSequenceDiagram.puml"
-      alt="Help command sequence diagram" />
+<puml src="diagrams/HelpCommandSequenceDiagram.puml" alt="Help command sequence diagram" />
 
 ### Logic component
 
-**API** : [`Logic.java`](https://github.com/se-edu/addressbook-level3/tree/master/src/main/java/seedu/address/logic/Logic.java)
+**API** : [`Logic.java`](https://github.com/AY2627S1-CS2103T-T11-2/tp/tree/master/src/main/java/seedu/address/logic/Logic.java)
 
 Here's a (partial) class diagram of the `Logic` component:
 
@@ -147,6 +147,7 @@ For example, `1,3-5,7` represents displayed indexes 1, 3, 4, 5, and 7.
 The parser does not check whether the selected indexes exist in the currently displayed person list. That list depends on the current model state and active filter, so bounds validation is performed when the resulting command executes.
 
 Command-specific parsers remain responsible for wrapping parsing failures in their own usage messages. This allows commands such as `delete`, `edit`, and future selection commands to share the same index-expression syntax while retaining command-specific feedback.
+
 `AddCommandParser` treats `h/TELEGRAM_HANDLE` as optional, while `EditCommandParser` distinguishes an omitted `h/`
 (preserve the current value) from an empty `h/` (clear it). Both parsers explicitly reject the legacy `a/` prefix.
 
@@ -163,26 +164,9 @@ between digit groups, and stores numbers as `xxxx xxxx`. Country codes, `+`, and
 `TelegramHandle` treats an empty value as absent; a non-empty
 value must begin with `@`, followed by 5 to 32 letters, digits, or underscores, with no leading underscore.
 
-#### Delete command
-`DeleteCommandParser` delegates its index-expression parsing to the shared `IndexRangeParser`, then constructs an `IndexPersonTarget` from the canonical ranges.
-
-Each parsed component is represented by an `IndexRange`. An individual index is represented as a range whose start
-and end are equal.
-
-`IndexPersonTarget` sorts and merges duplicate, adjacent, or overlapping ranges. For example, `1-3,2-4,4` is
-normalized to `1-4`. This ensures that each contact is deleted at most once.
-
-Before deleting any contacts, `IndexPersonTarget` resolves and validates every index against a snapshot of the
-currently displayed person list. Consequently, a command such as `delete 1,999` fails without deleting contact 1
-(suppose that contact index 999 does not exist).
-
-`DeleteCommand` depends on the shared `PersonTarget` interface rather than directly on an index. This allows future
-implementations such as `GroupDeleteTarget`, `SubjectDeleteTarget`, and `TagDeleteTarget` to reuse the deletion
-workflow.
-
 
 ### Model component
-**API** : [`Model.java`](https://github.com/se-edu/addressbook-level3/tree/master/src/main/java/seedu/address/model/Model.java)
+**API** : [`Model.java`](https://github.com/AY2627S1-CS2103T-T11-2/tp/tree/master/src/main/java/seedu/address/model/Model.java)
 
 <puml src="diagrams/ModelClassDiagram.puml" width="900" />
 
@@ -212,7 +196,7 @@ The `Model` component,
 
 ### Storage component
 
-**API** : [`Storage.java`](https://github.com/se-edu/addressbook-level3/tree/master/src/main/java/seedu/address/storage/Storage.java)
+**API** : [`Storage.java`](https://github.com/AY2627S1-CS2103T-T11-2/tp/tree/master/src/main/java/seedu/address/storage/Storage.java)
 
 <puml src="diagrams/StorageClassDiagram.puml" width="550" />
 
@@ -224,6 +208,10 @@ The `Storage` component,
 `FileUtil` writes replacement content to a temporary file in the destination directory before moving it over the
 destination. It uses an atomic replacement when supported by the file system and otherwise falls back to a regular
 replacement. If writing or moving fails, it attempts to remove the temporary file.
+
+`MainApp` stores student data in `data/tutortrack.json`. If that file does not exist but a data file from an earlier
+version does (`data/addressbook.json` or `addressbook.json`), `MainApp#migrateLegacyDataFileIfNeeded` copies it to
+`data/tutortrack.json` and keeps the original as a backup. If the copy fails, TutorTrack continues to use the legacy file.
 
 `JsonAdaptedPerson` deliberately reads and writes a person's `TelegramHandle` using the existing JSON `"address"`
 property; it does not introduce a `"telegramHandle"` property. When loading an older record, it replaces a non-empty
@@ -250,99 +238,113 @@ Classes used by multiple components are in the `seedu.address.commons` package.
 
 This section describes some noteworthy details on how certain features are implemented.
 
-### \[Proposed\] Undo/redo feature
+### Delete command
 
-#### Proposed Implementation
+`DeleteCommandParser` delegates its index-expression parsing to the shared `IndexRangeParser`, then constructs an `IndexPersonTarget` from the canonical ranges.
 
-The proposed undo/redo mechanism is facilitated by `VersionedAddressBook`. It extends `AddressBook` with an undo/redo history, stored internally as an `addressBookStateList` and `currentStatePointer`. Additionally, it implements the following operations:
+Each parsed component is represented by an `IndexRange`. An individual index is represented as a range whose start
+and end are equal.
 
-* `VersionedAddressBook#commit()` -- Saves the current address book state in its history.
-* `VersionedAddressBook#undo()` -- Restores the previous address book state from its history.
-* `VersionedAddressBook#redo()` -- Restores a previously undone address book state from its history.
+`IndexPersonTarget` sorts and merges duplicate, adjacent, or overlapping ranges. For example, `1-3,2-4,4` is
+normalized to `1-4`. This ensures that each contact is deleted at most once.
 
-These operations are exposed in the `Model` interface as `Model#commitAddressBook()`, `Model#undoAddressBook()` and `Model#redoAddressBook()` respectively.
+Before deleting any contacts, `IndexPersonTarget` resolves and validates every index against a snapshot of the
+currently displayed person list. Consequently, a command such as `delete 1,999` fails without deleting contact 1
+(suppose that contact index 999 does not exist).
 
-Given below is an example usage scenario and how the undo/redo mechanism behaves at each step.
+`DeleteCommand` depends on the shared `PersonTarget` interface rather than directly on an index. This allows future
+implementations such as `GroupDeleteTarget`, `SubjectDeleteTarget`, and `TagDeleteTarget` to reuse the deletion
+workflow.
 
-Step 1. The user launches the application for the first time. The `VersionedAddressBook` will be initialized with the initial address book state, and the `currentStatePointer` pointing to that single address book state.
+`delete` can also clear optional fields. When `p/`, `h/`, or `t/` is present, `DeleteCommandParser` creates a
+`DeleteCommand.FieldsToDelete` record instead of deleting people. `p/` and `h/` must be empty and may each appear
+once. An empty `t/` clears all tags, while named tags are parsed into a set, so a repeated name counts once.
+`DeleteCommand#deleteFields` builds every replacement `Person` before changing the model. If a named tag is missing
+from any selected person, it throws a `CommandException` and nobody is changed. Unlike deleting people, clearing
+fields keeps the current filter.
 
-<puml src="diagrams/UndoRedoState0.puml" alt="UndoRedoState0" />
+### Edit command
 
-Step 2. The user executes `delete 5` command to delete the 5th person in the address book. The `delete` command calls `Model#commitAddressBook()`, causing the modified state of the address book after the `delete 5` command executes to be saved in the `addressBookStateList`, and the `currentStatePointer` is shifted to the newly inserted address book state.
+`EditCommandParser` delegates parsing of the index expression to `IndexRangeParser`. This
+gives `edit` the same comma-separated index and inclusive-range syntax as other commands
+that operate on displayed persons.
 
-<puml src="diagrams/UndoRedoState1.puml" alt="UndoRedoState1" />
+The following diagram shows parsing, validation, tag edits, and constructor selection:
 
-Step 3. The user executes `add n/David …​` to add a new person. The `add` command also calls `Model#commitAddressBook()`, causing another modified address book state to be saved into the `addressBookStateList`.
+<puml src="diagrams/tracing/LogicSequenceDiagram.puml" alt="Edit command parsing sequence diagram" />
 
-<puml src="diagrams/UndoRedoState2.puml" alt="UndoRedoState2" />
+The parser rejects unknown parameter-like tokens such as `x/typo`, the legacy `a/` prefix,
+and repeated non-tag prefixes. Shared value objects validate supplied fields: `Phone` requires
+eight digits and stores `xxxx xxxx`, while `Email` accepts hyphens inside domain labels,
+including the final label, which must be at least two characters long. `Name` accepts
+periods only after one-to-three-letter initials or abbreviations that precede another name word.
 
-<box type="info" seamless>
+For backward compatibility, an index expression that selects exactly one index produces
+an `EditCommand` using the existing index-based constructor. This preserves the original
+single-person edit workflow and allows name, phone, email, Telegram handle, subject, group, and
+tags to be edited.
 
-**Note:** If a command fails its execution, it will not call `Model#commitAddressBook()`, so the address book state will not be saved into the `addressBookStateList`.
-</box>
+Single-person duplicate validation uses `Person.isSamePerson`, as does `UniquePersonList.contains` and
+`UniquePersonList.setPerson`. Names are compared without regard to letter case. Because `setPerson` first checks
+whether the target and edited person have the same identity, capitalization-only edits are allowed; the edited
+`Person` still contains the newly supplied `Name`, preserving its capitalization.
 
-Step 4. The user now decides that adding the person was a mistake, and decides to undo that action by executing the `undo` command. The `undo` command will call `Model#undoAddressBook()`, which will shift the `currentStatePointer` once to the left, pointing it to the previous address book state, and restores the address book to that state.
+When multiple indexes are selected, `EditCommandParser` constructs an `IndexPersonTarget`. `IndexPersonTarget` implements the `PersonTarget` interface and
+resolves its ranges against the currently displayed person list when the command is
+executed.
 
-<puml src="diagrams/UndoRedoState3.puml" alt="UndoRedoState3" />
+`IndexPersonTarget` normalizes duplicate, overlapping, and adjacent ranges. It validates
+all selected indexes against a snapshot of the displayed list before returning any
+persons. Consequently, an invalid command such as `edit 1,999 t/student` fails without
+editing person 1.
 
+Bulk edits are restricted to subject, group, and tags. Name, phone, email, and Telegram handle
+remain available only when exactly one person is selected. This policy is checked by both
+`EditCommandParser` and `EditCommand`. The parser provides early feedback for user input,
+while the command protects callers that construct commands directly.
 
-<box type="info" seamless>
+The edit descriptor represents fields that were not supplied using `null`. A supplied
+subject or group replaces the corresponding value for every selected person. Tags are not replaced as a set.
+Instead, `EditCommandParser` turns each `t/` value into a `TagEdit`: `t/TAG` becomes an addition and
+`t/OLD_TAG,NEW_TAG` becomes a rename. `createEditedPerson` applies these operations from left to right to a copy of
+each person's `LinkedHashSet` of tags, so unrelated tags and their order are preserved. A rename keeps the position
+of the source tag and removes any existing tag equal to the replacement, so the replacement's spelling is kept.
+Because `Tag` equality ignores case, matching ignores case too. If a rename source is missing, `TagEdit#applyTo`
+throws a `CommandException`. Empty `p/`, `h/`, and `t/` values are rejected; optional fields are cleared using
+`delete` instead. Both command constructors copy the descriptor defensively, including the ordered tag edits.
 
-**Note:** If the `currentStatePointer` is at index 0, pointing to the initial AddressBook state, then there are no previous AddressBook states to restore. The `undo` command uses `Model#canUndoAddressBook()` to check if this is the case. If so, it will return an error to the user rather
-than attempting to perform the undo.
-</box>
+For a bulk edit, all edited `Person` objects and the success result are prepared before the
+model is updated. The command then replaces each selected person using the resolved selection,
+so changes to the filtered list cannot cause later selected people to be skipped.
 
-The following sequence diagram shows how an undo operation goes through the `Logic` component:
+<puml src="diagrams/EditSequenceDiagram.puml" alt="Bulk edit execution and saving sequence diagram" />
 
-<puml src="diagrams/UndoSequenceDiagram-Logic.puml" alt="UndoSequenceDiagram-Logic" />
+Both single and bulk edits leave the current filter active. The filtered list is reevaluated
+as people are replaced, so edited people that no longer match disappear from the view. In
+contrast, `delete` resolves indexes against the currently displayed list and resets a successful
+deletion to show all remaining people. `LogicManager` saves the address book after successful
+execution.
 
-<box type="info" seamless>
+### Find command
 
-**Note:** The lifeline for `UndoCommand` should end at the destroy marker (X), but due to a limitation of PlantUML, it continues to the end of the diagram.
-</box>
+`FindCommandParser` accepts the `n/`, `h/`, `s/`, `g/`, and `t/` prefixes. It rejects input that has no criterion,
+a non-empty preamble, an unknown prefix, or a repeated prefix. Name input is split on commas. Each term is either an
+unquoted keyword or a quoted phrase, and a blank phrase such as `" "` is rejected.
+`NameContainsSearchTermsPredicate` matches a keyword against whole name components, which are separated by spaces,
+hyphens, or apostrophes. It matches a phrase as a substring of the name. Both comparisons ignore case.
 
-Similarly, how an undo operation goes through the `Model` component is shown below:
+`FindPredicate` combines the optional name predicate with the optional Telegram handle, subject, group, and tag
+criteria. A person must satisfy every criterion supplied. A tag expression separated by `,` uses `TagMatchMode.ANY`,
+and one separated by `&` uses `TagMatchMode.ALL`; mixing both separators is rejected. `FindCommand` passes the
+predicate to `Model#updateFilteredPersonList`, and the UI updates because it observes the filtered list.
 
-<puml src="diagrams/UndoSequenceDiagram-Model.puml" alt="UndoSequenceDiagram-Model" />
+### Clear confirmation
 
-The `redo` command does the opposite — it calls `Model#redoAddressBook()`, which shifts the `currentStatePointer` once to the right, pointing to the previously undone state, and restores the address book to that state.
-
-<box type="info" seamless>
-
-**Note:** If the `currentStatePointer` is at index `addressBookStateList.size() - 1`, pointing to the latest address book state, then there are no undone AddressBook states to restore. The `redo` command uses `Model#canRedoAddressBook()` to check if this is the case. If so, it will return an error to the user rather than attempting to perform the redo.
-</box>
-
-Step 5. The user then decides to execute the command `list`. Commands that do not modify the address book, such as `list`, will usually not call `Model#commitAddressBook()`, `Model#undoAddressBook()` or `Model#redoAddressBook()`. Thus, the `addressBookStateList` remains unchanged.
-
-<puml src="diagrams/UndoRedoState4.puml" alt="UndoRedoState4" />
-
-Step 6. The user executes `clear`, which calls `Model#commitAddressBook()`. Since the `currentStatePointer` is not pointing at the end of the `addressBookStateList`, all address book states after the `currentStatePointer` will be purged. Reason: It no longer makes sense to redo the `add n/David …` command. This is the behavior that most modern desktop applications follow.
-
-<puml src="diagrams/UndoRedoState5.puml" alt="UndoRedoState5" />
-
-The following activity diagram summarizes what happens when a user executes a new command:
-
-<puml src="diagrams/CommitActivityDiagram.puml" width="250" />
-
-#### Design considerations:
-
-**Aspect: How undo & redo execute:**
-
-* **Alternative 1 (current choice):** Saves the entire address book.
-  * Pros: Easy to implement.
-  * Cons: May have performance issues in terms of memory usage.
-
-* **Alternative 2:** Individual command knows how to undo/redo by
-  itself.
-  * Pros: Will use less memory (e.g. for `delete`, just save the person being deleted).
-  * Cons: We must ensure that the implementation of each individual command is correct.
-
-_{more aspects and alternatives to be added}_
-
-### \[Proposed\] Data archiving
-
-_{Explain here how the data archiving feature will be implemented}_
-
+`AddressBookParser` turns `clear` into `ClearCommand(false)` and `clear confirm` into `ClearCommand(true)`; any other
+argument is rejected. `LogicManager` records whether a confirmation is pending. An unconfirmed `ClearCommand` only
+sets this flag and returns a prompt, so nothing is saved. `clear confirm` empties the student list only when the flag
+is set; otherwise, it reports that no confirmation is pending. Any other input, including input that fails to parse,
+resets the flag, so the confirmation must immediately follow `clear`.
 
 --------------------------------------------------------------------------------------------------------------------
 
@@ -357,7 +359,7 @@ _{Explain here how the data archiving feature will be implemented}_
 
 ## **Appendix: Requirements**
 
-## Product scope
+### Product scope
 
 **Target user profile**:
 
@@ -423,8 +425,8 @@ Use case ends.
 
 **MSS**
 
-1. TA requests to edit a student identified by name.
-2. TutorTrack finds the matching student.
+1. TA requests to edit one student, identified by their index in the displayed list.
+2. TutorTrack finds the student at that index.
 3. TutorTrack validates the new particulars.
 4. TutorTrack updates the specified particulars.
 5. TutorTrack confirms that the student record was updated.
@@ -433,7 +435,7 @@ Use case ends.
 
 **Extensions**
 
-* 2a. No matching student is found.
+* 2a. The index is not in the displayed list.
     * 2a1. TutorTrack shows an error message.
     * Use case ends.
 
@@ -479,6 +481,26 @@ Use case ends.
     * 3a1. TutorTrack shows an error message without editing any student.
     * Use case ends.
 
+**Use case: Delete students**
+
+**MSS**
+
+1. TA requests to list or find students.
+2. TutorTrack shows the matching students.
+3. TA requests to delete one or more students by their displayed indexes or index ranges.
+4. TutorTrack deletes the selected students and confirms which students were deleted.
+
+Use case ends.
+
+**Extensions**
+
+* 2a. The list is empty.
+    * Use case ends.
+
+* 3a. The index expression is invalid, or an index is not in the displayed list.
+    * 3a1. TutorTrack shows an error message without deleting any student.
+    * Use case resumes at step 2.
+
 **Use case: List students from a tutorial group**
 
 **MSS**
@@ -505,26 +527,23 @@ Use case ends.
 
 1.  Should work on any _mainstream OS_ as long as it has Java `25` or above installed.
 2.  Should be able to hold up to 1000 persons without noticeable sluggishness in performance for typical usage.
-3.  A user with above average typing speed for regular English text (i.e. not code, not system admin commands) should 
+3.  A user with above average typing speed for regular English text (i.e. not code, not system admin commands) should
 be able to accomplish most of the tasks faster using commands than using the mouse.
-4. Normal operations should complete within 1 second for 200 records. 
-5. Should save data locally in a human-editable text file. 
-6. Should preserve data after being closed and reopened. 
-7. Should prevent partially written files during saving. 
-8. Should provide clear confirmation for destructive operations. 
-9. Should validate all user-entered and imported data. 
-10. Should not transmit student data to external services. 
-11. Should provide clear error messages and usage instructions. 
-12. Should support keyboard or command-based interaction for core tasks. 
-13. Should work on Windows, Linux, and macOS using Java 25. 
-14. Should work without an installer. 
-15. Should not require a remote server 
-16. Should not exceed 100 MB. 
-17. Should remain usable at the required screen resolutions and display scales. 
+4. Normal operations should complete within 1 second for 200 records.
+5. Should save data locally in a human-editable text file.
+6. Should preserve data after being closed and reopened.
+7. Should prevent partially written files during saving.
+8. Should provide clear confirmation for destructive operations.
+9. Should validate all user-entered and imported data.
+10. Should not transmit student data to external services.
+11. Should provide clear error messages and usage instructions.
+12. Should support keyboard or command-based interaction for core tasks.
+13. Should work on Windows, Linux, and macOS using Java 25.
+14. Should work without an installer.
+15. Should not require a remote server.
+16. Should not exceed 100 MB.
+17. Should remain usable at the required screen resolutions and display scales.
 18. Should not require an internet connection for core functionality.
-
-
-*{More to be added}*
 
 ### Glossary
 
@@ -533,6 +552,9 @@ be able to accomplish most of the tasks faster using commands than using the mou
 * **Module/Subject**: An academic course associated with a student, e.g. `CS1231S`.
 * **Student particulars**: Information stored about a student, such as name, phone number, email, module/subject, and tutorial group.
 * **CLI-style command**: A text command entered by the user to perform an action in TutorTrack.
+* **Mainstream OS**: Windows, Linux, and macOS.
+* **Displayed list**: The list of students currently shown, which may be filtered by `find`. Command indexes refer to this list.
+* **Index range**: An inclusive range of displayed indexes written as `START_INDEX-END_INDEX`, for example `3-5`.
 
 --------------------------------------------------------------------------------------------------------------------
 
@@ -552,8 +574,8 @@ testers are expected to do more *exploratory* testing.
 
    1. Download the JAR file and copy it into an empty folder.
 
-   1. Double-click the JAR file.<br>
-      Expected: The GUI opens with a set of sample contacts. The window size may not be optimal.
+   1. Double-click the JAR file, or open a terminal in that folder and run `java -jar tutortrack.jar`.<br>
+      Expected: The GUI opens with a set of sample students. The window size may not be optimal.
 
 1. Saving window preferences
 
@@ -562,19 +584,18 @@ testers are expected to do more *exploratory* testing.
    1. Relaunch the app by double-clicking the JAR file.<br>
        Expected: The most recent window size and location are retained.
 
-1. _{ more test cases … }_
 
-### Deleting contacts
+### Deleting students
 
 1. Deleting contacts while all persons are being shown
 
-   1. Prerequisites: List all persons using the `list` command, with multiple (at least 7) persons in the list.
+   1. Prerequisites: List all persons using the `list` command, with at least 6 persons in the list, as in the sample data.
 
    1. Test case: `delete 1`<br>
       Expected: The first contact is deleted from the list. The status message shows the deleted contact's details.
 
-   1. Test case: `delete 1,3,5-7`<br>
-      Expected: The 1st, 3rd, 5th, 6th and 7th contact is deleted from the list. The status message
+   1. Test case: `delete 1,3,5-6`<br>
+      Expected: The 1st, 3rd, 5th and 6th contacts are deleted from the list. The status message
       shows the deleted contacts' details.
 
    1. Test case: `delete 0`<br>
@@ -585,12 +606,21 @@ testers are expected to do more *exploratory* testing.
 
 1. Deleting a contact from a filtered list
 
-   1. Prerequisites: Filter the displayed person list using `find n/Alice`.
+   1. Prerequisites: Filter the displayed person list using `find n/Alex`.
 
    1. Test case: `delete 1`<br>
       Expected: The first contact in the displayed list is deleted. The list then shows all remaining contacts.
 
-1. _{ more test cases … }_
+1. Clearing optional fields
+
+   1. Prerequisites: Launch the application with the sample data and run `list`.
+
+   1. Test case: `delete 1 p/ h/`<br>
+      Expected: The first student's phone number and Telegram handle are removed. The student is not deleted.
+
+   1. Test case: `delete 1 t/Missing`<br>
+      Expected: No student is changed. The status message states that the tag does not exist.
+
 
 ### Adding students
 
@@ -635,99 +665,76 @@ testers are expected to do more *exploratory* testing.
    1. Test case: Repeat either successful command above with the same name but different contact details.<br>
       Expected: No second student is added. The status message reports that the student already exists.
 
-### Edit command
+### Editing students
 
-`EditCommandParser` delegates parsing of the index expression to `IndexRangeParser`. This
-gives `edit` the same comma-separated index and inclusive-range syntax as other commands
-that operate on displayed persons.
+1. Editing one student
 
-The following diagram shows parsing, validation, tag-removal requests, and constructor selection:
+   1. Prerequisites: Launch the application with the sample data and run `list`.
 
-<puml src="diagrams/tracing/LogicSequenceDiagram.puml" alt="Edit command parsing sequence diagram" />
+   1. Test case: `edit 2 n/Betsy Crower t/friends,Graduate`<br>
+      Expected: The 2nd student is renamed to `Betsy Crower`, and the tag `friends` is renamed to `Graduate`. Other
+      tags are unchanged.
 
-The parser rejects unknown parameter-like tokens such as `x/typo`, the legacy `a/` prefix,
-and repeated non-tag prefixes. Shared value objects validate supplied fields: `Phone` requires
-eight digits and stores `xxxx xxxx`, while `Email` accepts hyphens inside domain labels,
-including the final label, whose total length must be at least two characters. `Name` accepts
-periods only after one-to-three-letter initials or abbreviations that precede another name word.
+   1. Test case: `edit 1 t/Missing,Graduate`<br>
+      Expected: No student is changed. The status message states that the tag does not exist.
 
-For backward compatibility, an index expression that selects exactly one index produces
-an `EditCommand` using the existing index-based constructor. This preserves the original
-single-person edit workflow and allows name, phone, email, Telegram handle, subject, group, and
-tags to be edited.
+   1. Test case: `edit 1 p/`<br>
+      Expected: No student is changed. The status message states that edit values cannot be empty.
 
-Single-person duplicate validation uses `Person.isSamePerson`, as does `UniquePersonList.contains` and
-`UniquePersonList.setPerson`. Names are compared without regard to letter case. Because `setPerson` first checks
-whether the target and edited person have the same identity, capitalization-only edits are allowed; the edited
-`Person` still contains the newly supplied `Name`, preserving its capitalization.
+1. Editing several students
 
-When multiple indexes are selected, `EditCommandParser` constructs an `IndexPersonTarget`. `IndexPersonTarget` implements the `PersonTarget` interface and
-resolves its ranges against the currently displayed person list when the command is
-executed.
+   1. Test case: `edit 1-3 g/T11 t/Online`<br>
+      Expected: The first three students are moved to group `T11` and gain the tag `Online`.
 
-`IndexPersonTarget` normalizes duplicate, overlapping, and adjacent ranges. It validates
-all selected indexes against a snapshot of the displayed list before returning any
-persons. Consequently, an invalid command such as `edit 1,999 t/student` fails without
-editing person 1.
+   1. Test case: `edit 1-2 p/91234567`<br>
+      Expected: No student is changed. The status message states that only subject, group, and tags can be edited
+      for multiple students.
 
-Bulk edits are restricted to subject, group, and tags. Name, phone, email, and Telegram handle
-remain available only when exactly one person is selected. This policy is checked by both
-`EditCommandParser` and `EditCommand`. The parser provides early feedback for user input,
-while the command protects callers that construct commands directly.
-
-The edit descriptor represents fields that were not supplied using `null`. A supplied
-subject or group replaces the corresponding value for every selected person. A supplied
-non-empty tag set replaces each selected person's complete tag set in entry order.
-`LinkedHashSet` and case-insensitive `Tag` equality retain the first spelling of each distinct
-tag. When every supplied `t/` is empty, the parser sets `tagRemovalCount` on the descriptor
-instead of supplying a replacement set. Each empty prefix removes one tag from the end of
-each selected person's current tag order; removal stops when no tags remain. For example,
-`t/` changes `[Student, Online]` to `[Student]`, while `t/ t/` removes both. Empty and non-empty
-tag values cannot be mixed. Both command constructors copy the descriptor defensively,
-including tag order and the removal count.
-
-For a bulk edit, all edited `Person` objects and the success result are prepared before the
-model is updated. The command then replaces each selected person using the resolved selection,
-so changes to the filtered list cannot cause later selected people to be skipped.
-
-<puml src="diagrams/EditSequenceDiagram.puml" alt="Bulk edit execution and saving sequence diagram" />
-
-Both single and bulk edits leave the current filter active. The filtered list is reevaluated
-as people are replaced, so edited people that no longer match disappear from the view. In
-contrast, `delete` resolves indexes against the currently displayed list and resets a successful
-deletion to show all remaining people. `LogicManager` saves the address book after successful
-execution.
-
-### Finding persons
+### Finding students
 
 1. Finding contacts with keywords and phrases
 
    1. Prerequisites: Launch the application with the sample contacts.
 
-   1. Test case: `find n/"Alice Pauline",Kurz`<br>
-      Expected: `Alice Pauline` and `Carl Kurz` are displayed because each matches at least one search term.
+   1. Test case: `find n/"Alex Yeoh",Li`<br>
+      Expected: `Alex Yeoh` and `David Li` are displayed because each matches at least one search term.
 
-   1. Test case: `find n/"Alice Pauline","Carl Kurz"`<br>
-      Expected: `Alice Pauline` and `Carl Kurz` are displayed.
+   1. Test case: `find n/"Alex Yeoh","David Li"`<br>
+      Expected: `Alex Yeoh` and `David Li` are displayed.
 
-   1. Incorrect command: `find n/Alice,"Pauline`<br>
+   1. Incorrect command: `find n/Alex,"Yeoh`<br>
       Expected: The displayed list remains unchanged. The status message shows the `find` command usage.
 
-   1. Incorrect command: `" "`<br>
+   1. Incorrect command: `find n/" "`<br>
       Expected: The displayed list remains unchanged. The status message shows the `find` command usage.
+
+### Clearing all students
+
+1. Clearing with confirmation
+
+   1. Test case: `clear`<br>
+      Expected: No student is deleted. The status message asks you to enter `clear confirm`.
+
+   1. Test case: `clear`, then `list`, then `clear confirm`<br>
+      Expected: No student is deleted. The status message states that no clear confirmation is pending.
+
+   1. Test case: `clear`, then `clear confirm`<br>
+      Expected: All students are deleted.
+
 ### Saving data
 
 1. Dealing with missing/corrupted data files
 
-   1. Prerequisites: Launch TutorTrack once so that `data/addressbook.json` is created, close it, and keep a copy
+   1. Prerequisites: Launch TutorTrack once so that `data/tutortrack.json` is created, close it, and keep a copy
       of the file.
 
-   1. Test case: In `data/addressbook.json`, change one student's `"email"` value to `"invalid"`, save the file,
+   1. Test case: In `data/tutortrack.json`, change one student's `"email"` value to `"invalid"`, save the file,
       and relaunch TutorTrack.<br>
       Expected: An error dialog names the data file and the reason. TutorTrack closes after the dialog is dismissed,
       and the data file is unchanged.
 
-   1. Test case: Move `data/addressbook.json` to another folder and relaunch TutorTrack.<br>
+   1. Test case: Move `data/tutortrack.json` to another folder and relaunch TutorTrack.<br>
       Expected: TutorTrack starts with sample data and creates a new data file.
 
-1. _{ more test cases … }_
+   1. Test case: Close TutorTrack, rename `data/tutortrack.json` to `data/addressbook.json`, and relaunch TutorTrack.<br>
+      Expected: The same students are shown. A new `data/tutortrack.json` is created and `data/addressbook.json` is kept.

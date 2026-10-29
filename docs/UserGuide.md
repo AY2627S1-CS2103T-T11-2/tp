@@ -23,7 +23,7 @@ TutorTrack is a **desktop application for tutors to manage student records, opti
 1. Copy the file to the folder you want to use as the _home folder_ for TutorTrack.
 
 1. Open a terminal, `cd` to the folder containing the JAR file, and run `java -jar tutortrack.jar`.<br>
-   A GUI similar to the one below should appear in a few seconds. Note how the app contains some sample data.<br>
+   A GUI similar to the one below should appear in a few seconds. On first launch, TutorTrack contains some sample students; the screenshot shows other example student records.<br>
    ![TutorTrack initial screen](images/Ui.png)
 
 1. Type a command in the command box and press Enter to execute it. For example, type **`help`** and press Enter to open the help window.<br>
@@ -33,7 +33,7 @@ TutorTrack is a **desktop application for tutors to manage student records, opti
 
    - `add n/John Doe p/98765432 e/johnd@example.com h/@john_doe s/Mathematics g/Sec 3A` : Adds a student named `John Doe` to TutorTrack.
 
-   * `delete 2,4-6` : Deletes the 2nd, 4th, 5th and 6th students shown in the current list.
+   - `delete 2,4-6` : Deletes the 2nd, 4th, 5th and 6th students shown in the current list.
 
    - `clear` followed by `clear confirm` : Deletes all student records.
 
@@ -77,7 +77,7 @@ TutorTrack is a **desktop application for tutors to manage student records, opti
 - Opens a help window with a summary of the available commands and a link to the full User Guide.
 - Close it using the window's native close control, <kbd>Command</kbd>+<kbd>W</kbd> on macOS, or <kbd>Alt</kbd>+<kbd>F4</kbd> where
 supported by your operating system.
-- You can also open the Help window by selecting **Help** > **Help F1** or pressing <kbd>F1</kbd>.
+- You can also open the Help window by selecting **Help** > **Help** in the menu bar or by pressing <kbd>F1</kbd>.
 - Press <kbd>Enter</kbd> while the Help window is open to copy the User Guide URL to the clipboard.
 
 Format: `help`
@@ -131,8 +131,7 @@ The following validation rules apply:
 are duplicates when their normalized names are the same, ignoring letter case. If `John Tan` already exists,
 `john tan` and `JOHN TAN` are rejected even if the other details are different. The capitalization originally entered
 for an accepted student is preserved for storage and display.
-* Two distinct students with the same name still cannot coexist in TutorTrack; this limitation remains tracked by
-issue #97.
+* Two distinct students with the same name cannot coexist in TutorTrack. This is a known limitation.
 
 <box type="tip" seamless>
 
@@ -162,7 +161,7 @@ Edits one or more students in the currently displayed list.
 Format: `edit INDEX_OR_RANGE[,INDEX_OR_RANGE]... [n/NAME] [p/PHONE] [e/EMAIL] [h/TELEGRAM_HANDLE] [s/SUBJECT] [g/GROUP] [t/TAG]... [t/OLD_TAG,NEW_TAG]...`
 
 At least one field must be supplied. Omitted fields remain unchanged.
-Fields are replaced by default. Tags can be added using `t/tag`, while a specific tag name can be edited using `edit <index> t/<old_tag>, <new_tag>`.
+Fields are replaced by default. Tags are added using `t/TAG`, while an existing tag is renamed using `t/OLD_TAG,NEW_TAG`.
 Empty values, including whitespace-only values, are rejected; use `delete` to clear optional fields.
 
 #### Selecting students
@@ -208,13 +207,13 @@ Examples:
 
 * `edit 1 p/91234567 e/johndoe@example.com h/@johndoe` Edits the phone number, email address and Telegram handle
     of the 1st student to be `9123 4567`, `johndoe@example.com` and `@johndoe` respectively.
-* `edit 2 n/Betsy Crower t/online,Graduate` Changes the name and replaces the tag `Online` to `Graduate`.
+* `edit 2 n/Betsy Crower t/friends,Graduate` Changes the name of the 2nd student to `Betsy Crower` and renames the tag `friends` to `Graduate`.
 * `edit 1-3 s/CS3240 g/T11 t/Graduate t/online` Updates the subject, group, and tags of the first three displayed students.
 * `find n/Alice` followed by `edit 1 g/T12` Updates the first matching student's group and keeps the name filter active.
 
 The following example shows a bulk edit that updates a group, adds a tag, and renames an existing tag.
 
-![Bulk edit result](images/EditUi.png)
+![Bulk edit result](images/editUi.png)
 
 ### Locating students: `find`
 
@@ -253,7 +252,7 @@ Examples:
 
 The following example shows a combined subject, group, and tag search.
 
-![Combined find result](images/FindUi.png)
+![Combined find result](images/findUi.png)
 
 ### Deleting students or optional fields: `delete`
 
@@ -318,6 +317,7 @@ TutorTrack data is saved automatically as a JSON file `[JAR file location]/data/
 If you used an earlier version that saved data as `[JAR file location]/addressbook.json` or `[JAR file location]/data/addressbook.json`,
 TutorTrack automatically copies that file to `[JAR file location]/data/tutortrack.json` the first time it starts. The original `addressbook.json`
 file is kept as a backup. If the copy cannot be made, TutorTrack continues using the original file so your data is still loaded.
+
 <box type="warning" seamless>
 
 **Caution:**
@@ -328,7 +328,7 @@ file is kept as a backup. If the copy cannot be made, TutorTrack continues using
   to another folder to start again with sample data.
 * **Older data.** A non-empty physical address in the JSON `"address"` field does not cause a student record to be
   rejected. TutorTrack loads the record with an empty Telegram handle instead. Values beginning with `@` must also
-  satisfy the current Telegram-handle format; otherwise, they are cleared. No migration or backup is created. The
+  satisfy the current Telegram-handle format; otherwise, they are cleared. This conversion does not create a backup. The
   file remains unchanged until the next successful command saves the loaded data, replacing the old physical address
   with an empty value.
 * **Other manual changes.** Values outside their accepted range can cause unexpected behaviour. Edit the file only
@@ -354,11 +354,11 @@ file is kept as a backup. If the copy cannot be made, TutorTrack continues using
 
 | Action | Format / Example                                                                                                                                                          |
 | ------ |---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **Add** | `add n/NAME e/EMAIL s/SUBJECT g/GROUP [h/TELEGRAM_HANDLE] [p/PHONE] [t/TAG]...`                                                                                           |
+| **Add** | `add n/NAME [p/PHONE] e/EMAIL [h/TELEGRAM_HANDLE] s/SUBJECT g/GROUP [t/TAG]...`<br>e.g., `add n/Ravi S/O Kumar e/ravi@example.com s/CS2103T g/T11`                  |
 | **Clear** | `clear`, then `clear confirm`                                                                                                                                             |
 | **Delete** | `delete INDEX_OR_RANGE[,INDEX_OR_RANGE]... [p/] [h/] [t/TAG]...`<br> e.g., `delete 1,3-5,7 t/`                                                                            |
-| **Edit** | `edit INDEX_OR_RANGE[,INDEX_OR_RANGE]... [n/NAME] [p/PHONE] [e/EMAIL] [h/TELEGRAM_HANDLE] [s/SUBJECT] [g/GROUP] [t/TAG]...`<br>e.g., `edit 1,3-5 s/CS3240 g/T11 t/online` |
-| **Find** | `find [n/NAME_TERM[,NAME_TERM]...] [h/TELEGRAM_HANDLE] [s/SUBJECT] [g/GROUP] [t/TAG_EXPRESSION]`                                                                          |
+| **Edit** | `edit INDEX_OR_RANGE[,INDEX_OR_RANGE]... [n/NAME] [p/PHONE] [e/EMAIL] [h/TELEGRAM_HANDLE] [s/SUBJECT] [g/GROUP] [t/TAG]... [t/OLD_TAG,NEW_TAG]...`<br>e.g., `edit 1,3-5 s/CS3240 g/T11 t/online` |
+| **Find** | `find [n/NAME_TERM[,NAME_TERM]...] [h/TELEGRAM_HANDLE] [s/SUBJECT] [g/GROUP] [t/TAG_EXPRESSION]`<br>e.g., `find n/alex,david`                                     |
 | **List** | `list`                                                                                                                                                                    |
 | **Help** | `help`                                                                                                                                                                    |
 | **Exit** | `exit`                                                                                                                                                                    |
