@@ -68,7 +68,8 @@ public class AddressBookParserTest {
         assertFalse(request.isConfirmed());
         assertTrue(confirmation.isConfirmed());
         String expectedMessage = String.format(MESSAGE_INVALID_COMMAND_FORMAT, ClearCommand.MESSAGE_USAGE);
-        assertThrows(ParseException.class, expectedMessage, () -> parser.parseCommand(ClearCommand.COMMAND_WORD + " 3"));
+        assertThrows(ParseException.class, expectedMessage, () ->
+                parser.parseCommand(ClearCommand.COMMAND_WORD + " 3"));
     }
 
     @Test

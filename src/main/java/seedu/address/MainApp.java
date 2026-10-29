@@ -1,8 +1,10 @@
 package seedu.address;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.Optional;
 import java.util.logging.Logger;
 
@@ -37,6 +39,10 @@ public class MainApp extends Application {
     private static final Logger logger = LogsCenter.getLogger(MainApp.class);
     private static final Path USER_PREFS_FILE_PATH = Paths.get("preferences.json");
     private static final Path ADDRESS_BOOK_FILE_PATH = Paths.get("data", "tutortrack.json");
+    private static final Path[] LEGACY_ADDRESS_BOOK_FILE_PATHS = {
+        Paths.get("data", "addressbook.json"),
+        Paths.get("addressbook.json")
+    };
 
     protected Ui ui;
     protected Logic logic;
@@ -50,7 +56,8 @@ public class MainApp extends Application {
 
         JsonUserPrefsStorage userPrefsStorage = new JsonUserPrefsStorage(USER_PREFS_FILE_PATH);
         UserPrefs userPrefs = initPrefs(userPrefsStorage);
-        JsonAddressBookStorage addressBookStorage = new JsonAddressBookStorage(ADDRESS_BOOK_FILE_PATH);
+        JsonAddressBookStorage addressBookStorage = new JsonAddressBookStorage(migrateLegacyDataFileIfNeeded(
+                ADDRESS_BOOK_FILE_PATH, LEGACY_ADDRESS_BOOK_FILE_PATHS));
         storage = new StorageManager(addressBookStorage, userPrefsStorage);
 
         model = initModelManager(storage, userPrefs);
@@ -58,6 +65,39 @@ public class MainApp extends Application {
         logic = new LogicManager(model, storage);
 
         ui = new UiManager(logic, storage.getAddressBookFilePath());
+    }
+
+    /**
+     * Copies data from a pre-TutorTrack filename when the new data file has not yet been created.
+     * The old file is retained as a backup. If copying fails, the old file is used so that existing
+     * data remains available instead of being replaced with sample data.
+     */
+    static Path migrateLegacyDataFileIfNeeded(Path dataFilePath, Path... legacyDataFilePaths) {
+        if (Files.exists(dataFilePath)) {
+            return dataFilePath;
+        }
+
+        for (Path legacyDataFilePath : legacyDataFilePaths) {
+            if (!Files.exists(legacyDataFilePath)) {
+                continue;
+            }
+
+            try {
+                Path parentDirectory = dataFilePath.getParent();
+                if (parentDirectory != null) {
+                    Files.createDirectories(parentDirectory);
+                }
+                Files.copy(legacyDataFilePath, dataFilePath, StandardCopyOption.COPY_ATTRIBUTES);
+                logger.info("Migrated existing data from " + legacyDataFilePath + " to " + dataFilePath + ".");
+                return dataFilePath;
+            } catch (IOException e) {
+                logger.warning("Could not migrate data from " + legacyDataFilePath + " to " + dataFilePath
+                        + ". Continuing to use the legacy data file: " + StringUtil.getDetails(e));
+                return legacyDataFilePath;
+            }
+        }
+
+        return dataFilePath;
     }
 
     /**
