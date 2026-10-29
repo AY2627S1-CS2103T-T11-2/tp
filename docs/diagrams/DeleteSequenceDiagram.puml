@@ -37,6 +37,10 @@ activate IndexRangeParser
 IndexRangeParser --> DeleteCommandParser : ranges
 deactivate IndexRangeParser
 
+' Hidden arrow positions the destroy marker below the activation bar.
+IndexRangeParser -[hidden]-> DeleteCommandParser
+destroy IndexRangeParser
+
 create IndexPersonTarget
 DeleteCommandParser -> IndexPersonTarget : new IndexPersonTarget(ranges)
 activate IndexPersonTarget
@@ -83,6 +87,10 @@ end note
 
 IndexPersonTarget --> DeleteCommand : peopleToDelete
 deactivate IndexPersonTarget
+
+' Hidden arrow positions the destroy marker below the activation bar.
+IndexPersonTarget -[hidden]-> DeleteCommand
+destroy IndexPersonTarget
 
 loop for each person in peopleToDelete
     DeleteCommand -> Model : deletePerson(person)
