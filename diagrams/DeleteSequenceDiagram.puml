@@ -37,6 +37,7 @@ activate IndexRangeParser
 IndexRangeParser --> DeleteCommandParser : ranges
 deactivate IndexRangeParser
 
+
 create IndexPersonTarget
 DeleteCommandParser -> IndexPersonTarget : new IndexPersonTarget(ranges)
 activate IndexPersonTarget
@@ -83,6 +84,7 @@ end note
 
 IndexPersonTarget --> DeleteCommand : peopleToDelete
 deactivate IndexPersonTarget
+
 
 loop for each person in peopleToDelete
     DeleteCommand -> Model : deletePerson(person)
