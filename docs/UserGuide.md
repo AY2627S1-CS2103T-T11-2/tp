@@ -105,7 +105,7 @@ The following validation rules apply:
 
 | Field | Prefix | Rules                                                                                                                                                                                                                                                                                                                                            |
 | --- |--------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Name | `n/`   | Maximum 100 characters. Alphanumeric words may contain hyphens or apostrophes and are separated by single spaces. Initials and short abbreviations of up to three letters may end in a period when followed by another name, for example `S. Jay` or `Aisyah Bte. Ahmad`. `D/O` is accepted between name parts. Repeated spaces are normalized to one space. |
+| Name | `n/`   | Maximum 100 characters. Alphanumeric words may contain hyphens or apostrophes and are separated by single spaces. Initials and short abbreviations of up to three letters may end in a period when followed by another name, for example `S. Jay` or `Aisyah Bte. Ahmad`. One uppercase `D/O` or `S/O` may appear between name parts, for example `Ravi S/O Kumar`; lowercase `d/o` and `s/o` are not accepted because `s/` is the subject prefix. Repeated spaces are normalized to one space. |
 | Phone | `p/`   | Optional. If provided, it must contain exactly 8 digits. A single space or hyphen is allowed between digit groups. Consecutive separators, country codes, and `+` are rejected. Numbers are stored and displayed as `xxxx xxxx`, for example `9123 4567`.                                                                                        |
 | Email | `e/`   | Maximum 254 characters. Must use the `local-part@domain` format. The local part must start and end with an alphanumeric character; `+`, `_`, `.`, and `-` are allowed only between alphanumeric characters. Domain labels may be separated by periods, may contain hyphens only between alphanumeric characters, and the final label must be at least 2 characters long. |
 | Telegram handle | `h/`   | Optional. If provided, it must begin with `@`, followed by 5 to 32 letters, digits, or underscores. The first character after `@` cannot be an underscore.                                                                                                                                                                                       |
@@ -136,6 +136,7 @@ Examples:
 * `add n/Bob Lee p/92345678 e/bob@example.com h/@bob_lee s/Physics g/J1A t/Student t/Online`
 * `add n/Jean-Luc O'Connor p/9123 4567 e/jean@example.com h/@jean_luc s/Physics g/J1A`
 * `add n/A. R. Rahman e/rahman@example.com s/Mathematics g/T11`
+* `add n/Ravi S/O Kumar e/ravi@example.com s/CS2103T g/T11`
 * `add n/Charlie Lim e/charlie@example.com s/Mathematics g/Sec 3A` adds a student without a phone number, Telegram
   handle, or tags.
 
@@ -323,8 +324,9 @@ AddressBook data is saved automatically as a JSON file `[JAR file location]/data
 **Caution:**
 
 * **Back up first.** Editing the data file directly is for advanced users; create a backup before making changes.
-* **Invalid data.** If a change makes the file invalid, AddressBook starts with an empty address book at the next run.
-  The invalid file remains on disk until you run a command, which saves the in-memory data.
+* **Invalid data.** If the data file cannot be loaded, for example because a value is invalid or longer than its
+  maximum length, TutorTrack shows an error naming the file and closes without changing it. Fix the file, or move it
+  to another folder to start again with sample data.
 * **Older data.** A non-empty physical address in the JSON `"address"` field does not cause a student record to be
   rejected. TutorTrack loads the record with an empty Telegram handle instead. Values beginning with `@` must also
   satisfy the current Telegram-handle format; otherwise, they are cleared. No migration or backup is created. The

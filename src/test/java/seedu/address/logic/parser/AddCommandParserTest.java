@@ -104,6 +104,24 @@ public class AddCommandParserTest {
     }
 
     @Test
+    public void parse_nameWithSonOfQualifier_keepsSubjectSeparate() {
+        Person expectedPerson = new PersonBuilder()
+                .withName("Ravi S/O Kumar")
+                .withPhone("")
+                .withEmail("ravi@example.com")
+                .withTelegramHandle("")
+                .withSubject("CS2103T")
+                .withGroup("T11")
+                .withTags()
+                .build();
+
+        assertParseSuccess(parser, " n/Ravi S/O Kumar e/ravi@example.com s/CS2103T g/T11",
+                new AddCommand(expectedPerson));
+        assertParseSuccess(parser, " s/CS2103T g/T11 e/ravi@example.com n/Ravi S/O Kumar",
+                new AddCommand(expectedPerson));
+    }
+
+    @Test
     public void parse_nameWithInitials_success() {
         Person expectedPerson = new PersonBuilder(BOB)
                 .withName("A. R. Rahman")
@@ -124,6 +142,8 @@ public class AddCommandParserTest {
 
         assertParseFailure(parser, " n/Abdul Rahmud e/abdul@example.com s/CS2103T g/T11 D/O", expectedMessage);
         assertParseFailure(parser, " n/Abdul D/ Rahmud e/abdul@example.com s/CS2103T g/T11", expectedMessage);
+        assertParseFailure(parser, " n/Ravi Kumar e/ravi@example.com s/CS2103T g/T11 S/O", expectedMessage);
+        assertParseFailure(parser, " n/Ravi S/Okay Kumar e/ravi@example.com s/CS2103T g/T11", expectedMessage);
         assertParseFailure(parser, REQUIRED_BOB_FIELDS + " x/unknown", expectedMessage);
     }
 

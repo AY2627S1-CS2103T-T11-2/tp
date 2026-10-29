@@ -15,7 +15,7 @@ public class Name {
             "Names should contain at most " + MAX_LENGTH + " characters, using alphanumeric words separated by "
                     + "single spaces, with hyphens or apostrophes "
                     + "within words. Initials or short abbreviations of up to three letters may end in a period "
-                    + "when followed by another name, and D/O may appear between name parts";
+                    + "when followed by another name, and D/O or S/O may appear between name parts";
 
     private static final String NAME_WORD = "[\\p{Alnum}]+(?:[-'][\\p{Alnum}]+)*";
     private static final String INITIAL_OR_ABBREVIATION = "[\\p{Alpha}]{1,3}\\.";
@@ -26,8 +26,9 @@ public class Name {
      * Hyphens and apostrophes must occur within an alphanumeric word. Periods are limited to initials and short
      * abbreviations that precede another name word. This prevents leading, trailing, and repeated separators while
      * allowing names such as {@code Jean-Luc}, {@code O'Connor}, {@code S. Jay}, and {@code Aisyah Bte. Ahmad}.
+     * An uppercase {@code D/O} or {@code S/O} may appear once between name parts.
      */
-    public static final String VALIDATION_REGEX = NAME_PART + "(?: D/O " + NAME_PART + ")?";
+    public static final String VALIDATION_REGEX = NAME_PART + "(?: [DS]/O " + NAME_PART + ")?";
 
     public final String fullName;
 

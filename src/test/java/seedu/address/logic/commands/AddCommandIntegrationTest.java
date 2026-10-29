@@ -66,4 +66,12 @@ public class AddCommandIntegrationTest {
         assertCommandFailure(new AddCommand(duplicate), model, AddCommand.MESSAGE_DUPLICATE_PERSON);
     }
 
+    @Test
+    public void execute_relationshipQualifierNameDifferingOnlyByCase_throwsCommandException() {
+        model.addPerson(new PersonBuilder().withName("Ravi S/O Kumar").build());
+        Person duplicate = new PersonBuilder().withName("RAVI S/O KUMAR").withEmail("other@example.com").build();
+
+        assertCommandFailure(new AddCommand(duplicate), model, AddCommand.MESSAGE_DUPLICATE_PERSON);
+    }
+
 }

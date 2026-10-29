@@ -123,6 +123,14 @@ public class EditCommandParserTest {
     }
 
     @Test
+    public void parse_nameWithSonOfQualifier_success() {
+        EditPersonDescriptor descriptor = new EditPersonDescriptorBuilder().withName("Ravi S/O Kumar").build();
+
+        assertParseSuccess(parser, "1 n/Ravi S/O Kumar", new EditCommand(INDEX_FIRST_PERSON, descriptor));
+        assertParseFailure(parser, "1 g/Group S/O", MESSAGE_INVALID_FORMAT);
+    }
+
+    @Test
     public void parse_groupContainingSlashes_success() {
         for (String group : List.of("T11/T12", "T11 x / typo", "T11 https://example.com")) {
             EditPersonDescriptor descriptor = new EditPersonDescriptorBuilder().withGroup(group).build();

@@ -36,6 +36,9 @@ public class NameTest {
         assertFalse(Name.isValidName("Abdul D/ Rahmud")); // incomplete relationship qualifier
         assertFalse(Name.isValidName("Abdul D/O")); // relationship qualifier must be between words
         assertFalse(Name.isValidName("Abdul X/O Rahmud")); // unsupported slash-containing component
+        assertFalse(Name.isValidName("Ravi s/o Kumar")); // relationship qualifiers must be uppercase
+        assertFalse(Name.isValidName("S/O Kumar")); // relationship qualifier must follow a name part
+        assertFalse(Name.isValidName("Ravi S/O Kumar D/O Tan")); // at most one relationship qualifier
         assertFalse(Name.isValidName("a".repeat(Name.MAX_LENGTH + 1))); // exceeds maximum length
         assertFalse(Name.isValidName("John..Tan")); // repeated periods
         assertFalse(Name.isValidName(".John")); // starts with a period
@@ -52,6 +55,8 @@ public class NameTest {
         assertTrue(Name.isValidName("Jean-Luc Tan")); // hyphenated name
         assertTrue(Name.isValidName("O'Connor")); // apostrophe in name
         assertTrue(Name.isValidName("Abdul Binte D/O Rahmud"));
+        assertTrue(Name.isValidName("Ravi S/O Kumar"));
+        assertTrue(Name.isValidName("R. Ravi S/O A. Kumar")); // relationship qualifier with initials
         assertTrue(Name.isValidName("a".repeat(Name.MAX_LENGTH))); // exactly maximum length
         assertTrue(Name.isValidName("S. Jay")); // initial
         assertTrue(Name.isValidName("A. R. Rahman")); // multiple initials

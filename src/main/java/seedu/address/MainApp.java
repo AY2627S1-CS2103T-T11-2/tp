@@ -7,13 +7,14 @@ import java.util.Optional;
 import java.util.logging.Logger;
 
 import javafx.application.Application;
+import javafx.application.Platform;
+import javafx.scene.control.Alert;
 import javafx.stage.Stage;
 import seedu.address.commons.core.LogsCenter;
 import seedu.address.commons.exceptions.DataLoadingException;
 import seedu.address.commons.util.StringUtil;
 import seedu.address.logic.Logic;
 import seedu.address.logic.LogicManager;
-import seedu.address.model.AddressBook;
 import seedu.address.model.Model;
 import seedu.address.model.ModelManager;
 import seedu.address.model.ReadOnlyAddressBook;
@@ -43,17 +44,33 @@ public class MainApp extends Application {
     protected Storage storage;
     protected Model model;
 
+    private String dataLoadingErrorMessage;
+
     @Override
     public void init() throws Exception {
         logger.info("=============================[ Initializing AddressBook ]===========================");
         super.init();
+        initComponents(USER_PREFS_FILE_PATH, ADDRESS_BOOK_FILE_PATH);
+    }
 
-        JsonUserPrefsStorage userPrefsStorage = new JsonUserPrefsStorage(USER_PREFS_FILE_PATH);
+    /**
+     * Creates the storage, model, logic and UI components using the given data files.
+     * If an existing address book file cannot be loaded, no model, logic or UI is created, so the file
+     * cannot be overwritten. The error is reported when the application starts.
+     */
+    void initComponents(Path userPrefsFilePath, Path addressBookFilePath) {
+        JsonUserPrefsStorage userPrefsStorage = new JsonUserPrefsStorage(userPrefsFilePath);
         UserPrefs userPrefs = initPrefs(userPrefsStorage);
-        JsonAddressBookStorage addressBookStorage = new JsonAddressBookStorage(ADDRESS_BOOK_FILE_PATH);
+        JsonAddressBookStorage addressBookStorage = new JsonAddressBookStorage(addressBookFilePath);
         storage = new StorageManager(addressBookStorage, userPrefsStorage);
 
-        model = initModelManager(storage, userPrefs);
+        try {
+            model = initModelManager(storage, userPrefs);
+        } catch (DataLoadingException e) {
+            logger.severe("Data file at " + addressBookFilePath + " could not be loaded: " + StringUtil.getDetails(e));
+            dataLoadingErrorMessage = buildDataLoadingErrorMessage(addressBookFilePath, e);
+            return;
+        }
 
         logic = new LogicManager(model, storage);
 
@@ -62,28 +79,38 @@ public class MainApp extends Application {
 
     /**
      * Returns a {@code ModelManager} with the data from {@code storage}'s address book and {@code userPrefs}. <br>
-     * The data from the sample address book will be used instead if {@code storage}'s address book is not found,
-     * or an empty address book will be used instead if errors occur when reading {@code storage}'s address book.
+     * The data from the sample address book will be used instead if {@code storage}'s address book is not found.
+     *
+     * @throws DataLoadingException if {@code storage}'s address book exists but cannot be loaded.
      */
-    private Model initModelManager(Storage storage, ReadOnlyUserPrefs userPrefs) {
+    private Model initModelManager(Storage storage, ReadOnlyUserPrefs userPrefs) throws DataLoadingException {
         logger.info("Using data file : " + storage.getAddressBookFilePath());
 
-        Optional<ReadOnlyAddressBook> addressBookOptional;
-        ReadOnlyAddressBook initialData;
-        try {
-            addressBookOptional = storage.readAddressBook();
-            if (addressBookOptional.isEmpty()) {
-                logger.info("Creating a new data file " + storage.getAddressBookFilePath()
-                        + " populated with a sample AddressBook.");
-            }
-            initialData = addressBookOptional.orElseGet(SampleDataUtil::getSampleAddressBook);
-        } catch (DataLoadingException e) {
-            logger.warning("Data file at " + storage.getAddressBookFilePath() + " could not be loaded."
-                    + " Will be starting with an empty AddressBook.");
-            initialData = new AddressBook();
+        Optional<ReadOnlyAddressBook> addressBookOptional = storage.readAddressBook();
+        if (addressBookOptional.isEmpty()) {
+            logger.info("Creating a new data file " + storage.getAddressBookFilePath()
+                    + " populated with a sample AddressBook.");
         }
-
+        ReadOnlyAddressBook initialData = addressBookOptional.orElseGet(SampleDataUtil::getSampleAddressBook);
         return new ModelManager(initialData, userPrefs);
+    }
+
+    /**
+     * Returns a message explaining that the data file could not be loaded and was left unchanged.
+     */
+    static String buildDataLoadingErrorMessage(Path addressBookFilePath, DataLoadingException e) {
+        Throwable cause = e.getCause() == null ? e : e.getCause();
+        return "TutorTrack could not load the data file at " + addressBookFilePath.toAbsolutePath()
+                + " and has stopped without changing it.\n\n"
+                + "Reason: " + cause.getMessage() + "\n\n"
+                + "Fix the file, or move it to another folder to start again with sample data.";
+    }
+
+    /**
+     * Returns the message describing why the data file could not be loaded, if loading failed.
+     */
+    Optional<String> getDataLoadingErrorMessage() {
+        return Optional.ofNullable(dataLoadingErrorMessage);
     }
 
     /**
@@ -121,12 +148,23 @@ public class MainApp extends Application {
     @Override
     public void start(Stage primaryStage) {
         logger.info("Starting AddressBook " + MainApp.VERSION);
+        if (dataLoadingErrorMessage != null) {
+            Alert alert = new Alert(Alert.AlertType.ERROR, dataLoadingErrorMessage);
+            alert.setTitle("TutorTrack");
+            alert.setHeaderText("Could not load data file");
+            alert.showAndWait();
+            Platform.exit();
+            return;
+        }
         ui.start(primaryStage);
     }
 
     @Override
     public void stop() {
         logger.info("============================ [ Stopping AddressBook ] =============================");
+        if (model == null) {
+            return;
+        }
         try {
             storage.saveUserPrefs(model.getUserPrefs());
         } catch (IOException e) {
