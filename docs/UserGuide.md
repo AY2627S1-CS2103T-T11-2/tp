@@ -102,7 +102,7 @@ clipboard.
 
 Adds a student to TutorTrack.
 
-Format: `add n/NAME [p/PHONE] e/EMAIL [h/TELEGRAM_HANDLE] s/SUBJECT g/GROUP [t/TAG]...`
+Format: `add n/NAME e/EMAIL s/SUBJECT g/GROUP [h/TELEGRAM_HANDLE] [p/PHONE] [t/TAG]...`
 
 * `n/NAME`, `e/EMAIL`, `s/SUBJECT`, and `g/GROUP` are required.
 * `p/PHONE`, `h/TELEGRAM_HANDLE`, and `t/TAG` are optional.
@@ -160,7 +160,7 @@ Edits one or more students in the currently displayed list.
 
 Format: `edit INDEX_OR_RANGE[,INDEX_OR_RANGE]... [n/NAME] [p/PHONE] [e/EMAIL] [h/TELEGRAM_HANDLE] [s/SUBJECT] [g/GROUP] [t/TAG]... [t/OLD_TAG,NEW_TAG]...`
 
-At least one field must be supplied. Omitted fields remain unchanged.
+At least one optional field must be supplied. Omitted fields remain unchanged.
 Fields are replaced by default. Tags are added using `t/TAG`, while an existing tag is renamed using `t/OLD_TAG,NEW_TAG`.
 Empty values, including whitespace-only values, are rejected; use `delete` to clear optional fields.
 
@@ -191,11 +191,11 @@ Empty values, including whitespace-only values, are rejected; use `delete` to cl
   comma in a rename is trimmed.
 - `t/TAG` adds a tag while preserving existing tags. Matching ignores case: adding `t/online` when `Online`
   exists keeps the existing spelling `Online`.
-- `t/OLD_TAG, NEW_TAG` renames a tag, matching `OLD_TAG` without case and displaying the exact capitalization of
+- `t/OLD_TAG,NEW_TAG` renames a tag, matching `OLD_TAG` without case and displaying the exact capitalization of
   `NEW_TAG`. For example, `t/needshelp, ONLINE` replaces `NeedsHelp` with `ONLINE`.
 - If the replacement tag already exists, the two tags merge into one using the replacement's capitalization.
   The renamed tag retains its position; any duplicate destination tag is removed.
-- Additions and renames run left to right. `edit 1 t/New t/New,Updated` adds `Updated` while retaining unrelated tags.
+- Additions and renames run left to right. `edit 1 t/New t/New,Updated` adds `Updated` to the first student index while retaining unrelated tags.
 - If any rename source is missing, the entire command fails and nobody is changed, including for bulk edits.
 - Empty `t/`, `p/`, and `h/` are rejected by `edit`. Use `delete 1 t/`, `delete 1 p/`, or `delete 1 h/` to clear them.
 - Other field formats and whitespace normalization follow the rules in [Adding a student](#adding-a-student-add).
@@ -208,7 +208,7 @@ Examples:
 * `edit 1 p/91234567 e/johndoe@example.com h/@johndoe` Edits the phone number, email address and Telegram handle
     of the 1st student to be `9123 4567`, `johndoe@example.com` and `@johndoe` respectively.
 * `edit 2 n/Betsy Crower t/friends,Graduate` Changes the name of the 2nd student to `Betsy Crower` and renames the tag `friends` to `Graduate`.
-* `edit 1-3 s/CS3240 g/T11 t/Graduate t/online` Updates the subject, group, and tags of the first three displayed students.
+* `edit 1-3 s/CS3240 g/T11 t/Graduate t/online` Updates the subject to CS3240, group to T11, and add the tags `Graduate` and `online` to the first three displayed students to CS3240, T11.
 * `find n/Alice` followed by `edit 1 g/T12` Updates the first matching student's group and keeps the name filter active.
 
 The following example shows a bulk edit that updates a group, adds a tag, and renames an existing tag.
@@ -217,14 +217,14 @@ The following example shows a bulk edit that updates a group, adds a tag, and re
 
 ### Locating students: `find`
 
-Finds students by name, Telegram handle, subject, group, tag, or a combination of these criteria.
+Finds students by `name`, `Telegram handle`, `subject`, `group`, `tag`, or a combination of these criteria.
 
 Formats:
 
 - `find [n/NAME_TERM[,NAME_TERM]...] [h/TELEGRAM_HANDLE] [s/SUBJECT] [g/GROUP] [t/TAG_EXPRESSION]`, where a
   name term is a `KEYWORD` or `"PHRASE"`
 
-- At least one name, Telegram handle, subject, group, or tag criterion must be provided.
+- At least one name, Telegram handle, subject, group, or tag criterion must be provided. Only one of each prefix can be supplied.
 - All searches are case-insensitive; for example, `n/hans` matches `Hans`, `g/t11` matches `T11`, and
   `t/needshelp` matches `needsHelp`.
 - Separate multiple name terms with commas. A student matching any name term is returned (an `OR` search).
@@ -233,7 +233,6 @@ Formats:
 - A quoted phrase performs a substring match; for example, `n/"lex Ye"` matches `Alex Yeoh`.
 - A Telegram handle must include its leading `@` and is matched exactly, ignoring letter case.
 - Subject, group, and tag filters require an exact match, ignoring letter case.
-- Only one of each prefix can be supplied.
 - Within `TAG_EXPRESSION`, separate tags with `,` for an `OR` search; for example, `t/lowAttendance,needsHelp` matches a
   student with either the `lowAttendance` or `needsHelp` tag.
 - Within `TAG_EXPRESSION`, separate tags with `&` for an `AND` search; for example, `t/lowAttendance&needsHelp` matches only a
@@ -244,8 +243,8 @@ Formats:
   (an `AND` search).
 
 Examples:
-* `find n/alex,david` returns `Alex Yeoh` and `David Li`.<br>
-* `find n/"Alex Yeoh",David` returns names containing either the phrase `Alex Yeoh` or the keyword `David`.
+* `find n/alex,david` returns `Alex Yeoh`,`Alex Goh`, `Alex Tan` and `David Li`.<br>
+* `find n/"Alex Yeoh",David` returns contacts containing either the names `Alex Yeoh` or  `David`.
 * `find s/CS2103T g/T11` returns students in group `T11` whose subject is `CS2103T`.
 * `find t/highParticipation,needsHelp` returns students tagged `highParticipation` or `needsHelp`.
 * `find t/highParticipation&needsHelp` returns students tagged with both `highParticipation` and `needsHelp`.

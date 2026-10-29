@@ -165,8 +165,8 @@
 }
 
 .command-shell {
-    -fx-background-color: #FCF0EA;
-    -fx-border-color: #D6A58F;
+    -fx-background-color: #C96E50;
+    -fx-border-color: #B04A36;
     -fx-border-radius: 9;
     -fx-background-radius: 9;
     -fx-padding: 0 16 0 16;
@@ -177,7 +177,7 @@
 .command-symbol {
     -fx-font-family: "Segoe UI Semibold";
     -fx-font-size: 29px;
-    -fx-text-fill: #C96E50;
+    -fx-text-fill: #FFFDF9;
 }
 
 .command-shell #commandTextField {
@@ -188,8 +188,8 @@
     -fx-border-width: 1;
     -fx-font-family: "Segoe UI Semibold";
     -fx-font-size: 17px;
-    -fx-text-fill: #24211D;
-    -fx-prompt-text-fill: #7A6657;
+    -fx-text-fill: #FFFDF9;
+    -fx-prompt-text-fill: #FDE9DD;
     -fx-padding: 0;
 }
 
