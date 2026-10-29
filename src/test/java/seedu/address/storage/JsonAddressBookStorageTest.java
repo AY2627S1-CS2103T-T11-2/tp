@@ -129,7 +129,7 @@ public class JsonAddressBookStorageTest {
         assertEquals("JoHn TaN", readBack.getPersonList().getFirst().getName().toString());
         assertEquals(original, new AddressBook(readBack));
     }
-  
+
     @Test
     public void saveAndReadAddressBook_nameWithInitials_preservesName() throws Exception {
         Path filePath = testFolder.resolve("InitialsAddressBook.json");

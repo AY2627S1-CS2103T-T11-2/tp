@@ -1,38 +1,113 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.Group?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Button?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.FlowPane?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.SVGPath?>
 
-<HBox id="cardPane" fx:id="cardPane" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1">
-  <GridPane HBox.hgrow="ALWAYS">
+<VBox id="cardPane" fx:id="cardPane" minHeight="120" spacing="9" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1">
+  <padding><Insets top="12" right="24" bottom="14" left="24" /></padding>
+  <HBox alignment="CENTER_LEFT" spacing="12">
+    <Label fx:id="id" styleClass="contact-index" />
+    <Label fx:id="name" styleClass="contact-name" />
+    <FlowPane fx:id="tags" alignment="CENTER_LEFT" />
+  </HBox>
+  <GridPane styleClass="contact-details">
     <columnConstraints>
-      <ColumnConstraints hgrow="SOMETIMES" minWidth="10" prefWidth="150" />
+      <ColumnConstraints percentWidth="21" />
+      <ColumnConstraints percentWidth="20" />
+      <ColumnConstraints percentWidth="25" />
+      <ColumnConstraints percentWidth="19" />
+      <ColumnConstraints percentWidth="15" />
     </columnConstraints>
-    <VBox alignment="CENTER_LEFT" minHeight="105" GridPane.columnIndex="0">
-      <padding>
-        <Insets top="5" right="5" bottom="5" left="15" />
-      </padding>
-      <HBox spacing="0.5" alignment="CENTER_LEFT">
-        <Label fx:id="id" styleClass="cell_big_label">
-          <minWidth>
-            <!-- Ensures that the label text is never truncated -->
-            <Region fx:constant="USE_PREF_SIZE" />
-          </minWidth>
-        </Label>
-        <Label fx:id="name" text="\$first" styleClass="cell_big_label" />
+    <VBox spacing="4" GridPane.columnIndex="0">
+      <Label text="SUBJECT" styleClass="field-title" />
+      <Label fx:id="subject" minWidth="0" styleClass="field-value" />
+    </VBox>
+    <VBox spacing="4" styleClass="field-column" GridPane.columnIndex="1">
+      <Label text="GROUP" styleClass="field-title" />
+      <Label fx:id="group" minWidth="0" styleClass="field-value" />
+    </VBox>
+    <VBox spacing="4" styleClass="field-column" GridPane.columnIndex="2">
+      <HBox alignment="CENTER_LEFT" spacing="9">
+        <Group scaleX="0.7" scaleY="0.7">
+          <children>
+            <SVGPath content="M5 5H19A2 2 0 0 1 21 7V17A2 2 0 0 1 19 19H5A2 2 0 0 1 3 17V7A2 2 0 0 1 5 5ZM4 7L12 13L20 7"
+                     styleClass="contact-icon" />
+          </children>
+        </Group>
+        <Label text="EMAIL" styleClass="field-title" />
       </HBox>
-      <FlowPane fx:id="tags" minWidth="0" prefWidth="0" />
-      <Label fx:id="phone" styleClass="cell_small_label" text="\$phone" />
-      <Label fx:id="telegramHandle" styleClass="cell_small_label" text="\$telegramHandle" />
-      <Label fx:id="email" styleClass="cell_small_label" text="\$email" />
-      <Label fx:id="subject" styleClass="cell_small_label" text="\$subject" />
-      <Label fx:id="group" styleClass="cell_small_label" text="\$group" />
+      <HBox alignment="CENTER_LEFT" spacing="10">
+        <Label fx:id="email" minWidth="0" HBox.hgrow="ALWAYS" styleClass="field-value" />
+        <Button accessibleText="Copy email" mnemonicParsing="false" onAction="#copyEmail" styleClass="copy-button">
+          <graphic>
+            <Group scaleX="0.9" scaleY="0.9">
+              <children>
+                <SVGPath content="M10 8H18A2 2 0 0 1 20 10V18A2 2 0 0 1 18 20H10A2 2 0 0 1 8 18V10A2 2 0 0 1 10 8Z" styleClass="copy-icon" />
+                <SVGPath content="M16 8V5.8A1.8 1.8 0 0 0 14.2 4H5.8A1.8 1.8 0 0 0 4 5.8V14.2A1.8 1.8 0 0 0 5.8 16H8" styleClass="copy-icon" />
+              </children>
+            </Group>
+          </graphic>
+        </Button>
+      </HBox>
+    </VBox>
+    <VBox fx:id="telegramSection" spacing="4" styleClass="field-column" GridPane.columnIndex="3">
+      <HBox alignment="CENTER_LEFT" spacing="9">
+        <Group scaleX="0.7" scaleY="0.7">
+          <children>
+            <SVGPath content="M21 3L13.9 21L10.1 13.9L3 10.1L21 3Z"
+                     styleClass="contact-icon" />
+            <SVGPath content="M10.1 13.9L14.7 9.3"
+                     styleClass="contact-icon" />
+          </children>
+        </Group>
+        <Label text="TELEGRAM" styleClass="field-title" />
+      </HBox>
+      <HBox alignment="CENTER_LEFT" spacing="10">
+        <Label fx:id="telegramHandle" minWidth="0" HBox.hgrow="ALWAYS" styleClass="field-value" />
+        <Button accessibleText="Copy Telegram handle" mnemonicParsing="false" onAction="#copyTelegramHandle" styleClass="copy-button">
+          <graphic>
+            <Group scaleX="0.9" scaleY="0.9">
+              <children>
+                <SVGPath content="M10 8H18A2 2 0 0 1 20 10V18A2 2 0 0 1 18 20H10A2 2 0 0 1 8 18V10A2 2 0 0 1 10 8Z" styleClass="copy-icon" />
+                <SVGPath content="M16 8V5.8A1.8 1.8 0 0 0 14.2 4H5.8A1.8 1.8 0 0 0 4 5.8V14.2A1.8 1.8 0 0 0 5.8 16H8" styleClass="copy-icon" />
+              </children>
+            </Group>
+          </graphic>
+        </Button>
+      </HBox>
+    </VBox>
+    <VBox fx:id="phoneSection" spacing="4" styleClass="field-column" GridPane.columnIndex="4">
+      <HBox alignment="CENTER_LEFT" spacing="9">
+        <Group scaleX="0.85" scaleY="0.85">
+          <children>
+            <SVGPath content="M6.1 2.8H8.9C9.4 2.8 9.8 3.1 9.9 3.6L10.6 6.7C10.7 7.1 10.6 7.5 10.3 7.8L8.5 9.6A14.2 14.2 0 0 0 12.4 13.5L14.2 11.7C14.5 11.4 14.9 11.3 15.3 11.4L18.4 12.1C18.9 12.2 19.2 12.6 19.2 13.1V15.9C19.2 16.6 18.6 17.2 17.9 17.2C9.8 17.2 4.8 12.2 4.8 4.1C4.8 3.4 5.4 2.8 6.1 2.8Z"
+                     styleClass="contact-icon" />
+          </children>
+        </Group>
+        <Label text="PHONE" styleClass="field-title" />
+      </HBox>
+      <HBox alignment="CENTER_LEFT" spacing="10">
+        <Label fx:id="phone" minWidth="0" HBox.hgrow="ALWAYS" styleClass="field-value" />
+        <Button accessibleText="Copy phone number" mnemonicParsing="false" onAction="#copyPhone" styleClass="copy-button">
+          <graphic>
+            <Group scaleX="0.9" scaleY="0.9">
+              <children>
+                <SVGPath content="M10 8H18A2 2 0 0 1 20 10V18A2 2 0 0 1 18 20H10A2 2 0 0 1 8 18V10A2 2 0 0 1 10 8Z" styleClass="copy-icon" />
+                <SVGPath content="M16 8V5.8A1.8 1.8 0 0 0 14.2 4H5.8A1.8 1.8 0 0 0 4 5.8V14.2A1.8 1.8 0 0 0 5.8 16H8" styleClass="copy-icon" />
+              </children>
+            </Group>
+          </graphic>
+        </Button>
+      </HBox>
     </VBox>
   </GridPane>
-</HBox>
+</VBox>

@@ -21,7 +21,7 @@ public class FindCommand extends Command {
 
     public static final String COMMAND_WORD = "find";
 
-    public static final String MESSAGE_USAGE = COMMAND_WORD + ": Finds persons matching the supplied name, Telegram "
+    public static final String MESSAGE_USAGE = COMMAND_WORD + ": Finds students matching the supplied name, Telegram "
             + "handle, subject, group, and tag criteria (case-insensitive).\n"
             + "Parameters: [" + PREFIX_NAME + "NAME_TERM[,NAME_TERM]...] "
             + "[" + PREFIX_TELEGRAM_HANDLE + "TELEGRAM_HANDLE] "

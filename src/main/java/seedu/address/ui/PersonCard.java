@@ -5,9 +5,12 @@ import javafx.beans.binding.Bindings;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tooltip;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.FlowPane;
-import javafx.scene.layout.HBox;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Region;
+import javafx.scene.layout.VBox;
 import seedu.address.model.person.Person;
 
 /**
@@ -28,11 +31,11 @@ public class PersonCard extends UiPart<Region> {
     public final Person person;
 
     @FXML
-    private HBox cardPane;
-    @FXML
-    private Label name;
+    private VBox cardPane;
     @FXML
     private Label id;
+    @FXML
+    private Label name;
     @FXML
     private Label phone;
     @FXML
@@ -44,6 +47,10 @@ public class PersonCard extends UiPart<Region> {
     @FXML
     private Label group;
     @FXML
+    private VBox phoneSection;
+    @FXML
+    private VBox telegramSection;
+    @FXML
     private FlowPane tags;
 
     /**
@@ -52,36 +59,59 @@ public class PersonCard extends UiPart<Region> {
     public PersonCard(Person person, int displayedIndex) {
         super(FXML);
         this.person = person;
-        id.setText(displayedIndex + ". ");
+        id.setText(displayedIndex + ".");
         name.setText(person.getName().fullName);
         phone.setText(person.getPhone().value);
         telegramHandle.setText(person.getTelegramHandle().value);
         email.setText(person.getEmail().value);
         subject.setText(person.getSubject().subject);
         group.setText(person.getGroup().group);
-        setVisibleAndManaged(phone, !person.getPhone().isEmpty());
-        setVisibleAndManaged(telegramHandle, !person.getTelegramHandle().isEmpty());
+        boolean hasPhone = !person.getPhone().isEmpty();
+        boolean hasTelegramHandle = !person.getTelegramHandle().isEmpty();
+        setVisibleAndManaged(phoneSection, hasPhone);
+        setVisibleAndManaged(telegramSection, hasTelegramHandle);
+        GridPane.setColumnIndex(phoneSection, PersonCardData.getPhoneColumnIndex(person));
         person.getTags().stream()
                 .forEach(tag -> tags.getChildren().add(createTagLabel(tag.tagName)));
     }
 
     /**
-     * Creates a tag label that wraps within the card and exposes its complete text on hover.
+     * Creates a styled tag label that wraps within the card and shows its full text on hover.
      */
-    private Label createTagLabel(String tagText) {
-        Label tagLabel = new Label(tagText);
-        tagLabel.setWrapText(true);
-        tagLabel.setMinWidth(0);
-        tagLabel.maxWidthProperty().bind(Bindings.max(1, tags.widthProperty()));
-        tagLabel.setTooltip(new Tooltip(tagText));
-        return tagLabel;
+    private Label createTagLabel(String tagName) {
+        Label tag = new Label(tagName);
+        tag.getStyleClass().add("tag-" + tagName.toLowerCase());
+        tag.setWrapText(true);
+        tag.setMinWidth(0);
+        tag.maxWidthProperty().bind(Bindings.max(1, tags.widthProperty()));
+        tag.setTooltip(new Tooltip(tagName));
+        return tag;
     }
 
-    /**
-     * Shows a label only when its corresponding field has a value.
-     */
-    private void setVisibleAndManaged(Label label, boolean isVisible) {
-        label.setVisible(isVisible);
-        label.setManaged(isVisible);
+    private void setVisibleAndManaged(Region region, boolean isVisible) {
+        region.setVisible(isVisible);
+        region.setManaged(isVisible);
+    }
+
+    @FXML
+    private void copyEmail() {
+        copyToClipboard(PersonCardData.getCopyValue(person, PersonCardData.CopyableDetail.EMAIL));
+    }
+
+    @FXML
+    private void copyTelegramHandle() {
+        copyToClipboard(PersonCardData.getCopyValue(person, PersonCardData.CopyableDetail.TELEGRAM_HANDLE));
+    }
+
+    @FXML
+    private void copyPhone() {
+        copyToClipboard(PersonCardData.getCopyValue(person, PersonCardData.CopyableDetail.PHONE));
+    }
+
+    /** Copies the selected contact detail to the operating system clipboard. */
+    private void copyToClipboard(String value) {
+        ClipboardContent content = new ClipboardContent();
+        content.putString(value);
+        Clipboard.getSystemClipboard().setContent(content);
     }
 }

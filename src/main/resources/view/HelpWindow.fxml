@@ -31,7 +31,7 @@
                   <Insets right="5.0" />
                 </HBox.margin>
               </Label>
-              <Button fx:id="copyButton" mnemonicParsing="false" onAction="#copyUrl" text="Copy URL">
+              <Button fx:id="copyButton" defaultButton="true" mnemonicParsing="false" onAction="#copyUrl" text="Copy URL">
                 <HBox.margin>
                   <Insets left="5.0" />
                 </HBox.margin>
@@ -46,17 +46,17 @@
             </columnConstraints>
             <children>
               <Label styleClass="commandTableHeader" text="Action" />
-              <Label styleClass="commandTableHeader" text="Format, examples" GridPane.columnIndex="1" />
+              <Label styleClass="commandTableHeader" text="Format" GridPane.columnIndex="1" />
               <Label styleClass="commandTableAction" text="Add" GridPane.rowIndex="1" />
-              <Label styleClass="commandTableFormat" text="add n/NAME [p/PHONE] e/EMAIL [h/TELEGRAM_HANDLE] s/SUBJECT g/GROUP [t/TAG]&#10;" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+              <Label styleClass="commandTableFormat" text="add n/NAME e/EMAIL s/SUBJECT g/GROUP [p/PHONE] [h/TELEGRAM_HANDLE] [t/TAG]...&#10;" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="1" />
               <Label styleClass="commandTableAction" text="Clear" GridPane.rowIndex="2" />
-              <Label styleClass="commandTableFormat" text="clear" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+              <Label styleClass="commandTableFormat" text="clear, then clear confirm" GridPane.columnIndex="1" GridPane.rowIndex="2" />
               <Label styleClass="commandTableAction" text="Delete" GridPane.rowIndex="3" />
               <Label styleClass="commandTableFormat" text="delete INDEX_OR_RANGE[,INDEX_OR_RANGE]... [p/] [h/] [t/TAG]...&#10;Empty t/ clears all tags.&#10;" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="3" />
               <Label styleClass="commandTableAction" text="Edit" GridPane.rowIndex="4" />
               <Label styleClass="commandTableFormat" text="edit INDEX_OR_RANGE[,INDEX_OR_RANGE]... [n/NAME] [p/PHONE] [e/EMAIL] [h/TELEGRAM_HANDLE] [s/SUBJECT] [g/GROUP] [t/TAG or t/OLD,NEW]...&#10;Empty values are rejected.&#10;" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="4" />
               <Label styleClass="commandTableAction" text="Find" GridPane.rowIndex="5" />
-              <Label styleClass="commandTableFormat" text="find [n/NAME_TERM[,NAME_TERM]...] [h/TELEGRAM_HANDLE] [s/SUBJECT] [g/GROUP] [t/TAG_EXPRESSION]&#10;" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+              <Label styleClass="commandTableFormat" text="find [n/NAME_TERM[,NAME_TERM]...] [h/TELEGRAM_HANDLE]&#10;[s/SUBJECT] [g/GROUP] [t/TAG_EXPRESSION]&#10;A name term is a KEYWORD or a &quot;PHRASE&quot;. Separate name terms with ','.&#10;For tags, 'a,b' means 'a OR b'; 'a&amp;b' means 'a AND b'; Do not mix operators or repeat prefixes.&#10;" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="5" />
               <Label styleClass="commandTableAction" text="List" GridPane.rowIndex="6" />
               <Label styleClass="commandTableFormat" text="list" GridPane.columnIndex="1" GridPane.rowIndex="6" />
               <Label styleClass="commandTableAction" text="Help" GridPane.rowIndex="7" />
