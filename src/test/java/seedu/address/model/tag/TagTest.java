@@ -27,6 +27,14 @@ public class TagTest {
     public void isValidTagName() {
         // null tag name
         assertThrows(NullPointerException.class, () -> Tag.isValidTagName(null));
+
+        assertFalse(Tag.isValidTagName(""));
+        assertFalse(Tag.isValidTagName("needs-help"));
+        assertFalse(Tag.isValidTagName("needs help"));
+        assertFalse(Tag.isValidTagName("T".repeat(Tag.MAX_LENGTH + 1)));
+        assertTrue(Tag.isValidTagName("Student"));
+        assertTrue(Tag.isValidTagName("NeedsHelp"));
+        assertTrue(Tag.isValidTagName("T".repeat(Tag.MAX_LENGTH)));
     }
 
     @Test

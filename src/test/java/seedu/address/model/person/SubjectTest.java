@@ -23,8 +23,10 @@ public class SubjectTest {
         assertFalse(Subject.isValidSubject(""));
         assertFalse(Subject.isValidSubject(" "));
         assertFalse(Subject.isValidSubject("Computer-Science"));
+        assertFalse(Subject.isValidSubject("S".repeat(Subject.MAX_LENGTH + 1)));
         assertTrue(Subject.isValidSubject("Mathematics"));
         assertTrue(Subject.isValidSubject("Computer Science 2"));
+        assertTrue(Subject.isValidSubject("S".repeat(Subject.MAX_LENGTH)));
     }
 
     @Test

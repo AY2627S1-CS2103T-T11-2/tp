@@ -53,6 +53,16 @@ public class AddCommandTest {
     }
 
     @Test
+    public void execute_duplicateNameWithRelationshipQualifier_throwsCommandException() {
+        Person existingPerson = new PersonBuilder().withName("Abdul Binte D/O Rahmud").build();
+        Person duplicatePerson = new PersonBuilder(existingPerson).withEmail("other@example.com").build();
+        AddCommand addCommand = new AddCommand(duplicatePerson);
+        ModelStub modelStub = new ModelStubWithPerson(existingPerson);
+
+        assertThrows(CommandException.class, AddCommand.MESSAGE_DUPLICATE_PERSON, () -> addCommand.execute(modelStub));
+    }
+
+    @Test
     public void equals() {
         Person alice = new PersonBuilder().withName("Alice").build();
         Person bob = new PersonBuilder().withName("Bob").build();

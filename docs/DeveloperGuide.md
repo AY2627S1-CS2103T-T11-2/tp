@@ -151,8 +151,14 @@ Command-specific parsers remain responsible for wrapping parsing failures in the
 (preserve the current value) from an empty `h/` (clear it). Both parsers explicitly reject the legacy `a/` prefix.
 
 `ParserUtil` performs shared contact-field normalization before constructing the corresponding model value object.
-It trims names and collapses consecutive internal whitespace, while `Name` permits single spaces, hyphens, and
-apostrophes between alphanumeric words. `Phone` requires exactly eight digits, accepts single spaces or hyphens
+It trims names and collapses consecutive internal whitespace. `Name` permits alphanumeric words separated by single
+spaces, hyphens or apostrophes within words, initials or abbreviations of up to three letters ending in a period
+when followed by another word, and one uppercase `D/O` or `S/O` between name parts. Because `/` normally ends a
+prefix, `ArgumentTokenizer.containsUnknownPrefix` treats an exact `D/O` or `S/O` token as name text only while `n/`
+is the active prefix; elsewhere it is rejected as an unknown prefix. Lowercase `s/o` is not supported because `s/` is
+the subject prefix. The model value objects enforce maximum lengths of 100 characters for names, subjects, and
+groups, 50 for tags, and 254 for email addresses, so command parsing and JSON reload apply the same constraints.
+A data file containing a longer value therefore fails to load, as described in the Storage component. `Phone` requires exactly eight digits, accepts single spaces or hyphens
 between digit groups, and stores numbers as `xxxx xxxx`. Country codes, `+`, and consecutive separators are rejected.
 `TelegramHandle` treats an empty value as absent; a non-empty
 value must begin with `@`, followed by 5 to 32 letters, digits, or underscores, with no leading underscore.
@@ -228,9 +234,11 @@ successfully executed command causes `LogicManager` to save the in-memory data, 
 address is overwritten with an empty `"address"` value.
 
 JSON files that already contain names differing only by capitalization, such as `John Tan` and `john tan`, now fail
-validation as duplicate data. Loading is all-or-nothing: TutorTrack does not silently discard, merge, or rewrite either
-record. An automatic migration would risk merging distinct students, so the safe recovery is to back up the JSON file
-and give one record a genuinely distinct name before loading it again.
+validation as duplicate data. Loading is all-or-nothing. If an existing data file cannot be loaded, for example
+because of such duplicates, a value longer than its maximum length, or malformed JSON, `MainApp` does not create
+`Logic` or the main window. Instead, it shows an error dialog naming the file and exits, so no command can save over
+the original file. An automatic migration would risk merging distinct students, so recovery is manual: back up and
+correct the file, or move it away to start again with sample data.
 
 ### Common classes
 
@@ -604,6 +612,21 @@ testers are expected to do more *exploratory* testing.
    1. Test case: Replace the name above with `John..Tan`, `.John`, or `John.`.<br>
       Expected: No student is added. The status message shows the name constraints.
 
+1. Adding a student whose name contains `D/O` or `S/O`
+
+   1. Test case: `add n/Ravi S/O Kumar e/ravi@example.com s/CS2103T g/T11`<br>
+      Expected: Ravi is added with the name `Ravi S/O Kumar` and the subject `CS2103T`.
+
+   1. Test case: `add n/Ravi Kumar e/ravi2@example.com s/CS2103T g/T11 S/O`<br>
+      Expected: No student is added. The status message shows the `add` command usage because `S/O` is not part of
+      the name.
+
+1. Rejecting values longer than their maximum length
+
+   1. Test case: `add n/Dan Ong e/dan@example.com s/CS2103T g/T11 t/` followed by 51 letters, for example
+      `aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa`.<br>
+      Expected: No student is added. The status message states that tags can have at most 50 characters.
+
 1. Rejecting malformed input without changing data
 
    1. Test case: `add n/Charlie Lim e/charlie@example.com s/Mathematics g/T11 x/typo`<br>
@@ -696,6 +719,15 @@ execution.
 
 1. Dealing with missing/corrupted data files
 
-   1. _{Explain how to simulate missing or corrupted data files and state the expected behavior.}_
+   1. Prerequisites: Launch TutorTrack once so that `data/addressbook.json` is created, close it, and keep a copy
+      of the file.
 
-1. _{ more test cases … }_**
+   1. Test case: In `data/addressbook.json`, change one student's `"email"` value to `"invalid"`, save the file,
+      and relaunch TutorTrack.<br>
+      Expected: An error dialog names the data file and the reason. TutorTrack closes after the dialog is dismissed,
+      and the data file is unchanged.
+
+   1. Test case: Move `data/addressbook.json` to another folder and relaunch TutorTrack.<br>
+      Expected: TutorTrack starts with sample data and creates a new data file.
+
+1. _{ more test cases … }_

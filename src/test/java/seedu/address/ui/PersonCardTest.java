@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -16,6 +17,7 @@ import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.layout.FlowPane;
+import javafx.scene.text.Text;
 import seedu.address.logic.commands.Command;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.logic.parser.AddressBookParser;
@@ -81,6 +83,29 @@ public class PersonCardTest {
             panel.getRoot().layout();
             assertTrue(panel.getRoot().lookupAll(".label").stream()
                     .anyMatch(node -> node instanceof Label label && label.getText().equals("STUDENT")));
+        });
+    }
+
+    @Test
+    public void constructor_longNameInNarrowList_showsCompleteNameWithTooltip() throws InterruptedException {
+        String longName = "Muhammad Abdul Rahman Bin Mohamed Ismail S/O Krishnan Ramasamy Pillai Subramaniam";
+        Model model = new ModelManager();
+        model.addPerson(new PersonBuilder().withName(longName).build());
+        runOnFxThread(() -> {
+            PersonListPanel panel = new PersonListPanel(model.getFilteredPersonList());
+            new Scene(panel.getRoot(), 450, 500);
+            panel.getRoot().applyCss();
+            panel.getRoot().layout();
+            Label nameLabel = (Label) panel.getRoot().lookup("#name");
+            String renderedName = nameLabel.lookupAll(".text").stream()
+                    .map(node -> ((Text) node).getText())
+                    .collect(Collectors.joining())
+                    .replace("\n", " ")
+                    .trim();
+
+            assertTrue(nameLabel.isWrapText());
+            assertEquals(longName, renderedName);
+            assertEquals(longName, nameLabel.getTooltip().getText());
         });
     }
 

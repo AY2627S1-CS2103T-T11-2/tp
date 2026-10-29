@@ -54,6 +54,7 @@ public class EmailTest {
         assertFalse(Email.isValidEmail("alice@x.-ab"));
         assertFalse(Email.isValidEmail("alice@x.ab-"));
         assertFalse(Email.isValidEmail("alice@x.a--b"));
+        assertFalse(Email.isValidEmail("a".repeat(Email.MAX_LENGTH - 4) + "@a.bc"));
 
         // valid email
         assertTrue(Email.isValidEmail("PeterJack_1190@example.com")); // underscore in local part
@@ -71,6 +72,7 @@ public class EmailTest {
         assertTrue(Email.isValidEmail("peter_jack@very-very-very-long-example.com")); // long domain name
         assertTrue(Email.isValidEmail("if.you.dream.it_you.can.do.it@example.com")); // long local part
         assertTrue(Email.isValidEmail("e1234567@u.nus.edu")); // more than one period in domain
+        assertTrue(Email.isValidEmail("a".repeat(Email.MAX_LENGTH - 5) + "@a.bc")); // exactly maximum length
     }
 
     @Test

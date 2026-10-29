@@ -1,5 +1,7 @@
 package seedu.address.logic.parser;
 
+import static seedu.address.logic.parser.CliSyntax.PREFIX_NAME;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -18,6 +20,8 @@ import java.util.stream.Collectors;
 public class ArgumentTokenizer {
 
     private static final Pattern PARAMETER_PREFIX = Pattern.compile("(?<!\\S)[A-Za-z][A-Za-z0-9_-]*/(?!/)");
+    private static final List<String> NAME_RELATIONSHIP_QUALIFIERS = List.of("D/O", "S/O");
+    private static final int NAME_RELATIONSHIP_QUALIFIER_LENGTH = 3;
 
     /**
      * Tokenizes an arguments string and returns an {@code ArgumentMultimap} object that maps prefixes to their
@@ -34,17 +38,35 @@ public class ArgumentTokenizer {
 
     /**
      * Returns true if {@code argsString} contains a parameter-like token that is not one of {@code prefixes}.
-     * Embedded slashes and URLs are not treated as parameter prefixes.
+     * Embedded slashes and URLs are not treated as parameter prefixes. An exact {@code D/O} or {@code S/O} token is
+     * treated as name text only while the active parameter is {@code n/}.
      */
     public static boolean containsUnknownPrefix(String argsString, Prefix... prefixes) {
         List<Prefix> recognizedPrefixes = List.of(prefixes);
         Matcher matcher = PARAMETER_PREFIX.matcher(argsString);
+        Prefix activePrefix = null;
         while (matcher.find()) {
-            if (!recognizedPrefixes.contains(new Prefix(matcher.group()))) {
+            Prefix matchedPrefix = new Prefix(matcher.group());
+            if (recognizedPrefixes.contains(matchedPrefix)) {
+                activePrefix = matchedPrefix;
+            } else if (!isNameRelationshipQualifier(argsString, matcher, activePrefix)) {
                 return true;
             }
         }
         return false;
+    }
+
+    /**
+     * Returns true if the token found by {@code matcher} is a complete {@code D/O} or {@code S/O} within a name.
+     */
+    private static boolean isNameRelationshipQualifier(String argsString, Matcher matcher, Prefix activePrefix) {
+        int qualifierStart = matcher.start();
+        int qualifierEnd = qualifierStart + NAME_RELATIONSHIP_QUALIFIER_LENGTH;
+        return PREFIX_NAME.equals(activePrefix)
+                && NAME_RELATIONSHIP_QUALIFIERS.stream()
+                        .anyMatch(qualifier -> argsString.startsWith(qualifier, qualifierStart))
+                && (qualifierEnd == argsString.length()
+                        || Character.isWhitespace(argsString.charAt(qualifierEnd)));
     }
 
     /**

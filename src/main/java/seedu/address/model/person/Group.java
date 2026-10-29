@@ -9,7 +9,10 @@ import static seedu.address.commons.util.AppUtil.checkArgument;
  */
 public class Group {
 
-    public static final String MESSAGE_CONSTRAINTS = "Groups can take any values, and should not be blank";
+    public static final int MAX_LENGTH = 100;
+
+    public static final String MESSAGE_CONSTRAINTS = "Groups can take any non-blank value of at most "
+            + MAX_LENGTH + " characters";
 
     /*
      * The first character of the group must not be a whitespace,
@@ -30,7 +33,7 @@ public class Group {
     }
 
     public static boolean isValidGroup(String test) {
-        return test.matches(VALIDATION_REGEX);
+        return test.length() <= MAX_LENGTH && test.matches(VALIDATION_REGEX);
     }
 
     @Override

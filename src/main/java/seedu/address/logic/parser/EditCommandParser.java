@@ -47,7 +47,9 @@ public class EditCommandParser implements Parser<EditCommand> {
             throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, EditCommand.MESSAGE_USAGE), pe);
         }
 
-        verifyNoUnknownPrefixes(args);
+        if (ArgumentTokenizer.containsUnknownPrefix(args, EDIT_PREFIXES.toArray(Prefix[]::new))) {
+            throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, EditCommand.MESSAGE_USAGE));
+        }
 
         if (argMultimap.getValue(PREFIX_LEGACY_ADDRESS).isPresent()) {
             throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, EditCommand.MESSAGE_USAGE));
@@ -98,16 +100,6 @@ public class EditCommandParser implements Parser<EditCommand> {
         }
 
         return new EditCommand(target, editPersonDescriptor);
-    }
-
-    /**
-     * Rejects unrecognized parameter-like tokens instead of silently storing them in a field value.
-     * Embedded slashes and URLs remain valid value text.
-     */
-    private void verifyNoUnknownPrefixes(String args) throws ParseException {
-        if (ArgumentTokenizer.containsUnknownPrefix(args, EDIT_PREFIXES.toArray(Prefix[]::new))) {
-            throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, EditCommand.MESSAGE_USAGE));
-        }
     }
 
     /**

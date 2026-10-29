@@ -61,6 +61,8 @@ public class PersonCard extends UiPart<Region> {
         this.person = person;
         id.setText(displayedIndex + ".");
         name.setText(person.getName().fullName);
+        name.setWrapText(true);
+        name.setTooltip(new Tooltip(person.getName().fullName));
         phone.setText(person.getPhone().value);
         telegramHandle.setText(person.getTelegramHandle().value);
         email.setText(person.getEmail().value);

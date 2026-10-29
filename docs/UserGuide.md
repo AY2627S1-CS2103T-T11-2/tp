@@ -74,9 +74,9 @@ TutorTrack is a **desktop application for tutors to manage student records, opti
 
 ### Viewing help: `help`
 
-- Opens a help window with a summary of the available commands and a link to the full User Guide. 
+- Opens a help window with a summary of the available commands and a link to the full User Guide.
 - Close it using the window's native close control, <kbd>Command</kbd>+<kbd>W</kbd> on macOS, or <kbd>Alt</kbd>+<kbd>F4</kbd> where
-supported by your operating system. 
+supported by your operating system.
 - You can also open the Help window by selecting **Help** > **Help F1** or pressing <kbd>F1</kbd>.
 - Press <kbd>Enter</kbd> while the Help window is open to copy the User Guide URL to the clipboard.
 
@@ -114,13 +114,13 @@ The following validation rules apply:
 
 | Field | Prefix | Rules                                                                                                                                                                                                                                                                                                                                            |
 | --- |--------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Name | `n/`   | Must be non-blank. Alphanumeric words may contain hyphens or apostrophes and are separated by single spaces. Initials and short abbreviations of up to three letters may end in a period when followed by another name, for example `S. Jay` or `Aisyah Bte. Ahmad`. Repeated spaces are normalized to one space.                                |
+| Name | `n/`   | Maximum 100 characters. Alphanumeric words may contain hyphens or apostrophes and are separated by single spaces. Initials and short abbreviations of up to three letters may end in a period when followed by another name, for example `S. Jay` or `Aisyah Bte. Ahmad`. One uppercase `D/O` or `S/O` may appear between name parts, for example `Ravi S/O Kumar`; lowercase `d/o` and `s/o` are not accepted because `s/` is the subject prefix. Repeated spaces are normalized to one space. |
 | Phone | `p/`   | Optional. If provided, it must contain exactly 8 digits. A single space or hyphen is allowed between digit groups. Consecutive separators, country codes, and `+` are rejected. Numbers are stored and displayed as `xxxx xxxx`, for example `9123 4567`.                                                                                        |
-| Email | `e/`   | Must use the `local-part@domain` format. The local part must start and end with an alphanumeric character; `+`, `_`, `.`, and `-` are allowed only between alphanumeric characters. Domain labels may be separated by periods, may contain hyphens only between alphanumeric characters, and the final label must be at least 2 characters long. |
+| Email | `e/`   | Maximum 254 characters. Must use the `local-part@domain` format. The local part must start and end with an alphanumeric character; `+`, `_`, `.`, and `-` are allowed only between alphanumeric characters. Domain labels may be separated by periods, may contain hyphens only between alphanumeric characters, and the final label must be at least 2 characters long. |
 | Telegram handle | `h/`   | Optional. If provided, it must begin with `@`, followed by 5 to 32 letters, digits, or underscores. The first character after `@` cannot be an underscore.                                                                                                                                                                                       |
-| Subject | `s/`   | Must be non-blank and contain only alphanumeric characters and spaces.                                                                                                                                                                                                                                                                           |
-| Group | `g/`   | Must be non-blank. Any characters are allowed except reserved parameter-like tokens described below.                                                                                                                                                                                                                                             |
-| Tag | `t/`   | Must be non-blank and contain only alphanumeric characters without spaces. Tags appear in the order entered, including after saving and reopening. Tags are unique ignoring case; repeated tags such as `Student` and `student` are stored once, using the first spelling supplied.                                                              |
+| Subject | `s/`   | Maximum 100 characters. Must be non-blank and contain only alphanumeric characters and spaces.                                                                                                                                                                                                                                                    |
+| Group | `g/`   | Maximum 100 characters. Must be non-blank. Any characters are allowed except reserved parameter-like tokens described below.                                                                                                                                                                                                                      |
+| Tag | `t/`   | Maximum 50 characters. Must be non-blank and contain only alphanumeric characters without spaces. Tags appear in the order entered, including after saving and reopening. Tags are unique ignoring case; repeated tags such as `Student` and `student` are stored once, using the first spelling supplied.                                      |
 
 * Leading and trailing whitespace around each value is ignored. Whitespace-only phone and Telegram values are treated as empty.
 * Unknown parameter-like tokens such as `x/typo` are rejected. A token beginning at the start of the input or after
@@ -144,7 +144,9 @@ Examples:
 * `add n/Alice Tan p/91234567 e/alice@example.com h/@alice_tan s/Mathematics g/Sec 3A t/NeedsHelp`
 * `add n/Bob Lee p/92345678 e/bob@example.com h/@bob_lee s/Physics g/J1A t/NeedsHelp t/Online`
 * `add n/Jean-Luc O'Connor p/9123 4567 e/jean@example.com h/@jean_luc s/Physics g/J1A`
-* `add n/A. R. Rahman e/rahman@example.com s/Mathematics g/T11` adds a student without a phone number, Telegram
+* `add n/A. R. Rahman e/rahman@example.com s/Mathematics g/T11`
+* `add n/Ravi S/O Kumar e/ravi@example.com s/CS2103T g/T11`
+* `add n/Charlie Lim e/charlie@example.com s/Mathematics g/Sec 3A` adds a student without a phone number, Telegram
   handle, or tags.
 
 ### Listing all students: `list`
@@ -313,16 +315,17 @@ TutorTrack automatically saves data after successfully executing a command. You 
 
 TutorTrack data is saved automatically as a JSON file `[JAR file location]/data/tutortrack.json`. Advanced users are welcome to update data directly by editing that data file.
 
-If you used an earlier version that saved data as `[JAR file location]/addressbook.json` or `[JAR file location]/data/addressbook.json`, 
-TutorTrack automatically copies that file to `[JAR file location]/data/tutortrack.json` the first time it starts. The original `addressbook.json` 
+If you used an earlier version that saved data as `[JAR file location]/addressbook.json` or `[JAR file location]/data/addressbook.json`,
+TutorTrack automatically copies that file to `[JAR file location]/data/tutortrack.json` the first time it starts. The original `addressbook.json`
 file is kept as a backup. If the copy cannot be made, TutorTrack continues using the original file so your data is still loaded.
 <box type="warning" seamless>
 
 **Caution:**
 
 * **Back up first.** Editing the data file directly is for advanced users; create a backup before making changes.
-* **Invalid data.** If a change makes the file invalid, TutorTrack starts with an empty student list at the next run.
-  The invalid file remains on disk until you run a command, which saves the in-memory data.
+* **Invalid data.** If the data file cannot be loaded, for example because a value is invalid or longer than its
+  maximum length, TutorTrack shows an error naming the file and closes without changing it. Fix the file, or move it
+  to another folder to start again with sample data.
 * **Older data.** A non-empty physical address in the JSON `"address"` field does not cause a student record to be
   rejected. TutorTrack loads the record with an empty Telegram handle instead. Values beginning with `@` must also
   satisfy the current Telegram-handle format; otherwise, they are cleared. No migration or backup is created. The

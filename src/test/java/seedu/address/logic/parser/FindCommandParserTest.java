@@ -55,6 +55,14 @@ public class FindCommandParserTest {
     }
 
     @Test
+    public void parse_phraseWithRelationshipQualifier_returnsFindCommand() {
+        assertParseSuccess(parser, "n/\"Ravi S/O Kumar\"", commandWithName(List.of(), List.of("Ravi S/O Kumar")));
+        assertParseSuccess(parser, "n/\"Binte D/O Rahmud\"", commandWithName(List.of(), List.of("Binte D/O Rahmud")));
+        assertParseFailure(parser, "g/T11 S/O", String.format(MESSAGE_INVALID_COMMAND_FORMAT,
+                FindCommand.MESSAGE_USAGE));
+    }
+
+    @Test
     public void parse_validMixedArgs_returnsFindCommand() {
         FindCommand expectedFindCommand = commandWithName(List.of("Tan"), List.of("Alice Chen"));
         assertParseSuccess(parser, "n/\"Alice Chen\",Tan", expectedFindCommand);
