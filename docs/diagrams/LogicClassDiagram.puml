@@ -19,8 +19,6 @@ Class IndexRange
 
 Class EditCommand
 Class "EditCommand.EditPersonDescriptor" as EditPersonDescriptor
-Class "<<interface>>\nPersonTarget" as PersonTarget
-Class IndexPersonTarget
 
 Class "<<interface>>\nLogic" as Logic
 Class LogicManager
@@ -65,10 +63,9 @@ end note
 
 note right of EditPersonDescriptor
   null field = unchanged.
-  Empty phone or Telegram handle = clear.
-  Non-null tags = replace in entry order.
-  tagRemovalCount > 0 = remove that many
-  tags from the end of each selected person.
+  Supplied phone and Telegram values must be non-empty.
+  Ordered TagEdit values add or rename tags.
+  Optional fields are cleared using DeleteCommand.
 end note
 
 LogicManager --> Model
