@@ -68,6 +68,32 @@ public class FindPredicateTest {
     }
 
     @Test
+    public void test_storedSubjectAndGroupWithRepeatedSpaces_matches() {
+        // Records saved before #145 was fixed may still contain repeated spaces.
+        Person legacyPerson = new PersonBuilder().withSubject("CS  2103T").withGroup("T   11").build();
+        FindPredicate predicate = new FindPredicate(Optional.empty(), Optional.of(new Subject("cs 2103t")),
+                Optional.of(new Group("t 11")), Set.of());
+
+        assertTrue(predicate.test(legacyPerson));
+    }
+
+    @Test
+    public void test_subjectAndGroupDifferingBeyondSpacing_doNotMatch() {
+        Person person = new PersonBuilder().withSubject("CS2103T").withGroup("T11").build();
+        Person tabGroupPerson = new PersonBuilder().withGroup("T\t11").build();
+        Person splitGroupPerson = new PersonBuilder().withGroup("T1 1").build();
+
+        assertFalse(new FindPredicate(Optional.empty(), Optional.of(new Subject("CS 2103T")), Optional.empty(),
+                Set.of()).test(person));
+        assertFalse(new FindPredicate(Optional.empty(), Optional.empty(), Optional.of(new Group("T 11")),
+                Set.of()).test(person));
+        assertFalse(new FindPredicate(Optional.empty(), Optional.empty(), Optional.of(new Group("T 11")),
+                Set.of()).test(tabGroupPerson));
+        assertFalse(new FindPredicate(Optional.empty(), Optional.empty(), Optional.of(new Group("T11")),
+                Set.of()).test(splitGroupPerson));
+    }
+
+    @Test
     public void test_anyTagMatches_returnsTrue() {
         Person person = new PersonBuilder().withTags("highParticipation").build();
         FindPredicate predicate = new FindPredicate(Optional.empty(), Optional.empty(), Optional.empty(),

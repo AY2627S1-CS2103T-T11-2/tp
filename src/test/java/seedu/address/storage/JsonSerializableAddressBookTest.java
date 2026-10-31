@@ -21,6 +21,7 @@ public class JsonSerializableAddressBookTest {
     private static final Path DUPLICATE_PERSON_FILE = TEST_DATA_FOLDER.resolve("duplicatePersonAddressBook.json");
     private static final Path CASE_VARIANT_DUPLICATE_PERSON_FILE =
             TEST_DATA_FOLDER.resolve("caseVariantDuplicatePersonAddressBook.json");
+    private static final Path NULL_PERSON_FILE = TEST_DATA_FOLDER.resolve("nullPersonAddressBook.json");
 
     @Test
     public void toModelType_typicalPersonsFile_success() throws Exception {
@@ -52,6 +53,16 @@ public class JsonSerializableAddressBookTest {
                 JsonSerializableAddressBook.class).get();
 
         assertThrows(IllegalValueException.class, JsonSerializableAddressBook.MESSAGE_DUPLICATE_PERSON,
+                dataFromFile::toModelType);
+    }
+
+    @Test
+    public void toModelType_nullPersonEntry_throwsIllegalValueException() throws Exception {
+        // A null entry used to cause an unchecked NullPointerException at startup instead of the data-loading error.
+        JsonSerializableAddressBook dataFromFile = JsonUtil.readJsonFile(NULL_PERSON_FILE,
+                JsonSerializableAddressBook.class).get();
+
+        assertThrows(IllegalValueException.class, JsonSerializableAddressBook.MESSAGE_NULL_PERSON,
                 dataFromFile::toModelType);
     }
 
