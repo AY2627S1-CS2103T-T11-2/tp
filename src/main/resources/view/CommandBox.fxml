@@ -8,6 +8,7 @@
 <StackPane id="commandBox" styleClass="command-shell" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1">
   <HBox alignment="CENTER_LEFT" spacing="14">
     <Label text="»" styleClass="command-symbol" />
-    <TextField fx:id="commandTextField" HBox.hgrow="ALWAYS" onAction="#handleCommandEntered" onKeyPressed="#handleHistoryNavigation" promptText="Enter a command... (e.g. list, help...)" />
+    <TextField fx:id="commandTextField" minWidth="0" HBox.hgrow="ALWAYS" onAction="#handleCommandEntered" onKeyPressed="#handleHistoryNavigation" promptText="Enter a command... (e.g. list, help...)" />
+    <Label fx:id="commandPosition" styleClass="command-position" />
   </HBox>
 </StackPane>
