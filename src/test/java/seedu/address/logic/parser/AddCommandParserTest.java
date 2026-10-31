@@ -274,6 +274,7 @@ public class AddCommandParserTest {
                 REQUIRED_BOB_FIELDS + " typo/value",
                 REQUIRED_BOB_FIELDS + " X/typo",
                 REQUIRED_BOB_FIELDS + " x/",
+                REQUIRED_BOB_FIELDS + " x//typo",
                 REQUIRED_BOB_FIELDS + "\tx/typo")) {
             assertParseFailure(parser, input, expectedMessage);
         }

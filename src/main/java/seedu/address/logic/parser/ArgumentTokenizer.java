@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
  */
 public class ArgumentTokenizer {
 
-    private static final Pattern PARAMETER_PREFIX = Pattern.compile("(?<!\\S)[A-Za-z][A-Za-z0-9_-]*/(?!/)");
+    private static final Pattern PARAMETER_PREFIX = Pattern.compile("(?<!\\S)[A-Za-z][A-Za-z0-9_-]*/");
     private static final List<String> NAME_RELATIONSHIP_QUALIFIERS = List.of("D/O", "S/O");
     private static final int NAME_RELATIONSHIP_QUALIFIER_LENGTH = 3;
 
@@ -32,7 +32,16 @@ public class ArgumentTokenizer {
      * @return           ArgumentMultimap object that maps prefixes to their arguments
      */
     public static ArgumentMultimap tokenize(String argsString, Prefix... prefixes) {
-        List<PrefixPosition> positions = findAllPrefixPositions(argsString, prefixes);
+        List<PrefixPosition> positions = findAllPrefixPositions(argsString, false, prefixes);
+        return extractArguments(argsString, positions);
+    }
+
+    /**
+     * Tokenizes arguments while ignoring prefix-like text enclosed in double quotation marks.
+     * This is used by commands that support quoted argument values.
+     */
+    public static ArgumentMultimap tokenizeIgnoringQuotedPrefixes(String argsString, Prefix... prefixes) {
+        List<PrefixPosition> positions = findAllPrefixPositions(argsString, true, prefixes);
         return extractArguments(argsString, positions);
     }
 
@@ -42,10 +51,18 @@ public class ArgumentTokenizer {
      * treated as name text only while the active parameter is {@code n/}.
      */
     public static boolean containsUnknownPrefix(String argsString, Prefix... prefixes) {
+        return containsUnknownPrefix(argsString, false, prefixes);
+    }
+
+    private static boolean containsUnknownPrefix(String argsString, boolean ignoreQuotedPrefixes,
+                                                 Prefix... prefixes) {
         List<Prefix> recognizedPrefixes = List.of(prefixes);
         Matcher matcher = PARAMETER_PREFIX.matcher(argsString);
         Prefix activePrefix = null;
         while (matcher.find()) {
+            if (ignoreQuotedPrefixes && isInsideDoubleQuotes(argsString, matcher.start())) {
+                continue;
+            }
             Prefix matchedPrefix = new Prefix(matcher.group());
             if (recognizedPrefixes.contains(matchedPrefix)) {
                 activePrefix = matchedPrefix;
@@ -54,6 +71,13 @@ public class ArgumentTokenizer {
             }
         }
         return false;
+    }
+
+    /**
+     * Returns whether an unknown parameter-like token occurs outside double quotation marks.
+     */
+    public static boolean containsUnknownPrefixIgnoringQuotedPrefixes(String argsString, Prefix... prefixes) {
+        return containsUnknownPrefix(argsString, true, prefixes);
     }
 
     /**
@@ -76,23 +100,26 @@ public class ArgumentTokenizer {
      * @param prefixes   Prefixes to find in the arguments string
      * @return           List of zero-based prefix positions in the given arguments string
      */
-    private static List<PrefixPosition> findAllPrefixPositions(String argsString, Prefix... prefixes) {
+    private static List<PrefixPosition> findAllPrefixPositions(String argsString, boolean ignoreQuotedPrefixes,
+                                                               Prefix... prefixes) {
         return Arrays.stream(prefixes)
-                .flatMap(prefix -> findPrefixPositions(argsString, prefix).stream())
+                .flatMap(prefix -> findPrefixPositions(argsString, prefix, ignoreQuotedPrefixes).stream())
                 .collect(Collectors.toList());
     }
 
     /**
      * @see #findAllPrefixPositions(String, Prefix...)
      */
-    private static List<PrefixPosition> findPrefixPositions(String argsString, Prefix prefix) {
+    private static List<PrefixPosition> findPrefixPositions(String argsString, Prefix prefix,
+                                                            boolean ignoreQuotedPrefixes) {
         List<PrefixPosition> positions = new ArrayList<>();
 
-        int prefixPosition = findPrefixPosition(argsString, prefix.getPrefix(), 0);
+        int prefixPosition = findPrefixPosition(argsString, prefix.getPrefix(), 0, ignoreQuotedPrefixes);
         while (prefixPosition != -1) {
             PrefixPosition extendedPrefix = new PrefixPosition(prefix, prefixPosition);
             positions.add(extendedPrefix);
-            prefixPosition = findPrefixPosition(argsString, prefix.getPrefix(), prefixPosition);
+            prefixPosition = findPrefixPosition(argsString, prefix.getPrefix(), prefixPosition,
+                    ignoreQuotedPrefixes);
         }
 
         return positions;
@@ -110,10 +137,27 @@ public class ArgumentTokenizer {
      * {@code argsString} = "e/hi p/900", {@code prefix} = "p/" and
      * {@code fromIndex} = 0, this method returns 5.
      */
-    private static int findPrefixPosition(String argsString, String prefix, int fromIndex) {
+    private static int findPrefixPosition(String argsString, String prefix, int fromIndex,
+                                          boolean ignoreQuotedPrefixes) {
         int prefixIndex = argsString.indexOf(" " + prefix, fromIndex);
-        return prefixIndex == -1 ? -1
-                : prefixIndex + 1; // +1 as offset for whitespace
+        while (prefixIndex != -1) {
+            int prefixStart = prefixIndex + 1;
+            if (!ignoreQuotedPrefixes || !isInsideDoubleQuotes(argsString, prefixStart)) {
+                return prefixStart;
+            }
+            prefixIndex = argsString.indexOf(" " + prefix, prefixStart);
+        }
+        return -1;
+    }
+
+    private static boolean isInsideDoubleQuotes(String text, int position) {
+        boolean insideQuotes = false;
+        for (int i = 0; i < position; i++) {
+            if (text.charAt(i) == '"') {
+                insideQuotes = !insideQuotes;
+            }
+        }
+        return insideQuotes;
     }
 
     /**

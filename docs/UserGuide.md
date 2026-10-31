@@ -228,9 +228,11 @@ Formats:
 - All searches are case-insensitive; for example, `n/hans` matches `Hans`, `g/t11` matches `T11`, and
   `t/needshelp` matches `needsHelp`.
 - Separate multiple name terms with commas. A student matching any name term is returned (an `OR` search).
-- An unquoted keyword matches only a complete name component. Spaces, hyphens, and apostrophes separate components;
-  for example, `n/Jean` matches `Jean-Luc`, while `n/Han` does not match `Hans`.
+- An unquoted keyword matches only a complete name component. Spaces, hyphens, apostrophes, and periods separate
+  components; for example, `n/Jean` matches `Jean-Luc`, `n/df` matches `df. f`, while `n/Han` does not match `Hans`.
 - A quoted phrase performs a substring match; for example, `n/"lex Ye"` matches `Alex Yeoh`.
+- Each name keyword or phrase is limited to 100 characters and uses the same word, abbreviation, and relationship
+  qualifier syntax as names. Invalid terms such as `n/!!!`, `n/@`, `n/-`, and `n/"abc/def"` are rejected.
 - A Telegram handle must include its leading `@` and is matched exactly, ignoring letter case.
 - Subject, group, and tag filters require an exact match, ignoring letter case.
 - Within `TAG_EXPRESSION`, separate tags with `,` for an `OR` search; for example, `t/lowAttendance,needsHelp` matches a
