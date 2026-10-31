@@ -65,6 +65,9 @@ public class FindCommandParserTest {
         assertParseSuccess(parser, "n/\"lex Ye\"", commandWithName(List.of(), List.of("lex Ye")));
         assertParseSuccess(parser, "n/\"Jean-Luc O'Connor\"",
                 commandWithName(List.of(), List.of("Jean-Luc O'Connor")));
+        assertParseSuccess(parser, "n/\"Jean-\"", commandWithName(List.of(), List.of("Jean-")));
+        assertParseSuccess(parser, "n/\"'Connor\"", commandWithName(List.of(), List.of("'Connor")));
+        assertParseSuccess(parser, "n/\". Jay\"", commandWithName(List.of(), List.of(". Jay")));
     }
 
     @Test
@@ -214,6 +217,8 @@ public class FindCommandParserTest {
         assertParseFailure(parser, "n/\"a---b\"", expectedMessage);
         assertParseFailure(parser, "n/\"a...b\"", expectedMessage);
         assertParseFailure(parser, "n/\"Alice . Bob\"", expectedMessage);
+        assertParseFailure(parser, "n/\"' Connor\"", expectedMessage);
+        assertParseFailure(parser, "n/\"Jean -\"", expectedMessage);
         assertParseFailure(parser, "n/\"Alice S/O Bob D/O Carol\"", expectedMessage);
         assertParseFailure(parser, "n/" + "a".repeat(Name.MAX_LENGTH + 1), expectedMessage);
         assertParseFailure(parser, "n/\"" + "a".repeat(Name.MAX_LENGTH + 1) + "\"", expectedMessage);

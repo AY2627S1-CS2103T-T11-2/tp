@@ -52,7 +52,12 @@ public class NameContainsSearchTermsPredicateTest {
         assertFalse(new NameContainsSearchTermsPredicate(List.of("Han"), List.of()).test(person));
         assertTrue(new NameContainsSearchTermsPredicate(List.of(), List.of("Han")).test(person));
         assertTrue(new NameContainsSearchTermsPredicate(List.of(), List.of("aNS jeAn-l")).test(person));
+        assertTrue(new NameContainsSearchTermsPredicate(List.of(), List.of("Jean-")).test(person));
         assertFalse(new NameContainsSearchTermsPredicate(List.of(), List.of("Hans Jean L")).test(person));
+
+        Person punctuationPerson = new PersonBuilder().withName("S. Jay O'Connor").build();
+        assertTrue(new NameContainsSearchTermsPredicate(List.of(), List.of(". Jay")).test(punctuationPerson));
+        assertTrue(new NameContainsSearchTermsPredicate(List.of(), List.of("'Connor")).test(punctuationPerson));
     }
 
     @Test

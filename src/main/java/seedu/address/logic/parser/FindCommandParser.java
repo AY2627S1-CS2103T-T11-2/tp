@@ -44,6 +44,7 @@ public class FindCommandParser implements Parser<FindCommand> {
     private static final Pattern NAME_PHRASE_PATTERN = Pattern.compile(
             NAME_SEARCH_TOKEN_PATTERN + "(?:\\s+" + NAME_SEARCH_TOKEN_PATTERN + ")*",
             Pattern.CASE_INSENSITIVE);
+    private static final Pattern NAME_ALPHANUMERIC_CHARACTER_PATTERN = Pattern.compile("\\p{Alnum}");
     private static final Pattern NAME_RELATIONSHIP_QUALIFIER_TOKEN_PATTERN = Pattern.compile(
             "(?<!\\S)" + NAME_RELATIONSHIP_QUALIFIER_PATTERN + "(?!\\S)", Pattern.CASE_INSENSITIVE);
     private static final List<Prefix> FIND_PREFIXES = List.of(PREFIX_NAME, PREFIX_TELEGRAM_HANDLE,
@@ -106,9 +107,7 @@ public class FindCommandParser implements Parser<FindCommand> {
             String phrase = matcher.group(1);
             if (phrase != null) {
                 String normalizedPhrase = phrase.trim().replaceAll("\\s+", " ");
-                if (normalizedPhrase.length() > Name.MAX_LENGTH
-                        || !NAME_PHRASE_PATTERN.matcher(normalizedPhrase).matches()
-                        || NAME_RELATIONSHIP_QUALIFIER_TOKEN_PATTERN.matcher(normalizedPhrase).results().count() > 1) {
+                if (!isValidNamePhrase(normalizedPhrase)) {
                     throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, FindCommand.MESSAGE_USAGE));
                 }
                 phrases.add(phrase);
@@ -122,6 +121,45 @@ public class FindCommandParser implements Parser<FindCommand> {
         }
 
         return new NameContainsSearchTermsPredicate(keywords, phrases);
+    }
+
+    /**
+     * Returns whether the phrase can occur as a literal substring of a valid name.
+     * A leading period or a boundary hyphen or apostrophe can be completed by characters outside the phrase.
+     */
+    private boolean isValidNamePhrase(String phrase) {
+        if (phrase.isEmpty() || phrase.length() > Name.MAX_LENGTH
+                || NAME_RELATIONSHIP_QUALIFIER_TOKEN_PATTERN.matcher(phrase).results().count() > 1) {
+            return false;
+        }
+
+        String phraseCore = phrase;
+        char firstCharacter = phrase.charAt(0);
+        if (firstCharacter == '.') {
+            if (phrase.length() < 2 || !Character.isWhitespace(phrase.charAt(1))) {
+                return false;
+            }
+            phraseCore = phraseCore.substring(1).stripLeading();
+        } else if (firstCharacter == '-' || firstCharacter == '\'') {
+            if (phrase.length() < 2 || !isNameAlphanumeric(phrase.charAt(1))) {
+                return false;
+            }
+            phraseCore = phraseCore.substring(1);
+        }
+
+        char lastCharacter = phrase.charAt(phrase.length() - 1);
+        if (lastCharacter == '-' || lastCharacter == '\'') {
+            if (phrase.length() < 2 || !isNameAlphanumeric(phrase.charAt(phrase.length() - 2))) {
+                return false;
+            }
+            phraseCore = phraseCore.substring(0, phraseCore.length() - 1);
+        }
+
+        return !phraseCore.isEmpty() && NAME_PHRASE_PATTERN.matcher(phraseCore).matches();
+    }
+
+    private boolean isNameAlphanumeric(char character) {
+        return NAME_ALPHANUMERIC_CHARACTER_PATTERN.matcher(String.valueOf(character)).matches();
     }
 
     /**
