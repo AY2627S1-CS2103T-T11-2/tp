@@ -1,90 +1,45 @@
 @startuml
 !include style.puml
 skinparam ArrowFontStyle plain
+hide footbox
 
 box Logic LOGIC_COLOR_T1
-participant ":LogicManager" as LogicManager LOGIC_COLOR
-participant ":AddressBookParser" as AddressBookParser LOGIC_COLOR
 participant "command:EditCommand" as EditCommand LOGIC_COLOR
 participant "target:IndexPersonTarget" as IndexPersonTarget LOGIC_COLOR
-participant "result:CommandResult" as CommandResult LOGIC_COLOR
 end box
 
 box Model MODEL_COLOR_T1
 participant "model:Model" as Model MODEL_COLOR
 end box
 
-box Storage STORAGE_COLOR_T1
-participant ":Storage" as Storage STORAGE_COLOR
-end box
-
-[-> LogicManager : execute("edit 1,3-4 g/T12 t/ t/")
-activate LogicManager
-LogicManager -> AddressBookParser ++: parseCommand(commandText)
-note right of AddressBookParser
-  EditCommandParser returns a command with:
-  target ranges [1-1, 3-4], group T12,
-  tagRemovalCount = 2.
-  Detailed parsing is shown separately.
-end note
-AddressBookParser --> LogicManager --: command
-
-LogicManager -> EditCommand ++: execute(model)
-EditCommand -> Model ++: getAddressBook().getPersonList().size()
-Model --> EditCommand --: personCountBeforeEdit
-EditCommand -> EditCommand : executeBulkEdit(model)
+[-> EditCommand ++: execute(model)
 EditCommand -> IndexPersonTarget ++: resolve(model)
 IndexPersonTarget -> Model ++: getFilteredPersonList()
 Model --> IndexPersonTarget --: displayedPeople
 note right of IndexPersonTarget
-  Copies the displayed list and validates every index
-  before returning distinct people in display order.
-  Invalid indexes throw CommandException;
-  no person is changed.
+  Validate all indexes before
+  returning any students.
 end note
 IndexPersonTarget --> EditCommand --: peopleToEdit
 
-EditCommand -> EditCommand : descriptor.hasSinglePersonOnlyFields()
-note right of EditCommand
-  Rejects bulk name, phone, email, or Telegram edits
-  even when the command was constructed directly.
-end note
-
-loop each person in peopleToEdit
+loop prepare each edited student
     EditCommand -> EditCommand : createEditedPerson(person, descriptor)
-    note right of EditCommand
-      Sets group to T12; omitted fields remain unchanged.
-      Removes the last two tags from this person's
-      ordered tag set, stopping when it is empty.
-      Non-empty supplied tags would replace all tags.
-    end note
 end
 
-create CommandResult
-EditCommand -> CommandResult : new CommandResult(successMessage)
 note right of EditCommand
-  All edited people and the success result are
-  prepared before the first model update.
+  All replacements are prepared before
+  the model is changed.
 end note
 
-loop each original and edited person
+loop apply each prepared replacement
     EditCommand -> Model ++: setPerson(originalPerson, editedPerson)
     Model --> EditCommand --
 end
 
 note over EditCommand, Model
-  The existing filter stays active, as it does for delete.
-  Edited people that no longer match disappear from the view.
-  The saved selection prevents shrinking results from skipping people.
+  The existing filter stays active after editing.
+  Students that no longer match disappear from the view.
 end note
 
-EditCommand -> Model ++: getAddressBook().getPersonList().size()
-Model --> EditCommand --: personCountAfterEdit
-EditCommand -> EditCommand : assert personCountAfterEdit == personCountBeforeEdit
-EditCommand --> LogicManager --: result
-
-LogicManager -> Storage ++: saveAddressBook(model.getAddressBook())
-Storage --> LogicManager --
-[<-- LogicManager : result
-deactivate LogicManager
+[<-- EditCommand --: CommandResult
 @enduml

@@ -41,9 +41,9 @@ IndexRangeParser ..> IndexRange : <<create>>
 note right of XYZCommandParser
   EditCommandParser rejects unknown prefixes
   and duplicate non-tag prefixes.
-  Non-empty tags retain entry order.
-  Each empty t/ increments tagRemovalCount;
-  empty and non-empty tags cannot be mixed.
+  t/TAG creates an ordered tag addition.
+  t/OLD_TAG,NEW_TAG creates an ordered rename.
+  Empty tag values are rejected.
 end note
 
 note right of IndexRangeParser

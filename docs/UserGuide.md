@@ -208,7 +208,8 @@ Examples:
 * `edit 1 p/91234567 e/johndoe@example.com h/@johndoe` Edits the phone number, email address and Telegram handle
     of the 1st student to be `9123 4567`, `johndoe@example.com` and `@johndoe` respectively.
 * `edit 2 n/Betsy Crower t/friends,Graduate` Changes the name of the 2nd student to `Betsy Crower` and renames the tag `friends` to `Graduate`.
-* `edit 1-3 s/CS3240 g/T11 t/Graduate t/online` Updates the subject to CS3240, group to T11, and add the tags `Graduate` and `online` to the first three displayed students to CS3240, T11.
+* `edit 1-3 s/CS3240 g/T11 t/Graduate t/online` updates the subject to `CS3240`, the group to `T11`, and adds the
+  tags `Graduate` and `online` to the first three displayed students.
 * `find n/Alice` followed by `edit 1 g/T12` Updates the first matching student's group and keeps the name filter active.
 
 The following example shows a bulk edit that updates a group, adds a tag, and renames an existing tag.
@@ -240,13 +241,13 @@ Formats:
 - Within `TAG_EXPRESSION`, separate tags with `&` for an `AND` search; for example, `t/lowAttendance&needsHelp` matches only a
   student with both the `lowAttendance` and `needsHelp` tags.
 - `,` and `&` cannot be used together in the same tag expression.
-- When a name, Telegram handle, subject, group, or tag criteria are combined, a student must match every supplied
+- When criteria for name, Telegram handle, subject, group, or tag are combined, a student must match every supplied
   criterion type
   (an `AND` search).
 
 Examples:
 * `find n/alex,david` returns `Alex Yeoh`,`Alex Goh`, `Alex Tan` and `David Li`.<br>
-* `find n/"Alex Yeoh",David` returns contacts containing either the names `Alex Yeoh` or  `David`.
+* `find n/"Alex Yeoh",David` returns students containing either the names `Alex Yeoh` or `David`.
 * `find s/CS2103T g/T11` returns students in group `T11` whose subject is `CS2103T`.
 * `find t/highParticipation,needsHelp` returns students tagged `highParticipation` or `needsHelp`.
 * `find t/highParticipation&needsHelp` returns students tagged with both `highParticipation` and `needsHelp`.
