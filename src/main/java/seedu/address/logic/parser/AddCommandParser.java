@@ -42,6 +42,10 @@ public class AddCommandParser implements Parser<AddCommand> {
         ArgumentMultimap argMultimap =
                 ArgumentTokenizer.tokenize(args, ADD_PREFIXES.toArray(Prefix[]::new));
 
+        if (ArgumentTokenizer.containsMiscasedNameRelationshipQualifier(args, ADD_PREFIXES.toArray(Prefix[]::new))) {
+            throw new ParseException(Name.MESSAGE_INVALID_RELATIONSHIP_QUALIFIER);
+        }
+
         if (!arePrefixesPresent(argMultimap, PREFIX_NAME, PREFIX_EMAIL, PREFIX_SUBJECT, PREFIX_GROUP)
                 || argMultimap.getValue(PREFIX_LEGACY_ADDRESS).isPresent()
                 || ArgumentTokenizer.containsUnknownPrefix(args, ADD_PREFIXES.toArray(Prefix[]::new))

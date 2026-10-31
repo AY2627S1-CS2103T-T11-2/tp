@@ -84,16 +84,21 @@ public class FindPredicate implements Predicate<Person> {
                 .map(value -> value.value.equalsIgnoreCase(person.getTelegramHandle().value))
                 .orElse(true);
         boolean matchesSubject = subject
-                .map(value -> value.subject.equalsIgnoreCase(person.getSubject().subject))
+                .map(value -> value.subject.equalsIgnoreCase(collapseSpaces(person.getSubject().subject)))
                 .orElse(true);
         boolean matchesGroup = group
-                .map(value -> value.group.equalsIgnoreCase(person.getGroup().group))
+                .map(value -> value.group.equalsIgnoreCase(collapseSpaces(person.getGroup().group)))
                 .orElse(true);
         boolean matchesTags = tags.isEmpty() || switch (tagMatchMode) {
             case ANY -> tags.stream().anyMatch(tag -> personHasTag(person, tag));
             case ALL -> tags.stream().allMatch(tag -> personHasTag(person, tag));
         };
         return matchesName && matchesSubject && matchesGroup && matchesTags && matchesTelegramHandle;
+    }
+
+    /** Collapses repeated spaces so values saved before spaces were normalized still match. */
+    private static String collapseSpaces(String value) {
+        return value.replaceAll(" {2,}", " ");
     }
 
     private boolean personHasTag(Person person, Tag tag) {
