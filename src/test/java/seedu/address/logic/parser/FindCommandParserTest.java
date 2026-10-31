@@ -20,6 +20,7 @@ import seedu.address.logic.Messages;
 import seedu.address.logic.commands.FindCommand;
 import seedu.address.model.person.FindPredicate;
 import seedu.address.model.person.Group;
+import seedu.address.model.person.Name;
 import seedu.address.model.person.NameContainsSearchTermsPredicate;
 import seedu.address.model.person.Subject;
 import seedu.address.model.person.TelegramHandle;
@@ -44,6 +45,14 @@ public class FindCommandParserTest {
     }
 
     @Test
+    public void parse_validNamePunctuationInKeyword_returnsFindCommand() {
+        assertParseSuccess(parser, "n/Jean-Luc", commandWithName(List.of("Jean-Luc"), List.of()));
+        assertParseSuccess(parser, "n/O'Connor", commandWithName(List.of("O'Connor"), List.of()));
+        assertParseSuccess(parser, "n/S.", commandWithName(List.of("S."), List.of()));
+        assertParseSuccess(parser, "n/S/O", commandWithName(List.of("S/O"), List.of()));
+    }
+
+    @Test
     public void parse_validPhraseArgs_returnsFindCommand() {
         FindCommand expectedFindCommand = commandWithName(List.of(), List.of("Alice Chen"));
         assertParseSuccess(parser, "n/\"Alice Chen\"", expectedFindCommand);
@@ -52,11 +61,21 @@ public class FindCommandParserTest {
 
         FindCommand expectedPhraseWithRepeatedSpaces = commandWithName(List.of(), List.of("Alice   Chen"));
         assertParseSuccess(parser, "n/\"Alice   Chen\"", expectedPhraseWithRepeatedSpaces);
+
+        assertParseSuccess(parser, "n/\"lex Ye\"", commandWithName(List.of(), List.of("lex Ye")));
+        assertParseSuccess(parser, "n/\"Jean-Luc O'Connor\"",
+                commandWithName(List.of(), List.of("Jean-Luc O'Connor")));
+        assertParseSuccess(parser, "n/\"Jean-\"", commandWithName(List.of(), List.of("Jean-")));
+        assertParseSuccess(parser, "n/\"'Connor\"", commandWithName(List.of(), List.of("'Connor")));
+        assertParseSuccess(parser, "n/\". Jay\"", commandWithName(List.of(), List.of(". Jay")));
     }
 
     @Test
     public void parse_phraseWithRelationshipQualifier_returnsFindCommand() {
         assertParseSuccess(parser, "n/\"Ravi S/O Kumar\"", commandWithName(List.of(), List.of("Ravi S/O Kumar")));
+        assertParseSuccess(parser, "n/\"ravi s/o kumar\"",
+                commandWithName(List.of(), List.of("ravi s/o kumar")));
+        assertParseSuccess(parser, "n/s/o", commandWithName(List.of("s/o"), List.of()));
         assertParseSuccess(parser, "n/\"Binte D/O Rahmud\"", commandWithName(List.of(), List.of("Binte D/O Rahmud")));
         assertParseFailure(parser, "g/T11 S/O", String.format(MESSAGE_INVALID_COMMAND_FORMAT,
                 FindCommand.MESSAGE_USAGE));
@@ -67,6 +86,9 @@ public class FindCommandParserTest {
         FindCommand expectedFindCommand = commandWithName(List.of("Tan"), List.of("Alice Chen"));
         assertParseSuccess(parser, "n/\"Alice Chen\",Tan", expectedFindCommand);
         assertParseSuccess(parser, "n/Tan,\"Alice Chen\"", expectedFindCommand);
+
+        FindCommand substringAndKeywordCommand = commandWithName(List.of("Hans"), List.of("Han"));
+        assertParseSuccess(parser, "n/\"Han\",Hans", substringAndKeywordCommand);
 
         FindCommand expectedMultiplePhrases = commandWithName(List.of(), List.of("Alice Chen", "Bob Tan"));
         assertParseSuccess(parser, "n/\"Alice Chen\",\"Bob Tan\"", expectedMultiplePhrases);
@@ -183,6 +205,23 @@ public class FindCommandParserTest {
         assertParseFailure(parser, "n/Alice,,Bob", expectedMessage);
         assertParseFailure(parser, "n/Alice Bob", expectedMessage);
         assertParseFailure(parser, "Alice", expectedMessage);
+        assertParseFailure(parser, "n/!!!", expectedMessage);
+        assertParseFailure(parser, "n/@", expectedMessage);
+        assertParseFailure(parser, "n/-", expectedMessage);
+        assertParseFailure(parser, "n/abc$", expectedMessage);
+        assertParseFailure(parser, "n/\"!!!\"", expectedMessage);
+        assertParseFailure(parser, "n/\"@\"", expectedMessage);
+        assertParseFailure(parser, "n/\"-\"", expectedMessage);
+        assertParseFailure(parser, "n/\"abc/def\"", expectedMessage);
+        assertParseFailure(parser, "n/\"Alice x/typo\"", expectedMessage);
+        assertParseFailure(parser, "n/\"a---b\"", expectedMessage);
+        assertParseFailure(parser, "n/\"a...b\"", expectedMessage);
+        assertParseFailure(parser, "n/\"Alice . Bob\"", expectedMessage);
+        assertParseFailure(parser, "n/\"' Connor\"", expectedMessage);
+        assertParseFailure(parser, "n/\"Jean -\"", expectedMessage);
+        assertParseFailure(parser, "n/\"Alice S/O Bob D/O Carol\"", expectedMessage);
+        assertParseFailure(parser, "n/" + "a".repeat(Name.MAX_LENGTH + 1), expectedMessage);
+        assertParseFailure(parser, "n/\"" + "a".repeat(Name.MAX_LENGTH + 1) + "\"", expectedMessage);
     }
 
     @Test

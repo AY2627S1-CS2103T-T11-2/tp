@@ -46,11 +46,45 @@ public class NameContainsSearchTermsPredicateTest {
     }
 
     @Test
+    public void test_keywordRequiresComponentWhilePhraseMatchesSubstring() {
+        Person person = new PersonBuilder().withName("Hans Jean-Luc").build();
+
+        assertFalse(new NameContainsSearchTermsPredicate(List.of("Han"), List.of()).test(person));
+        assertTrue(new NameContainsSearchTermsPredicate(List.of(), List.of("Han")).test(person));
+        assertTrue(new NameContainsSearchTermsPredicate(List.of(), List.of("aNS jeAn-l")).test(person));
+        assertTrue(new NameContainsSearchTermsPredicate(List.of(), List.of("Jean-")).test(person));
+        assertFalse(new NameContainsSearchTermsPredicate(List.of(), List.of("Hans Jean L")).test(person));
+
+        Person punctuationPerson = new PersonBuilder().withName("S. Jay O'Connor").build();
+        assertTrue(new NameContainsSearchTermsPredicate(List.of(), List.of(". Jay")).test(punctuationPerson));
+        assertTrue(new NameContainsSearchTermsPredicate(List.of(), List.of("'Connor")).test(punctuationPerson));
+    }
+
+    @Test
+    public void test_mixedKeywordAndPhraseUsesOrMatching() {
+        NameContainsSearchTermsPredicate predicate =
+                new NameContainsSearchTermsPredicate(List.of("Bob"), List.of("lex Ye"));
+
+        assertTrue(predicate.test(new PersonBuilder().withName("Alex Yeoh").build()));
+        assertTrue(predicate.test(new PersonBuilder().withName("Bob Tan").build()));
+        assertFalse(predicate.test(new PersonBuilder().withName("Alice Chen").build()));
+    }
+
+    @Test
     public void test_nameWithInitial_returnsTrue() {
         Person person = new PersonBuilder().withName("S. Jay").build();
 
+        assertTrue(new NameContainsSearchTermsPredicate(List.of("S"), List.of()).test(person));
+        assertTrue(new NameContainsSearchTermsPredicate(List.of("S."), List.of()).test(person));
         assertTrue(new NameContainsSearchTermsPredicate(List.of("Jay"), List.of()).test(person));
         assertTrue(new NameContainsSearchTermsPredicate(List.of(), List.of("S. Jay")).test(person));
+    }
+
+    @Test
+    public void test_abbreviationWithoutPeriod_matchesAbbreviationComponent() {
+        Person person = new PersonBuilder().withName("df. f").build();
+
+        assertTrue(new NameContainsSearchTermsPredicate(List.of("df"), List.of()).test(person));
     }
 
     @Test

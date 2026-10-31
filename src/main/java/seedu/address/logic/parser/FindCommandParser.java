@@ -22,6 +22,7 @@ import seedu.address.logic.parser.exceptions.ParseException;
 import seedu.address.model.person.FindPredicate;
 import seedu.address.model.person.FindPredicate.TagMatchMode;
 import seedu.address.model.person.Group;
+import seedu.address.model.person.Name;
 import seedu.address.model.person.NameContainsSearchTermsPredicate;
 import seedu.address.model.person.Person;
 import seedu.address.model.person.Subject;
@@ -33,6 +34,19 @@ import seedu.address.model.tag.Tag;
  */
 public class FindCommandParser implements Parser<FindCommand> {
     private static final Pattern NAME_TERM_PATTERN = Pattern.compile("\"([^\"]*)\"|([^\\s\",]+)");
+    private static final String NAME_WORD_PATTERN = "[\\p{Alnum}]+(?:[-'][\\p{Alnum}]+)*";
+    private static final String NAME_ABBREVIATION_PATTERN = "[\\p{Alpha}]{1,3}\\.";
+    private static final String NAME_RELATIONSHIP_QUALIFIER_PATTERN = "[DS]/O";
+    private static final String NAME_SEARCH_TOKEN_PATTERN = "(?:" + NAME_WORD_PATTERN + "|"
+            + NAME_ABBREVIATION_PATTERN + "|" + NAME_RELATIONSHIP_QUALIFIER_PATTERN + ")";
+    private static final Pattern NAME_KEYWORD_PATTERN = Pattern.compile(NAME_SEARCH_TOKEN_PATTERN,
+            Pattern.CASE_INSENSITIVE);
+    private static final Pattern NAME_PHRASE_PATTERN = Pattern.compile(
+            NAME_SEARCH_TOKEN_PATTERN + "(?:\\s+" + NAME_SEARCH_TOKEN_PATTERN + ")*",
+            Pattern.CASE_INSENSITIVE);
+    private static final Pattern NAME_ALPHANUMERIC_CHARACTER_PATTERN = Pattern.compile("\\p{Alnum}");
+    private static final Pattern NAME_RELATIONSHIP_QUALIFIER_TOKEN_PATTERN = Pattern.compile(
+            "(?<!\\S)" + NAME_RELATIONSHIP_QUALIFIER_PATTERN + "(?!\\S)", Pattern.CASE_INSENSITIVE);
     private static final List<Prefix> FIND_PREFIXES = List.of(PREFIX_NAME, PREFIX_TELEGRAM_HANDLE,
             PREFIX_SUBJECT, PREFIX_GROUP, PREFIX_TAG);
 
@@ -44,11 +58,12 @@ public class FindCommandParser implements Parser<FindCommand> {
      */
     public FindCommand parse(String args) throws ParseException {
         String trimmedArgs = args.trim();
-        ArgumentMultimap argMultimap = ArgumentTokenizer.tokenize(
+        ArgumentMultimap argMultimap = ArgumentTokenizer.tokenizeIgnoringQuotedPrefixes(
                 " " + trimmedArgs, FIND_PREFIXES.toArray(Prefix[]::new));
 
         if (trimmedArgs.isEmpty()
-                || ArgumentTokenizer.containsUnknownPrefix(trimmedArgs, FIND_PREFIXES.toArray(Prefix[]::new))) {
+                || ArgumentTokenizer.containsUnknownPrefixIgnoringQuotedPrefixes(
+                        trimmedArgs, FIND_PREFIXES.toArray(Prefix[]::new))) {
             throw new ParseException(
                     String.format(MESSAGE_INVALID_COMMAND_FORMAT, FindCommand.MESSAGE_USAGE));
         }
@@ -91,16 +106,60 @@ public class FindCommandParser implements Parser<FindCommand> {
             }
             String phrase = matcher.group(1);
             if (phrase != null) {
-                if (phrase.isBlank()) {
+                String normalizedPhrase = phrase.trim().replaceAll("\\s+", " ");
+                if (!isValidNamePhrase(normalizedPhrase)) {
                     throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, FindCommand.MESSAGE_USAGE));
                 }
                 phrases.add(phrase);
             } else {
-                keywords.add(matcher.group(2));
+                String keyword = matcher.group(2);
+                if (keyword.length() > Name.MAX_LENGTH || !NAME_KEYWORD_PATTERN.matcher(keyword).matches()) {
+                    throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, FindCommand.MESSAGE_USAGE));
+                }
+                keywords.add(keyword);
             }
         }
 
         return new NameContainsSearchTermsPredicate(keywords, phrases);
+    }
+
+    /**
+     * Returns whether the phrase can occur as a literal substring of a valid name.
+     * A leading period or a boundary hyphen or apostrophe can be completed by characters outside the phrase.
+     */
+    private boolean isValidNamePhrase(String phrase) {
+        if (phrase.isEmpty() || phrase.length() > Name.MAX_LENGTH
+                || NAME_RELATIONSHIP_QUALIFIER_TOKEN_PATTERN.matcher(phrase).results().count() > 1) {
+            return false;
+        }
+
+        String phraseCore = phrase;
+        char firstCharacter = phrase.charAt(0);
+        if (firstCharacter == '.') {
+            if (phrase.length() < 2 || !Character.isWhitespace(phrase.charAt(1))) {
+                return false;
+            }
+            phraseCore = phraseCore.substring(1).stripLeading();
+        } else if (firstCharacter == '-' || firstCharacter == '\'') {
+            if (phrase.length() < 2 || !isNameAlphanumeric(phrase.charAt(1))) {
+                return false;
+            }
+            phraseCore = phraseCore.substring(1);
+        }
+
+        char lastCharacter = phrase.charAt(phrase.length() - 1);
+        if (lastCharacter == '-' || lastCharacter == '\'') {
+            if (phrase.length() < 2 || !isNameAlphanumeric(phrase.charAt(phrase.length() - 2))) {
+                return false;
+            }
+            phraseCore = phraseCore.substring(0, phraseCore.length() - 1);
+        }
+
+        return !phraseCore.isEmpty() && NAME_PHRASE_PATTERN.matcher(phraseCore).matches();
+    }
+
+    private boolean isNameAlphanumeric(char character) {
+        return NAME_ALPHANUMERIC_CHARACTER_PATTERN.matcher(String.valueOf(character)).matches();
     }
 
     /**

@@ -137,6 +137,42 @@ public class ArgumentTokenizerTest {
     }
 
     @Test
+    public void containsUnknownPrefix_doubleSlashAfterUnknownPrefix_returnsTrue() {
+        Prefix groupPrefix = new Prefix("g/");
+
+        assertTrue(ArgumentTokenizer.containsUnknownPrefix(" g/T11 x//typo", groupPrefix));
+    }
+
+    @Test
+    public void containsUnknownPrefix_embeddedSlashesAndUrl_returnsFalse() {
+        Prefix groupPrefix = new Prefix("g/");
+
+        assertFalse(ArgumentTokenizer.containsUnknownPrefix(" g/T11/T12", groupPrefix));
+        assertFalse(ArgumentTokenizer.containsUnknownPrefix(" g/T11 https://example.com", groupPrefix));
+    }
+
+    @Test
+    public void tokenizeIgnoringQuotedPrefixes_prefixInsideQuotes_keepsQuotedValueTogether() {
+        Prefix namePrefix = new Prefix("n/");
+        Prefix subjectPrefix = new Prefix("s/");
+        String args = " n/\"ravi s/o kumar\" s/CS2103T";
+
+        ArgumentMultimap result = ArgumentTokenizer.tokenizeIgnoringQuotedPrefixes(
+                args, namePrefix, subjectPrefix);
+
+        assertArgumentPresent(result, namePrefix, "\"ravi s/o kumar\"");
+        assertArgumentPresent(result, subjectPrefix, "CS2103T");
+    }
+
+    @Test
+    public void containsUnknownPrefixIgnoringQuotedPrefixes_prefixInsideQuotes_returnsFalse() {
+        Prefix namePrefix = new Prefix("n/");
+
+        assertFalse(ArgumentTokenizer.containsUnknownPrefixIgnoringQuotedPrefixes(
+                "n/\"ravi x/typo kumar\"", namePrefix));
+    }
+
+    @Test
     public void equalsMethod() {
         Prefix aaa = new Prefix("aaa");
 

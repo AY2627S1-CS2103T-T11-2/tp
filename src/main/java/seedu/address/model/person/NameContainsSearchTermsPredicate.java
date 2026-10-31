@@ -37,7 +37,7 @@ public class NameContainsSearchTermsPredicate implements Predicate<Person> {
 
     /**
      * Returns whether the name contains the keyword as a complete name component.
-     * Spaces, hyphens, and apostrophes are treated as name-component separators.
+     * Spaces, hyphens, apostrophes, and periods are treated as name-component separators.
      */
     private static boolean containsNameComponentIgnoreCase(String name, String keyword) {
         if (StringUtil.containsWordIgnoreCase(name, keyword)) {
@@ -45,7 +45,7 @@ public class NameContainsSearchTermsPredicate implements Predicate<Person> {
         }
 
         String trimmedKeyword = keyword.trim();
-        return Arrays.stream(name.split("[\\s'-]+"))
+        return Arrays.stream(name.split("[\\s.'-]+"))
                 .anyMatch(trimmedKeyword::equalsIgnoreCase);
     }
 
