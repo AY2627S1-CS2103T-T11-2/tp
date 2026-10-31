@@ -114,12 +114,12 @@ The following validation rules apply:
 
 | Field | Prefix | Rules                                                                                                                                                                                                                                                                                                                                            |
 | --- |--------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Name | `n/`   | Maximum 100 characters. Alphanumeric words may contain hyphens or apostrophes and are separated by single spaces. Initials and short abbreviations of up to three letters may end in a period when followed by another name, for example `S. Jay` or `Aisyah Bte. Ahmad`. One uppercase `D/O` or `S/O` may appear between name parts, for example `Ravi S/O Kumar`; lowercase `d/o` and `s/o` are not accepted because `s/` is the subject prefix. Repeated spaces are normalized to one space. |
+| Name | `n/`   | Maximum 100 characters. Alphanumeric words may contain hyphens or apostrophes and are separated by single spaces. Initials and short abbreviations of up to three letters may end in a period when followed by another name, for example `S. Jay` or `Aisyah Bte. Ahmad`. One uppercase `D/O` or `S/O` may appear between name parts, for example `Ravi S/O Kumar`. Other casings such as `s/o`, `S/o`, or `d/O` are rejected with an error, because `s/` is also the subject prefix. Repeated spaces are normalized to one space. |
 | Phone | `p/`   | Optional. If provided, it must contain exactly 8 digits. A single space or hyphen is allowed between digit groups. Consecutive separators, country codes, and `+` are rejected. Numbers are stored and displayed as `xxxx xxxx`, for example `9123 4567`.                                                                                        |
 | Email | `e/`   | Maximum 254 characters. Must use the `local-part@domain` format. The local part must start and end with an alphanumeric character; `+`, `_`, `.`, and `-` are allowed only between alphanumeric characters. Domain labels may be separated by periods, may contain hyphens only between alphanumeric characters, and the final label must be at least 2 characters long. |
 | Telegram handle | `h/`   | Optional. If provided, it must begin with `@`, followed by 5 to 32 letters, digits, or underscores. The first character after `@` cannot be an underscore.                                                                                                                                                                                       |
-| Subject | `s/`   | Maximum 100 characters. Must be non-blank and contain only alphanumeric characters and spaces.                                                                                                                                                                                                                                                    |
-| Group | `g/`   | Maximum 100 characters. Must be non-blank. Any characters are allowed except reserved parameter-like tokens described below.                                                                                                                                                                                                                      |
+| Subject | `s/`   | Maximum 100 characters. Must be non-blank and contain only alphanumeric characters and spaces. Repeated spaces between words are stored as a single space.                                                                                                                                                                                                                                                    |
+| Group | `g/`   | Maximum 100 characters. Must be non-blank. Any characters are allowed except reserved parameter-like tokens described below. Repeated spaces between words are stored as a single space.                                                                                                                                                                                                                      |
 | Tag | `t/`   | Maximum 50 characters. Must be non-blank and contain only alphanumeric characters without spaces. Tags appear in the order entered, including after saving and reopening. Tags are unique ignoring case; repeated tags such as `Student` and `student` are stored once, using the first spelling supplied.                                      |
 
 * Leading and trailing whitespace around each value is ignored. Whitespace-only phone and Telegram values are treated as empty.
@@ -132,6 +132,15 @@ are duplicates when their normalized names are the same, ignoring letter case. I
 `john tan` and `JOHN TAN` are rejected even if the other details are different. The capitalization originally entered
 for an accepted student is preserved for storage and display.
 * Two distinct students with the same name cannot coexist in TutorTrack. This is a known limitation.
+
+<box type="warning" seamless>
+
+**Subjects starting with the word "O" (for example `O Level`):** do not type `s/` directly after the name.
+TutorTrack cannot tell `n/Ravi s/O Level` apart from a mistyped `n/Ravi S/O Level`, so it rejects the command
+instead of guessing. Put `s/` before `n/`, or after any other parameter, for example
+`add s/O Level n/Ravi Kumar e/ravi@example.com g/T11` or `add n/Ravi Kumar e/ravi@example.com s/O Level g/T11`.
+Subjects such as `Oracle` that only begin with the letter O are not affected. The same rule applies to `edit`.
+</box>
 
 <box type="tip" seamless>
 
@@ -183,7 +192,8 @@ Empty values, including whitespace-only values, are rejected; use `delete` to cl
 | Multiple students | `s/`, `g/`, `t/` only |
 
 - Only one subject and one group can be supplied in each command.
-- Unknown prefixes and slashes in group values follow the same rules as [adding a student](#adding-a-student-add).
+- Unknown prefixes, slashes in group values, the `D/O` and `S/O` casing rule, and the rule for subjects starting with
+  the word "O" follow the same rules as [adding a student](#adding-a-student-add).
 
 #### Editing tags and clearing fields
 
@@ -235,7 +245,9 @@ Formats:
 - Each name keyword or phrase is limited to 100 characters and uses the same word, abbreviation, and relationship
   qualifier syntax as names. Invalid terms such as `n/!!!`, `n/@`, `n/-`, and `n/"abc/def"` are rejected.
 - A Telegram handle must include its leading `@` and is matched exactly, ignoring letter case.
-- Subject, group, and tag filters require an exact match, ignoring letter case.
+- Subject, group, and tag filters require an exact match, ignoring letter case. Repeated spaces in subjects and groups
+  are also ignored, so `s/CS 2103T` also finds a student whose subject an earlier version saved with two spaces
+  after `CS`.
 - Within `TAG_EXPRESSION`, separate tags with `,` for an `OR` search; for example, `t/lowAttendance,needsHelp` matches a
   student with either the `lowAttendance` or `needsHelp` tag.
 - Within `TAG_EXPRESSION`, separate tags with `&` for an `AND` search; for example, `t/lowAttendance&needsHelp` matches only a
@@ -246,7 +258,7 @@ Formats:
   (an `AND` search).
 
 Examples:
-* `find n/alex,david` returns `Alex Yeoh`,`Alex Goh`, `Alex Tan` and `David Li`.<br>
+* `find n/alex,david` returns `Alex Yeoh` and `David Li` from the sample data.<br>
 * `find n/"Alex Yeoh",David` returns students containing either the names `Alex Yeoh` or `David`.
 * `find s/CS2103T g/T11` returns students in group `T11` whose subject is `CS2103T`.
 * `find t/highParticipation,needsHelp` returns students tagged `highParticipation` or `needsHelp`.
@@ -326,13 +338,18 @@ file is kept as a backup. If the copy cannot be made, TutorTrack continues using
 
 * **Back up first.** Editing the data file directly is for advanced users; create a backup before making changes.
 * **Invalid data.** If the data file cannot be loaded, for example because a value is invalid or longer than its
-  maximum length, TutorTrack shows an error naming the file and closes without changing it. Fix the file, or move it
-  to another folder to start again with sample data.
+  maximum length, or because the student list or a tag list contains an empty `null` entry, TutorTrack shows an error
+  naming the file and closes without changing it. Fix the file, or move it to another folder to start again with
+  sample data. Phone numbers saved by older versions with a country code, such as `+65 9123 4567`, are no longer valid;
+  remove the country code in the file before starting TutorTrack.
 * **Older data.** A non-empty physical address in the JSON `"address"` field does not cause a student record to be
   rejected. TutorTrack loads the record with an empty Telegram handle instead. Values beginning with `@` must also
   satisfy the current Telegram-handle format; otherwise, they are cleared. This conversion does not create a backup. The
   file remains unchanged until the next successful command saves the loaded data, replacing the old physical address
   with an empty value.
+* **Repeated spaces in older data.** Subjects and groups saved by earlier versions with repeated spaces between
+  words load unchanged and are still found by `find`, for example `find s/CS 2103T`. They keep their original spacing
+  in the file until you edit that subject or group.
 * **Other manual changes.** Values outside their accepted range can cause unexpected behaviour. Edit the file only
   when you are confident that the changes are valid.
 </box>

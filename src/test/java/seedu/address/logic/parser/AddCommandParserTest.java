@@ -148,6 +148,72 @@ public class AddCommandParserTest {
     }
 
     @Test
+    public void parse_miscasedRelationshipQualifierInName_failure() {
+        // Without this check, lowercase s/ would silently end the name and start the subject (#143).
+        for (String qualifier : List.of("s/o", "s/O", "S/o", "d/o", "D/o", "d/O")) {
+            assertParseFailure(parser, " n/Ali " + qualifier + " Abu e/ali@example.com s/CS2103T g/T11",
+                    Name.MESSAGE_INVALID_RELATIONSHIP_QUALIFIER);
+        }
+
+        // The qualifier message replaces the misleading duplicate-subject and generic format errors (#147).
+        assertParseFailure(parser, " e/ali@example.com s/CS2103T g/T11 n/Ali s/o Abu",
+                Name.MESSAGE_INVALID_RELATIONSHIP_QUALIFIER);
+        assertParseFailure(parser, " n/Ali  s/o  Abu e/ali@example.com s/CS2103T g/T11",
+                Name.MESSAGE_INVALID_RELATIONSHIP_QUALIFIER);
+        assertParseFailure(parser, " n/Ali\ts/o Abu e/ali@example.com s/CS2103T g/T11",
+                Name.MESSAGE_INVALID_RELATIONSHIP_QUALIFIER);
+    }
+
+    @Test
+    public void parse_miscasedQualifierAtEndOfName_failure() {
+        // Previously added the student with subject "o" when s/SUBJECT was omitted.
+        assertParseFailure(parser, " n/Ali s/o e/ali@example.com g/T11", Name.MESSAGE_INVALID_RELATIONSHIP_QUALIFIER);
+        assertParseFailure(parser, " n/Ali Abu s/O", Name.MESSAGE_INVALID_RELATIONSHIP_QUALIFIER);
+    }
+
+    @Test
+    public void parse_subjectWordOImmediatelyAfterName_failure() {
+        // Known syntax restriction: "n/Ali s/O Level" is indistinguishable from a miscased S/O, so it is rejected.
+        assertParseFailure(parser, " n/Ali Abu s/O Level e/ali@example.com g/T11",
+                Name.MESSAGE_INVALID_RELATIONSHIP_QUALIFIER);
+    }
+
+    @Test
+    public void parse_subjectStartingWithONotImmediatelyAfterName_success() {
+        PersonBuilder aliBuilder = new PersonBuilder().withName("Ali Abu").withPhone("").withEmail("ali@example.com")
+                .withTelegramHandle("").withGroup("T11").withTags();
+        AddCommand oLevelCommand = new AddCommand(aliBuilder.withSubject("O Level").build());
+
+        assertParseSuccess(parser, " s/O Level n/Ali Abu e/ali@example.com g/T11", oLevelCommand);
+        assertParseSuccess(parser, " n/Ali Abu e/ali@example.com s/O Level g/T11", oLevelCommand);
+        assertParseSuccess(parser, " n/Ali Abu e/ali@example.com g/T11 s/o",
+                new AddCommand(aliBuilder.withSubject("o").build()));
+        // Only the standalone word O is ambiguous; other subjects may follow the name directly.
+        assertParseSuccess(parser, " n/Ali Abu s/Oracle e/ali@example.com g/T11",
+                new AddCommand(aliBuilder.withSubject("Oracle").build()));
+    }
+
+    @Test
+    public void parse_uppercaseQualifierThenSubject_success() {
+        Person expectedPerson = new PersonBuilder().withName("Priya D/O Raman").withPhone("")
+                .withEmail("priya@example.com").withTelegramHandle("").withSubject("O Level").withGroup("T11")
+                .withTags().build();
+
+        assertParseSuccess(parser, " n/Priya D/O Raman e/priya@example.com s/O Level g/T11",
+                new AddCommand(expectedPerson));
+    }
+
+    @Test
+    public void parse_repeatedSpacesInSubjectAndGroup_collapsed() {
+        // #145: repeated spaces are stored as one so that exact-match find behaves predictably.
+        Person expectedPerson = new PersonBuilder(BOB).withPhone("").withTelegramHandle("")
+                .withSubject("CS 2103T").withGroup("T 11").withTags().build();
+
+        assertParseSuccess(parser, NAME_DESC_BOB + EMAIL_DESC_BOB + " s/  CS   2103T  g/T  11 ",
+                new AddCommand(expectedPerson));
+    }
+
+    @Test
     public void parse_nameWithMalformedPeriods_failure() {
         assertParseFailure(parser, " n/John..Tan" + EMAIL_DESC_BOB + SUBJECT_DESC_CS2103T + GROUP_DESC_T11,
                 Name.MESSAGE_CONSTRAINTS);
