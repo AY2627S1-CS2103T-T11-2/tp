@@ -49,7 +49,7 @@
 }
 
 .menu-bar .menu-button:showing {
-    -fx-background-color: #C96E50;
+    -fx-background-color: #D47858;
 }
 
 .menu-bar .menu-button:showing > .label {
@@ -73,7 +73,7 @@
 }
 
 .context-menu .menu-item:focused {
-    -fx-background-color: #C96E50;
+    -fx-background-color: #D47858;
 }
 
 .context-menu .menu-item:focused .label {
@@ -100,7 +100,7 @@
 }
 
 .scroll-bar .thumb:pressed {
-    -fx-background-color: #C96E50;
+    -fx-background-color: #D47858;
 }
 
 .scroll-bar .increment-button,
@@ -165,8 +165,8 @@
 }
 
 .command-shell {
-    -fx-background-color: #C96E50;
-    -fx-border-color: #B04A36;
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: #E5A58E;
     -fx-border-radius: 9;
     -fx-background-radius: 9;
     -fx-padding: 0 16 0 16;
@@ -177,7 +177,7 @@
 .command-symbol {
     -fx-font-family: "Segoe UI Semibold";
     -fx-font-size: 29px;
-    -fx-text-fill: #FFFDF9;
+    -fx-text-fill: #D47858;
 }
 
 .command-shell #commandTextField {
@@ -188,9 +188,15 @@
     -fx-border-width: 1;
     -fx-font-family: "Segoe UI Semibold";
     -fx-font-size: 17px;
-    -fx-text-fill: #FFFDF9;
-    -fx-prompt-text-fill: #FDE9DD;
+    -fx-text-fill: #342E2A;
+    -fx-prompt-text-fill: #8E7368;
     -fx-padding: 0;
+}
+
+.command-position {
+    -fx-font-family: "Segoe UI";
+    -fx-font-size: 12px;
+    -fx-text-fill: #8E7368;
 }
 
 .contact-list-area .list-view {
@@ -227,8 +233,8 @@
 
 .contact-list-area .list-cell:filled:selected #cardPane,
 .contact-list-area .list-cell:filled:selected:focused #cardPane {
-    -fx-background-color: #C96E50;
-    -fx-border-color: #C96E50;
+    -fx-background-color: #D47858;
+    -fx-border-color: #D47858;
 }
 
 .contact-list-area .list-cell:filled:selected .label,
@@ -272,7 +278,11 @@
 .field-column {
     -fx-border-color: transparent transparent transparent #F0E8DF;
     -fx-border-width: 0 0 0 1;
-    -fx-padding: 0 0 0 24;
+    -fx-padding: 0 16 0 24;
+}
+
+.first-field-column {
+    -fx-padding: 0 16 0 0;
 }
 
 .field-title {
@@ -303,12 +313,12 @@
 }
 
 .copy-button:focused {
-    -fx-border-color: #C96E50;
+    -fx-border-color: #D47858;
     -fx-border-width: 1;
 }
 
 .copy-button:hover .copy-icon {
-    -fx-stroke: #C96E50;
+    -fx-stroke: #D47858;
 }
 
 .copy-icon {

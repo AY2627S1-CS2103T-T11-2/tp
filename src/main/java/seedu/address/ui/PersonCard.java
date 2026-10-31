@@ -59,6 +59,7 @@ public class PersonCard extends UiPart<Region> {
     public PersonCard(Person person, int displayedIndex) {
         super(FXML);
         this.person = person;
+        allowFieldsToGrowWithinTheirColumns();
         id.setText(displayedIndex + ".");
         name.setText(person.getName().fullName);
         name.setWrapText(true);
@@ -75,6 +76,19 @@ public class PersonCard extends UiPart<Region> {
         GridPane.setColumnIndex(phoneSection, PersonCardData.getPhoneColumnIndex(person));
         person.getTags().stream()
                 .forEach(tag -> tags.getChildren().add(createTagLabel(tag.tagName)));
+    }
+
+    private void allowFieldsToGrowWithinTheirColumns() {
+        tags.setMaxWidth(Double.MAX_VALUE);
+        setUnconstrainedSize(phone);
+        setUnconstrainedSize(telegramHandle);
+        setUnconstrainedSize(email);
+        setUnconstrainedSize(subject);
+        setUnconstrainedSize(group);
+    }
+
+    private void setUnconstrainedSize(Label label) {
+        label.setMaxWidth(Double.MAX_VALUE);
     }
 
     /**
