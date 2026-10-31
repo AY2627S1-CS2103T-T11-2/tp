@@ -22,6 +22,7 @@ public class ArgumentTokenizer {
     private static final Pattern PARAMETER_PREFIX = Pattern.compile("(?<!\\S)[A-Za-z][A-Za-z0-9_-]*/");
     private static final List<String> NAME_RELATIONSHIP_QUALIFIERS = List.of("D/O", "S/O");
     private static final int NAME_RELATIONSHIP_QUALIFIER_LENGTH = 3;
+    private static final Pattern MISCASED_NAME_RELATIONSHIP_QUALIFIER = Pattern.compile("[DdSs]/[Oo](?=\\s|$)");
 
     /**
      * Tokenizes an arguments string and returns an {@code ArgumentMultimap} object that maps prefixes to their
@@ -78,6 +79,28 @@ public class ArgumentTokenizer {
      */
     public static boolean containsUnknownPrefixIgnoringQuotedPrefixes(String argsString, Prefix... prefixes) {
         return containsUnknownPrefix(argsString, true, prefixes);
+    }
+
+    /**
+     * Returns true if a name value contains a relationship qualifier not written as {@code D/O} or {@code S/O},
+     * such as {@code s/o}. Lowercase {@code s/} would otherwise silently start the subject value.
+     */
+    public static boolean containsMiscasedNameRelationshipQualifier(String argsString, Prefix... prefixes) {
+        List<Prefix> recognizedPrefixes = List.of(prefixes);
+        Matcher matcher = PARAMETER_PREFIX.matcher(argsString);
+        Prefix activePrefix = null;
+        while (matcher.find()) {
+            if (PREFIX_NAME.equals(activePrefix) && !isNameRelationshipQualifier(argsString, matcher, activePrefix)
+                    && MISCASED_NAME_RELATIONSHIP_QUALIFIER.matcher(argsString)
+                            .region(matcher.start(), argsString.length()).lookingAt()) {
+                return true;
+            }
+            Prefix matchedPrefix = new Prefix(matcher.group());
+            if (recognizedPrefixes.contains(matchedPrefix)) {
+                activePrefix = matchedPrefix;
+            }
+        }
+        return false;
     }
 
     /**

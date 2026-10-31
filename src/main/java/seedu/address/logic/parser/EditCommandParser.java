@@ -20,6 +20,7 @@ import seedu.address.logic.commands.IndexPersonTarget;
 import seedu.address.logic.commands.IndexRange;
 import seedu.address.logic.commands.TagEdit;
 import seedu.address.logic.parser.exceptions.ParseException;
+import seedu.address.model.person.Name;
 
 /**
  * Parses input arguments and creates a new EditCommand object
@@ -45,6 +46,10 @@ public class EditCommandParser implements Parser<EditCommand> {
             ranges = IndexRangeParser.parse(argMultimap.getPreamble());
         } catch (ParseException pe) {
             throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, EditCommand.MESSAGE_USAGE), pe);
+        }
+
+        if (ArgumentTokenizer.containsMiscasedNameRelationshipQualifier(args, EDIT_PREFIXES.toArray(Prefix[]::new))) {
+            throw new ParseException(Name.MESSAGE_INVALID_RELATIONSHIP_QUALIFIER);
         }
 
         if (ArgumentTokenizer.containsUnknownPrefix(args, EDIT_PREFIXES.toArray(Prefix[]::new))) {
