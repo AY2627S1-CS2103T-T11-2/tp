@@ -755,8 +755,8 @@ testers are expected to do more _exploratory_ testing.
 ### Saving data
 
 1. Dealing with missing/corrupted data files
-   1. Prerequisites: Launch TutorTrack once so that `data/tutortrack.json` is created, close it, and keep a copy
-      of the file.
+   1. Prerequisites: Launch TutorTrack and run `list` so that `data/tutortrack.json` is created, close it, and keep
+      a copy of the file. Launching and closing TutorTrack without running a command does not create the file.
 
    1. Test case: In `data/tutortrack.json`, change one student's `"email"` value to `"invalid"`, save the file,
       and relaunch TutorTrack.<br>
@@ -769,7 +769,8 @@ testers are expected to do more _exploratory_ testing.
       file is unchanged.
 
    1. Test case: Move `data/tutortrack.json` to another folder and relaunch TutorTrack.<br>
-      Expected: TutorTrack starts with sample data and creates a new data file.
+      Expected: TutorTrack starts with sample students. A new `data/tutortrack.json` is created only after a command,
+      such as `list`, runs successfully.
 
    1. Test case: Close TutorTrack, rename `data/tutortrack.json` to `data/addressbook.json`, and relaunch TutorTrack.<br>
       Expected: The same students are shown. A new `data/tutortrack.json` is created and `data/addressbook.json` is kept.
