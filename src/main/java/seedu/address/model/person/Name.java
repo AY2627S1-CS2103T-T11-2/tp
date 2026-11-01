@@ -17,6 +17,9 @@ public class Name {
                     + "within words. Initials or short abbreviations of up to three letters may end in a period "
                     + "when followed by another name, and D/O or S/O may appear between name parts";
 
+    public static final String MESSAGE_INVALID_RELATIONSHIP_QUALIFIER = "Write D/O or S/O in names in uppercase, "
+            + "for example n/Ravi S/O Kumar. To enter a subject starting with O, put s/SUBJECT before n/NAME.";
+
     private static final String NAME_WORD = "[\\p{Alnum}]+(?:[-'][\\p{Alnum}]+)*";
     private static final String INITIAL_OR_ABBREVIATION = "[\\p{Alpha}]{1,3}\\.";
     private static final String NAME_PART = "(?:(?:" + NAME_WORD + "|" + INITIAL_OR_ABBREVIATION + ") )*"

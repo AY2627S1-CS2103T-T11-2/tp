@@ -107,13 +107,13 @@ public class ParserUtil {
 
     /**
      * Parses a {@code String subject} into a {@code Subject}.
-     * Leading and trailing whitespaces will be trimmed.
+     * Leading and trailing whitespaces will be trimmed, and repeated internal spaces will be collapsed into one.
      *
      * @throws ParseException if the given {@code subject} is invalid.
      */
     public static Subject parseSubject(String subject) throws ParseException {
         requireNonNull(subject);
-        String trimmedSubject = subject.trim();
+        String trimmedSubject = subject.trim().replaceAll(" {2,}", " ");
         if (!Subject.isValidSubject(trimmedSubject)) {
             throw new ParseException(Subject.MESSAGE_CONSTRAINTS);
         }
@@ -122,13 +122,13 @@ public class ParserUtil {
 
     /**
      * Parses a {@code String group} into a {@code Group}.
-     * Leading and trailing whitespaces will be trimmed.
+     * Leading and trailing whitespaces will be trimmed, and repeated internal spaces will be collapsed into one.
      *
      * @throws ParseException if the given {@code group} is invalid.
      */
     public static Group parseGroup(String group) throws ParseException {
         requireNonNull(group);
-        String trimmedGroup = group.trim();
+        String trimmedGroup = group.trim().replaceAll(" {2,}", " ");
         if (!Group.isValidGroup(trimmedGroup)) {
             throw new ParseException(Group.MESSAGE_CONSTRAINTS);
         }
