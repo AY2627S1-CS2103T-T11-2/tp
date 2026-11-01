@@ -30,6 +30,7 @@ import static seedu.address.logic.commands.CommandTestUtil.VALID_SUBJECT_AMY;
 import static seedu.address.logic.commands.CommandTestUtil.VALID_TAG_FRIEND;
 import static seedu.address.logic.commands.CommandTestUtil.VALID_TAG_HUSBAND;
 import static seedu.address.logic.commands.CommandTestUtil.VALID_TELEGRAM_HANDLE_AMY;
+import static seedu.address.logic.commands.CommandTestUtil.assertCommandFailure;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_EMAIL;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_GROUP;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_PHONE;
@@ -207,17 +208,46 @@ public class EditCommandParserTest {
 
     @Test
     public void parse_invalidPreamble_failure() {
-        // negative index
-        assertParseFailure(parser, "-5" + NAME_DESC_AMY, MESSAGE_INVALID_FORMAT);
-
-        // zero index
-        assertParseFailure(parser, "0" + NAME_DESC_AMY, MESSAGE_INVALID_FORMAT);
-
         // invalid arguments being parsed as preamble
         assertParseFailure(parser, "1 some random string", MESSAGE_INVALID_FORMAT);
 
         // invalid prefix being parsed as preamble
         assertParseFailure(parser, "1 i/ string", MESSAGE_INVALID_FORMAT);
+    }
+
+    @Test
+    public void parse_invalidNumericIndex_failure() {
+        for (String index : List.of("0", "000", "-1", "-5", "-2147483648", "2147483648",
+                "999999999999999999999999999999")) {
+            assertParseFailure(parser, index + NAME_DESC_AMY, Messages.MESSAGE_INVALID_PERSON_DISPLAYED_INDEX);
+        }
+    }
+
+    @Test
+    public void parse_invalidNumericIndexInSelection_failure() {
+        for (String selection : List.of("0,1", "1,-2", "0-2", "-2-1", "1--2", "-3--1", "3-1",
+                "1-2147483648", "1,2147483648")) {
+            assertParseFailure(parser, selection + GROUP_DESC_AMY, Messages.MESSAGE_INVALID_PERSON_DISPLAYED_INDEX);
+        }
+    }
+
+    @Test
+    public void parseAndExecute_indexOutsideDisplayedList_failure() throws Exception {
+        Model model = new ModelManager();
+        model.addPerson(new PersonBuilder().build());
+
+        for (String index : List.of("2", "20", "2147483647")) {
+            assertCommandFailure(parser.parse(index + NAME_DESC_AMY), model,
+                    Messages.MESSAGE_INVALID_PERSON_DISPLAYED_INDEX);
+        }
+        for (String selection : List.of("1-2", "1,20", "1-2147483647")) {
+            assertCommandFailure(parser.parse(selection + GROUP_DESC_AMY), model,
+                    Messages.MESSAGE_INVALID_PERSON_DISPLAYED_INDEX);
+        }
+
+        model.updateFilteredPersonList(person -> false);
+        assertCommandFailure(parser.parse("1" + NAME_DESC_AMY), model,
+                Messages.MESSAGE_INVALID_PERSON_DISPLAYED_INDEX);
     }
 
     @Test
