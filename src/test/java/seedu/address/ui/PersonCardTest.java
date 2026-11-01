@@ -109,6 +109,44 @@ public class PersonCardTest {
         });
     }
 
+    @Test
+    public void constructor_longDetailsInNarrowList_wrapsDetailsWithoutEllipses() throws InterruptedException {
+        String subject = "Advanced Software Engineering and Design Principles";
+        String group = "Project Group With An Exceptionally Long Descriptive Name";
+        String email = "averylongstudentemailaddressforwrapping@exampleuniversity.edu";
+        String telegramHandle = "@longtelegramhandleforstudentname";
+        Model model = new ModelManager();
+        model.addPerson(new PersonBuilder().withSubject(subject).withGroup(group).withEmail(email)
+                .withTelegramHandle(telegramHandle).build());
+
+        runOnFxThread(() -> {
+            PersonListPanel panel = new PersonListPanel(model.getFilteredPersonList());
+            new Scene(panel.getRoot(), 450, 500);
+            panel.getRoot().applyCss();
+            panel.getRoot().layout();
+
+            assertLabelDisplaysCompleteText(panel, "#subject", subject);
+            assertLabelDisplaysCompleteText(panel, "#group", group);
+            assertLabelDisplaysCompleteText(panel, "#email", email);
+            assertLabelDisplaysCompleteText(panel, "#telegramHandle", telegramHandle);
+            assertTrue(panel.getRoot().lookup("#cardPane").getBoundsInParent().getWidth()
+                    <= panel.getRoot().getBoundsInParent().getWidth());
+        });
+    }
+
+    private void assertLabelDisplaysCompleteText(PersonListPanel panel, String selector, String expectedText) {
+        Label label = (Label) panel.getRoot().lookup(selector);
+        String renderedText = label.lookupAll(".text").stream()
+                .map(node -> ((Text) node).getText())
+                .collect(Collectors.joining())
+                .replace("\n", " ")
+                .trim();
+
+        assertTrue(label.isWrapText());
+        assertTrue(label.getWidth() > 0);
+        assertEquals(expectedText, renderedText);
+    }
+
     private static void runOnFxThread(Runnable action) throws InterruptedException {
         CountDownLatch actionCompleted = new CountDownLatch(1);
         AtomicReference<Throwable> failure = new AtomicReference<>();
