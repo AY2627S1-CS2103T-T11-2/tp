@@ -110,6 +110,11 @@ public class IndexRangeParserTest {
         assertThrows(NullPointerException.class, () -> IndexRangeParser.parse(null));
     }
 
+    @Test
+    public void parse_leadingZeroes_returnsCanonicalRanges() throws Exception {
+        assertEquals(List.of(range(1, 3)), IndexRangeParser.parse("0001,0002-0003"));
+    }
+
     /**
      * Creates a single-index range.
      */

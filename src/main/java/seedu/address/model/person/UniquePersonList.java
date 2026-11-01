@@ -3,8 +3,12 @@ package seedu.address.model.person;
 import static java.util.Objects.requireNonNull;
 import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
 
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -95,6 +99,61 @@ public class UniquePersonList implements Iterable<Person> {
         }
 
         internalList.setAll(persons);
+    }
+
+    /**
+     * Replaces corresponding people using one observable-list update.
+     *
+     * <p>This operation is identity-preserving: each replacement must represent
+     * the same person as its target.
+     */
+    public void setPersonsInBatch(List<Person> targets, List<Person> editedPersons) {
+        requireAllNonNull(targets);
+        requireAllNonNull(editedPersons);
+        if (targets.size() != editedPersons.size()) {
+            throw new IllegalArgumentException("Targets and replacements must have equal sizes");
+        }
+        if (targets.isEmpty()) {
+            return;
+        }
+        Map<Person, Person> replacementsByTarget = new HashMap<>();
+        for (int i = 0; i < targets.size(); i++) {
+            Person target = targets.get(i);
+            Person replacement = editedPersons.get(i);
+            if (!target.isSamePerson(replacement)) {
+                throw new IllegalArgumentException("Batch replacement must preserve person identity");
+            }
+            if (replacementsByTarget.put(target, replacement) != null) {
+                throw new IllegalArgumentException("The same target cannot be replaced twice");
+            }
+        }
+        Set<Person> existingPeople = new HashSet<>(internalList);
+        if (!existingPeople.containsAll(targets)) {
+            throw new PersonNotFoundException();
+        }
+        List<Person> updatedPeople = internalList.stream()
+                .map(person -> replacementsByTarget.getOrDefault(person, person))
+                .toList();
+        internalList.setAll(updatedPeople);
+    }
+
+    /**
+     * Removes multiple people using one observable-list update.
+     */
+    public void removePersonsInBatch(List<Person> targets) {
+        requireAllNonNull(targets);
+        if (targets.isEmpty()) {
+            return;
+        }
+        Set<Person> targetsToRemove = new HashSet<>(targets);
+        Set<Person> existingPeople = new HashSet<>(internalList);
+        if (!existingPeople.containsAll(targetsToRemove)) {
+            throw new PersonNotFoundException();
+        }
+        List<Person> remainingPeople = internalList.stream()
+                .filter(person -> !targetsToRemove.contains(person))
+                .toList();
+        internalList.setAll(remainingPeople);
     }
 
     /**

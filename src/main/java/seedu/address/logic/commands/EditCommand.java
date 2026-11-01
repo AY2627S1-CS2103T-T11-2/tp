@@ -169,9 +169,7 @@ public class EditCommand extends Command {
                 editedPeople.size(),
                 editedPeopleSummary));
 
-        for (int i = 0; i < peopleToEdit.size(); i++) {
-            model.setPerson(peopleToEdit.get(i), editedPeople.get(i));
-        }
+        model.setPersonsInBatch(peopleToEdit, editedPeople);
 
         return result;
     }
