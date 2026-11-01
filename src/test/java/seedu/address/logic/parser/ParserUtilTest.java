@@ -209,6 +209,22 @@ public class ParserUtilTest {
     }
 
     @Test
+    public void parseSubjectAndGroup_repeatedInternalSpaces_collapsedToOneSpace() throws Exception {
+        assertEquals(new Subject("CS 2103T"), ParserUtil.parseSubject("  CS   2103T  "));
+        assertEquals(new Group("T 11"), ParserUtil.parseGroup(" T  11 "));
+        // Values that differ by more than spacing stay distinct.
+        assertEquals(new Group("T1 1"), ParserUtil.parseGroup("T1  1"));
+        assertEquals(new Group("T11"), ParserUtil.parseGroup("T11"));
+    }
+
+    @Test
+    public void parseSubjectAndGroup_internalTab_keepsPreviousBehaviour() throws Exception {
+        // Only ordinary spaces are collapsed: a tab is still rejected in a subject and kept as typed in a group.
+        assertThrows(ParseException.class, () -> ParserUtil.parseSubject("CS\t2103T"));
+        assertEquals(new Group("T\t11"), ParserUtil.parseGroup("T\t11"));
+    }
+
+    @Test
     public void parseTag_null_throwsNullPointerException() {
         assertThrows(NullPointerException.class, () -> ParserUtil.parseTag(null));
     }

@@ -5,6 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.List;
+
 import org.junit.jupiter.api.Test;
 
 public class ArgumentTokenizerTest {
@@ -149,6 +151,40 @@ public class ArgumentTokenizerTest {
 
         assertFalse(ArgumentTokenizer.containsUnknownPrefix(" g/T11/T12", groupPrefix));
         assertFalse(ArgumentTokenizer.containsUnknownPrefix(" g/T11 https://example.com", groupPrefix));
+    }
+
+    @Test
+    public void containsMiscasedNameRelationshipQualifier_miscasedQualifierInName_returnsTrue() {
+        Prefix[] prefixes = {CliSyntax.PREFIX_NAME, CliSyntax.PREFIX_EMAIL, CliSyntax.PREFIX_SUBJECT};
+
+        for (String qualifier : List.of("s/o", "s/O", "S/o", "d/o", "D/o", "d/O")) {
+            assertTrue(ArgumentTokenizer.containsMiscasedNameRelationshipQualifier(
+                    " n/Ravi " + qualifier + " Kumar", prefixes), qualifier);
+        }
+        assertTrue(ArgumentTokenizer.containsMiscasedNameRelationshipQualifier(" n/Ravi s/o", prefixes));
+        assertTrue(ArgumentTokenizer.containsMiscasedNameRelationshipQualifier(" e/x@example.com n/Ravi s/O Level",
+                prefixes));
+        assertTrue(ArgumentTokenizer.containsMiscasedNameRelationshipQualifier(" n/Ravi S/O Kumar s/o", prefixes));
+    }
+
+    @Test
+    public void containsMiscasedNameRelationshipQualifier_noMiscasedQualifierInName_returnsFalse() {
+        Prefix[] prefixes = {CliSyntax.PREFIX_NAME, CliSyntax.PREFIX_EMAIL, CliSyntax.PREFIX_SUBJECT};
+
+        // Valid uppercase qualifiers are name text.
+        assertFalse(ArgumentTokenizer.containsMiscasedNameRelationshipQualifier(" n/Ravi S/O Kumar", prefixes));
+        assertFalse(ArgumentTokenizer.containsMiscasedNameRelationshipQualifier(" n/Priya D/O Raman s/CS2103T",
+                prefixes));
+        // s/ that follows another prefix, or comes before n/, is an intentional subject.
+        assertFalse(ArgumentTokenizer.containsMiscasedNameRelationshipQualifier(" s/o n/Ravi", prefixes));
+        assertFalse(ArgumentTokenizer.containsMiscasedNameRelationshipQualifier(" n/Ravi e/x@example.com s/o",
+                prefixes));
+        // Longer words are not qualifiers.
+        assertFalse(ArgumentTokenizer.containsMiscasedNameRelationshipQualifier(" n/Ravi s/Oracle", prefixes));
+        assertFalse(ArgumentTokenizer.containsMiscasedNameRelationshipQualifier(" n/Ravi S/OAbu", prefixes));
+        assertFalse(ArgumentTokenizer.containsMiscasedNameRelationshipQualifier(" n/Ravi s/o/x", prefixes));
+        // Without n/ there is no name for the qualifier to belong to.
+        assertFalse(ArgumentTokenizer.containsMiscasedNameRelationshipQualifier(" s/o", CliSyntax.PREFIX_SUBJECT));
     }
 
     @Test

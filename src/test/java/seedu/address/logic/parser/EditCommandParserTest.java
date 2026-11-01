@@ -131,6 +131,46 @@ public class EditCommandParserTest {
     }
 
     @Test
+    public void parse_miscasedRelationshipQualifierInName_failure() {
+        // #143: "edit 1 n/Ravi s/o Kumar" used to rename the student to "Ravi" and set the subject to "o Kumar".
+        for (String qualifier : List.of("s/o", "s/O", "S/o", "d/o", "D/o", "d/O")) {
+            assertParseFailure(parser, "1 n/Ravi " + qualifier + " Kumar", Name.MESSAGE_INVALID_RELATIONSHIP_QUALIFIER);
+        }
+
+        assertParseFailure(parser, "1 t/friend n/Ravi s/o Kumar", Name.MESSAGE_INVALID_RELATIONSHIP_QUALIFIER);
+        assertParseFailure(parser, "1 n/Ravi S/O Kumar s/o", Name.MESSAGE_INVALID_RELATIONSHIP_QUALIFIER);
+        assertParseFailure(parser, "1 n/Ravi s/O Level", Name.MESSAGE_INVALID_RELATIONSHIP_QUALIFIER);
+    }
+
+    @Test
+    public void parse_subjectStartingWithONotImmediatelyAfterName_success() {
+        EditPersonDescriptor nameAndSubject = new EditPersonDescriptorBuilder()
+                .withName("Ravi S/O Kumar").withSubject("O Level").build();
+        assertParseSuccess(parser, "1 s/O Level n/Ravi S/O Kumar", new EditCommand(INDEX_FIRST_PERSON, nameAndSubject));
+        assertParseSuccess(parser, "1 n/Ravi S/O Kumar e/ravi@example.com s/O Level",
+                new EditCommand(INDEX_FIRST_PERSON, new EditPersonDescriptorBuilder().withName("Ravi S/O Kumar")
+                        .withEmail("ravi@example.com").withSubject("O Level").build()));
+
+        EditPersonDescriptor subjectOnly = new EditPersonDescriptorBuilder().withSubject("o").build();
+        assertParseSuccess(parser, "1 s/o", new EditCommand(INDEX_FIRST_PERSON, subjectOnly));
+
+        IndexPersonTarget firstToThird = new IndexPersonTarget(List.of(
+                new IndexRange(INDEX_FIRST_PERSON, INDEX_THIRD_PERSON)));
+        assertParseSuccess(parser, "1-3 s/O Level",
+                new EditCommand(firstToThird, new EditPersonDescriptorBuilder().withSubject("O Level").build()));
+    }
+
+    @Test
+    public void parse_repeatedSpacesInSubjectAndGroup_collapsed() {
+        EditPersonDescriptor descriptor = new EditPersonDescriptorBuilder()
+                .withSubject("Data Structures").withGroup("B 2").build();
+        IndexPersonTarget firstToSecond = new IndexPersonTarget(List.of(
+                new IndexRange(INDEX_FIRST_PERSON, INDEX_SECOND_PERSON)));
+
+        assertParseSuccess(parser, "1-2 s/Data   Structures g/B  2", new EditCommand(firstToSecond, descriptor));
+    }
+
+    @Test
     public void parse_groupContainingSlashes_success() {
         for (String group : List.of("T11/T12", "T11 x / typo", "T11 https://example.com")) {
             EditPersonDescriptor descriptor = new EditPersonDescriptorBuilder().withGroup(group).build();

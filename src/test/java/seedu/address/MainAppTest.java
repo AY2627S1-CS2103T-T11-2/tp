@@ -22,6 +22,10 @@ public class MainAppTest {
             + "\"email\" : \"john@example.com\", \"address\" : \"\", \"subject\" : \"CS2103T\", \"group\" : \"T11\", "
             + "\"tags\" : [ ] } ] }";
     private static final String MALFORMED_DATA = "{ \"persons\" : [ { \"name\" : ";
+    private static final String NULL_PERSON_DATA = "{ \"persons\" : [ null ] }";
+    private static final String NULL_TAG_DATA = "{ \"persons\" : [ { \"name\" : \"John Tan\", \"phone\" : \"\", "
+            + "\"email\" : \"john@example.com\", \"address\" : \"\", \"subject\" : \"CS2103T\", \"group\" : \"T11\", "
+            + "\"tags\" : [ null ] } ] }";
     private static final String VALID_DATA = "{ \"persons\" : [ { \"name\" : \"John Tan\", \"phone\" : \"\", "
             + "\"email\" : \"john@example.com\", \"address\" : \"\", \"subject\" : \"CS2103T\", \"group\" : \"T11\", "
             + "\"tags\" : [ ] } ] }";
@@ -37,6 +41,17 @@ public class MainAppTest {
     @Test
     public void initComponents_malformedJson_stopsWithoutChangingFile() throws Exception {
         assertLoadingFailurePreservesFile(MALFORMED_DATA);
+    }
+
+    @Test
+    public void initComponents_nullStudentEntry_stopsWithoutChangingFile() throws Exception {
+        // Previously an unchecked NullPointerException crashed startup without the data-loading error dialog.
+        assertLoadingFailurePreservesFile(NULL_PERSON_DATA);
+    }
+
+    @Test
+    public void initComponents_nullTagEntry_stopsWithoutChangingFile() throws Exception {
+        assertLoadingFailurePreservesFile(NULL_TAG_DATA);
     }
 
     @Test
@@ -122,6 +137,45 @@ public class MainAppTest {
         assertEquals(dataFile, resolvedDataFile);
         assertEquals("new data", Files.readString(dataFile));
         assertEquals("legacy data", Files.readString(legacyDataFile));
+    }
+
+    @Test
+    public void migrateLegacyDataFileIfNeeded_copyFails_usesLegacyFile() throws Exception {
+        Path legacyDataFile = testFolder.resolve("addressbook.json");
+        Files.writeString(legacyDataFile, VALID_DATA);
+        // A regular file where the data folder should be makes creating the folder, and so the copy, fail.
+        Path blockedFolder = testFolder.resolve("data");
+        Files.writeString(blockedFolder, "not a folder");
+        Path dataFile = blockedFolder.resolve("tutortrack.json");
+
+        Path resolvedDataFile = MainApp.migrateLegacyDataFileIfNeeded(dataFile, legacyDataFile);
+
+        assertEquals(legacyDataFile, resolvedDataFile);
+        assertEquals(VALID_DATA, Files.readString(legacyDataFile));
+
+        // The legacy data is still loaded instead of being replaced with sample data.
+        MainApp app = new MainApp();
+        app.initComponents(testFolder.resolve("prefs.json"), resolvedDataFile);
+        assertEquals("John Tan", app.model.getAddressBook().getPersonList().getFirst().getName().fullName);
+    }
+
+    @Test
+    public void initComponents_invalidMigratedLegacyData_stopsWithoutChangingEitherFile() throws Exception {
+        Path legacyDataFile = testFolder.resolve("addressbook.json");
+        Path dataFile = testFolder.resolve("data").resolve("tutortrack.json");
+        Files.writeString(legacyDataFile, INVALID_NAME_DATA);
+        byte[] legacyBytes = Files.readAllBytes(legacyDataFile);
+
+        Path resolvedDataFile = MainApp.migrateLegacyDataFileIfNeeded(dataFile, legacyDataFile);
+        MainApp app = new MainApp();
+        app.initComponents(testFolder.resolve("prefs.json"), resolvedDataFile);
+        app.stop();
+
+        assertEquals(dataFile, resolvedDataFile);
+        assertNull(app.model);
+        assertTrue(app.getDataLoadingErrorMessage().isPresent());
+        assertArrayEquals(legacyBytes, Files.readAllBytes(legacyDataFile));
+        assertArrayEquals(legacyBytes, Files.readAllBytes(dataFile));
     }
 
     @Test

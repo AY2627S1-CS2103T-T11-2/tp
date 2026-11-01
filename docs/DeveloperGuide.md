@@ -158,8 +158,17 @@ It trims names and collapses consecutive internal whitespace. `Name` permits alp
 spaces, hyphens or apostrophes within words, initials or abbreviations of up to three letters ending in a period
 when followed by another word, and one uppercase `D/O` or `S/O` between name parts. Because `/` normally ends a
 prefix, `ArgumentTokenizer.containsUnknownPrefix` treats an exact `D/O` or `S/O` token as name text only while `n/`
-is the active prefix; elsewhere it is rejected as an unknown prefix. Lowercase `s/o` is not supported because `s/` is
-the subject prefix. The model value objects enforce maximum lengths of 100 characters for names, subjects, and
+is the active prefix; elsewhere it is rejected as an unknown prefix. Any other casing is ambiguous because `s/` is
+also the subject prefix: `n/Ravi s/o Kumar` could be a mistyped name or the name `Ravi` with the subject `o Kumar`, and
+the input is identical either way. Previously the tokenizer chose the subject reading, silently changing both fields.
+`AddCommandParser` and `EditCommandParser` therefore call
+`ArgumentTokenizer.containsMiscasedNameRelationshipQualifier` before any other check. It reports a `d/o`, `s/O`, `S/o`
+or similar token that follows the `n/` value and is followed by whitespace or the end of input, and the parser throws
+`Name.MESSAGE_INVALID_RELATIONSHIP_QUALIFIER`. Rejecting is preferred over guessing because either guess can corrupt
+a field without warning. The resulting restriction is that a subject consisting of, or starting with, the word `O`
+(such as `O Level`) cannot be written immediately after the name; `s/` must come before `n/` or after another prefix.
+`ParserUtil` also collapses repeated ordinary spaces in subjects and groups. Tabs are not collapsed, so a tab in a
+subject is still rejected and a tab in a group is kept. The model value objects enforce maximum lengths of 100 characters for names, subjects, and
 groups, 50 for tags, and 254 for email addresses, so command parsing and JSON reload apply the same constraints.
 A data file containing a longer value therefore fails to load, as described in the Storage component. `Phone` requires exactly eight digits, accepts single spaces or hyphens
 between digit groups, and stores numbers as `xxxx xxxx`. Country codes, `+`, and consecutive separators are rejected.
@@ -223,7 +232,8 @@ address is overwritten with an empty `"address"` value.
 
 JSON files that already contain names differing only by capitalization, such as `John Tan` and `john tan`, now fail
 validation as duplicate data. Loading is all-or-nothing. If an existing data file cannot be loaded, for example
-because of such duplicates, a value longer than its maximum length, or malformed JSON, `MainApp` does not create
+because of such duplicates, a value longer than its maximum length, malformed JSON, or a `null` entry in the
+`persons` or `tags` array, `MainApp` does not create
 `Logic` or the main window. Instead, it shows an error dialog naming the file and exits, so no command can save over
 the original file. An automatic migration would risk merging distinct students, so recovery is manual: back up and
 correct the file, or move it away to start again with sample data.
@@ -338,7 +348,9 @@ unquoted keyword or a quoted phrase, and a blank phrase such as `" "` is rejecte
 hyphens, or apostrophes. It matches a phrase as a substring of the name. Both comparisons ignore case.
 
 `FindPredicate` combines the optional name predicate with the optional Telegram handle, subject, group, and tag
-criteria. A person must satisfy every criterion supplied. A tag expression separated by `,` uses `TagMatchMode.ANY`,
+criteria. A person must satisfy every criterion supplied. Subject and group comparisons ignore case and collapse
+repeated spaces in the stored value. New values are already collapsed by `ParserUtil`, but records saved before that
+change may still contain repeated spaces, and the JSON file is not rewritten when it is loaded. A tag expression separated by `,` uses `TagMatchMode.ANY`,
 and one separated by `&` uses `TagMatchMode.ALL`; mixing both separators is rejected. `FindCommand` passes the
 predicate to `Model#updateFilteredPersonList`, and the UI updates because it observes the filtered list.
 
@@ -642,6 +654,13 @@ testers are expected to do more _exploratory_ testing.
       Expected: No student is added. The status message shows the `add` command usage because `S/O` is not part of
       the name.
 
+   1. Test case: `add n/Ali s/o Abu e/ali@example.com s/CS2103T g/T11`<br>
+      Expected: No student is added. The status message asks for `D/O` or `S/O` in uppercase.
+
+   1. Test case: `add s/O Level n/Ali Abu e/ali@example.com g/T11`<br>
+      Expected: Ali is added with the subject `O Level`. Typing `s/O Level` directly after the name is rejected
+      with the same uppercase message.
+
 1. Rejecting values longer than their maximum length
    1. Test case: `add n/Dan Ong e/dan@example.com s/CS2103T g/T11 t/` followed by 51 letters, for example
       `aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa`.<br>
@@ -668,6 +687,10 @@ testers are expected to do more _exploratory_ testing.
 
    1. Test case: `edit 1 p/`<br>
       Expected: No student is changed. The status message states that edit values cannot be empty.
+
+   1. Test case: `edit 1 n/Ravi s/o Kumar`<br>
+      Expected: No student is changed, including the subject. The status message asks for `D/O` or `S/O` in
+      uppercase.
 
 1. Editing several students
    1. Test case: `edit 1-3 g/T11 t/Online`<br>
@@ -739,6 +762,11 @@ testers are expected to do more _exploratory_ testing.
       and relaunch TutorTrack.<br>
       Expected: An error dialog names the data file and the reason. TutorTrack closes after the dialog is dismissed,
       and the data file is unchanged.
+
+   1. Test case: In `data/tutortrack.json`, replace the contents with `{ "persons" : [ null ] }` and relaunch
+      TutorTrack.<br>
+      Expected: An error dialog names the data file. TutorTrack closes after the dialog is dismissed, and the data
+      file is unchanged.
 
    1. Test case: Move `data/tutortrack.json` to another folder and relaunch TutorTrack.<br>
       Expected: TutorTrack starts with sample data and creates a new data file.

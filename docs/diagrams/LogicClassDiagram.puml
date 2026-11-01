@@ -52,8 +52,6 @@ IndexPersonTarget --> "1..*" IndexRange : ranges
 
 EditCommand --> "0..1" PersonTarget : target
 EditCommand *--> "1" EditPersonDescriptor : defensive copy
-IndexPersonTarget .up.|> PersonTarget
-IndexPersonTarget --> "1..*" IndexRange : ranges
 
 note right of EditCommand
   Single selection: index, target = null.

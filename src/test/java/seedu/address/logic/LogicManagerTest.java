@@ -1,5 +1,6 @@
 package seedu.address.logic;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.logic.Messages.MESSAGE_INVALID_COMMAND_FORMAT;
@@ -38,6 +39,7 @@ import seedu.address.model.Model;
 import seedu.address.model.ModelManager;
 import seedu.address.model.ReadOnlyAddressBook;
 import seedu.address.model.UserPrefs;
+import seedu.address.model.person.Name;
 import seedu.address.model.person.Person;
 import seedu.address.storage.JsonAddressBookStorage;
 import seedu.address.storage.JsonUserPrefsStorage;
@@ -47,6 +49,9 @@ import seedu.address.testutil.PersonBuilder;
 public class LogicManagerTest {
     private static final IOException DUMMY_IO_EXCEPTION = new IOException("dummy IO exception");
     private static final IOException DUMMY_AD_EXCEPTION = new AccessDeniedException("dummy access denied exception");
+    private static final String LEGACY_DOUBLE_SPACE_DATA = "{ \"persons\" : [ { \"name\" : \"Lee Kim\", "
+            + "\"phone\" : \"\", \"email\" : \"lee@example.com\", \"address\" : \"\", \"subject\" : \"CS  2103T\", "
+            + "\"group\" : \"T  11\", \"tags\" : [ ] } ] }";
 
     @TempDir
     public Path temporaryFolder;
@@ -250,6 +255,68 @@ public class LogicManagerTest {
     }
 
     @Test
+    public void execute_miscasedRelationshipQualifier_leavesStudentAndSavedFileUnchanged() throws Exception {
+        logic.execute("add n/Ravi S/O Kumar p/91234567 e/ravi@example.com h/@ravi_kumar s/CS2103T g/T11 t/weak");
+        Person original = model.getAddressBook().getPersonList().getFirst();
+        byte[] savedBytes = Files.readAllBytes(dataFile());
+
+        // #143: each of these used to succeed and silently change the name, the subject, or both.
+        for (String command : List.of("edit 1 n/Ravi s/o Kumar", "edit 1 n/Ravi s/O Kumar",
+                "edit 1 t/strong n/Ravi s/o Kumar", "edit 1 n/Ravi s/O Level",
+                "add n/Ali s/o e/ali@example.com g/T11", "add n/Ali s/o Abu e/ali@example.com s/CS2103T g/T11")) {
+            assertThrows(ParseException.class, Name.MESSAGE_INVALID_RELATIONSHIP_QUALIFIER, () ->
+                    logic.execute(command));
+            assertEquals(List.of(original), model.getAddressBook().getPersonList());
+            assertArrayEquals(savedBytes, Files.readAllBytes(dataFile()));
+        }
+
+        reopenSavedData();
+        assertEquals(List.of(original), model.getAddressBook().getPersonList());
+    }
+
+    @Test
+    public void execute_findSubjectAndGroup_matchesLegacyAndNewSpacingConsistently() throws Exception {
+        // A record saved before #145 was fixed keeps its double spaces on disk.
+        Files.writeString(dataFile(), LEGACY_DOUBLE_SPACE_DATA);
+        reopenSavedData();
+        logic.execute("add n/Tan Wei e/tan@example.com s/CS   2103T g/T 11");
+        logic.execute("add n/Ng Ann e/ng@example.com s/CS2103T g/T11");
+
+        for (String findCommand : List.of("find s/CS 2103T g/T 11", "find s/cs  2103t g/t   11")) {
+            logic.execute(findCommand);
+            assertEquals(List.of("Lee Kim", "Tan Wei"), displayedNames());
+        }
+
+        // An unrelated edit must not rewrite the legacy subject or group.
+        logic.execute("list");
+        logic.execute("edit 1 t/legacy");
+        reopenSavedData();
+        Person legacyPerson = model.getAddressBook().getPersonList().getFirst();
+        assertEquals("CS  2103T", legacyPerson.getSubject().subject);
+        assertEquals("T  11", legacyPerson.getGroup().group);
+        assertEquals("CS 2103T", model.getAddressBook().getPersonList().get(1).getSubject().subject);
+
+        logic.execute("find s/CS 2103T");
+        assertEquals(List.of("Lee Kim", "Tan Wei"), displayedNames());
+    }
+
+    @Test
+    public void execute_findStudentWithRelationshipQualifier_matchesKeywordAndQuotedPhrase() throws Exception {
+        logic.execute("add n/Ravi S/O Kumar e/ravi@example.com s/CS2103T g/T11");
+        logic.execute("add n/Ravi Shankar e/shankar@example.com s/CS2103T g/T12");
+
+        // The lowercase s/o inside quotes stays part of the phrase instead of starting a subject filter.
+        logic.execute("find n/\"ravi s/o kumar\" s/CS2103T");
+        assertEquals(List.of("Ravi S/O Kumar"), displayedNames());
+
+        logic.execute("find n/S/O");
+        assertEquals(List.of("Ravi S/O Kumar"), displayedNames());
+
+        logic.execute("find n/Ravi g/T12");
+        assertEquals(List.of("Ravi Shankar"), displayedNames());
+    }
+
+    @Test
     public void execute_storageThrowsIoException_throwsCommandException() {
         assertCommandFailureForExceptionFromStorage(DUMMY_IO_EXCEPTION, String.format(
                 LogicManager.FILE_OPS_ERROR_FORMAT, DUMMY_IO_EXCEPTION.getMessage()));
@@ -264,6 +331,24 @@ public class LogicManagerTest {
     @Test
     public void getFilteredPersonList_modifyList_throwsUnsupportedOperationException() {
         assertThrows(UnsupportedOperationException.class, () -> logic.getFilteredPersonList().remove(0));
+    }
+
+    private Path dataFile() {
+        return temporaryFolder.resolve("addressBook.json");
+    }
+
+    /**
+     * Replaces the model and logic with ones loaded from the saved data file, as happens when TutorTrack restarts.
+     */
+    private void reopenSavedData() throws Exception {
+        StorageManager storage = new StorageManager(new JsonAddressBookStorage(dataFile()),
+                new JsonUserPrefsStorage(temporaryFolder.resolve("userPrefs.json")));
+        model = new ModelManager(storage.readAddressBook().orElseThrow(), new UserPrefs());
+        logic = new LogicManager(model, storage);
+    }
+
+    private List<String> displayedNames() {
+        return model.getFilteredPersonList().stream().map(person -> person.getName().fullName).toList();
     }
 
     /**
