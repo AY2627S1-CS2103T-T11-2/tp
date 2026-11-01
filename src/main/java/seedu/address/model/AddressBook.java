@@ -38,6 +38,20 @@ public class AddressBook implements ReadOnlyAddressBook {
     }
 
     /**
+     * Replaces multiple people in one batch.
+     */
+    public void setPersonsInBatch(List<Person> targets, List<Person> replacements) {
+        persons.setPersonsInBatch(targets, replacements);
+    }
+
+    /**
+     * Removes multiple people using one observable-list update.
+     */
+    public void removePersonsInBatch(List<Person> targets) {
+        persons.removePersonsInBatch(targets);
+    }
+
+    /**
      * Resets the existing data of this {@code AddressBook} with {@code newData}.
      */
     public void resetData(ReadOnlyAddressBook newData) {

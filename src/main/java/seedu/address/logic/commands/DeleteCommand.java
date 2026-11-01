@@ -87,9 +87,7 @@ public class DeleteCommand extends Command {
             return deleteFields(model, peopleToDelete);
         }
 
-        for (Person person : peopleToDelete) {
-            model.deletePerson(person);
-        }
+        model.deletePersonsInBatch(peopleToDelete);
 
         CommandResult result;
 
@@ -133,9 +131,11 @@ public class DeleteCommand extends Command {
                     tags, person.getSubject(), person.getGroup()));
         }
 
-        for (int i = 0; i < people.size(); i++) {
-            model.setPerson(people.get(i), updatedPeople.get(i));
-        }
+        // for (int i = 0; i < people.size(); i++) {
+        //     model.setPerson(people.get(i), updatedPeople.get(i));
+        // }
+        model.setPersonsInBatch(people, updatedPeople);
+
         String summary = updatedPeople.stream().map(Messages::format).collect(Collectors.joining("\n"));
         return new CommandResult(String.format(MESSAGE_DELETE_FIELDS_SUCCESS, updatedPeople.size(), summary));
     }

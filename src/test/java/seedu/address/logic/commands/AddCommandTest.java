@@ -143,6 +143,16 @@ public class AddCommandTest {
         }
 
         @Override
+        public void setPersonsInBatch(List<Person> targets, List<Person> editedPersons) {
+            throw new AssertionError("This method should not be called.");
+        }
+
+        @Override
+        public void deletePersonsInBatch(List<Person> targets) {
+            throw new AssertionError("This method should not be called.");
+        }
+
+        @Override
         public ObservableList<Person> getFilteredPersonList() {
             throw new AssertionError("This method should not be called.");
         }
