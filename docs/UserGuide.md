@@ -328,8 +328,9 @@ TutorTrack automatically saves data after successfully executing a command. You 
 
 TutorTrack data is saved automatically as a JSON file `[JAR file location]/data/tutortrack.json`. Advanced users are welcome to update data directly by editing that data file.
 
-If you used an earlier version that saved data as `[JAR file location]/addressbook.json` or `[JAR file location]/data/addressbook.json`,
-TutorTrack automatically copies that file to `[JAR file location]/data/tutortrack.json` the first time it starts. The original `addressbook.json`
+If you used an earlier version that saved data as `addressbook.json` or `data/addressbook.json` in the folder you
+launch TutorTrack from (your home folder in Quick start), TutorTrack automatically copies that file to
+`data/tutortrack.json` in the same folder when it starts and `data/tutortrack.json` does not exist yet. The original `addressbook.json`
 file is kept as a backup. If the copy cannot be made, TutorTrack continues using the original file so your data is still loaded.
 
 <box type="warning" seamless>

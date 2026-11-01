@@ -162,7 +162,8 @@ is the active prefix; elsewhere it is rejected as an unknown prefix. Any other c
 also the subject prefix: `n/Ravi s/o Kumar` could be a mistyped name or the name `Ravi` with the subject `o Kumar`, and
 the input is identical either way. Previously the tokenizer chose the subject reading, silently changing both fields.
 `AddCommandParser` and `EditCommandParser` therefore call
-`ArgumentTokenizer.containsMiscasedNameRelationshipQualifier` before any other check. It reports a `d/o`, `s/O`, `S/o`
+`ArgumentTokenizer.containsMiscasedNameRelationshipQualifier` before checking prefixes or field values
+(`EditCommandParser` parses its index expression first). It reports a `d/o`, `s/O`, `S/o`
 or similar token that follows the `n/` value and is followed by whitespace or the end of input, and the parser throws
 `Name.MESSAGE_INVALID_RELATIONSHIP_QUALIFIER`. Rejecting is preferred over guessing because either guess can corrupt
 a field without warning. The resulting restriction is that a subject consisting of, or starting with, the word `O`
@@ -325,8 +326,8 @@ throws a `CommandException`. Empty `p/`, `h/`, and `t/` values are rejected; opt
 `delete` instead. Both command constructors copy the descriptor defensively, including the ordered tag edits.
 
 For a bulk edit, all edited `Person` objects and the success result are prepared before the
-model is updated. The command then replaces each selected person using the resolved selection,
-so changes to the filtered list cannot cause later selected people to be skipped.
+model is updated. The command then passes the resolved selection and the replacements to
+`Model#setPersonsInBatch` in one call, so changes to the filtered list cannot cause later selected people to be skipped.
 
 The following diagram focuses on the bulk-edit execution flow. Parsing and saving are omitted because they are
 covered by the parsing diagram above and the general `LogicManager` workflow respectively.
@@ -345,7 +346,7 @@ execution.
 a non-empty preamble, an unknown prefix, or a repeated prefix. Name input is split on commas. Each term is either an
 unquoted keyword or a quoted phrase, and a blank phrase such as `" "` is rejected.
 `NameContainsSearchTermsPredicate` matches a keyword against whole name components, which are separated by spaces,
-hyphens, or apostrophes. It matches a phrase as a substring of the name. Both comparisons ignore case.
+periods, hyphens, or apostrophes. It matches a phrase as a substring of the name. Both comparisons ignore case.
 
 `FindPredicate` combines the optional name predicate with the optional Telegram handle, subject, group, and tag
 criteria. A person must satisfy every criterion supplied. Subject and group comparisons ignore case and collapse
@@ -661,6 +662,15 @@ testers are expected to do more _exploratory_ testing.
       Expected: Ali is added with the subject `O Level`. Typing `s/O Level` directly after the name is rejected
       with the same uppercase message.
 
+1. Normalizing subjects and groups, and validating Telegram handles
+   1. Test case: `add n/Siti Rahman e/siti@example.com s/CS   2103T g/Sec  3A`, typing several spaces inside the
+      subject and the group.<br>
+      Expected: Siti is added with the subject `CS 2103T` and the group `Sec 3A`. `find s/cs 2103t` then shows her.
+
+   1. Test case: `add n/Siti Lim e/sitilim@example.com h/siti_lim s/CS2103T g/T11`<br>
+      Expected: No student is added. The status message shows the Telegram handle constraints. Using `h/@_siti`
+      gives the same message.
+
 1. Rejecting values longer than their maximum length
    1. Test case: `add n/Dan Ong e/dan@example.com s/CS2103T g/T11 t/` followed by 51 letters, for example
       `aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa`.<br>
@@ -767,6 +777,11 @@ testers are expected to do more _exploratory_ testing.
       TutorTrack.<br>
       Expected: An error dialog names the data file. TutorTrack closes after the dialog is dismissed, and the data
       file is unchanged.
+
+   1. Test case: Restore the copy. In `data/tutortrack.json`, change one student's `"address"` value, which stores
+      the Telegram handle, to `"Blk 123 Clementi"` and relaunch TutorTrack.<br>
+      Expected: All students load, and that student has no Telegram handle. The data file is unchanged until a command,
+      such as `list`, runs successfully.
 
    1. Test case: Move `data/tutortrack.json` to another folder and relaunch TutorTrack.<br>
       Expected: TutorTrack starts with sample students. A new `data/tutortrack.json` is created only after a command,
