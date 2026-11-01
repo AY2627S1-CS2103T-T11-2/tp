@@ -15,6 +15,10 @@
 
 TutorTrack is based on [AddressBook-Level3](https://se-education.org/addressbook-level3/) by the [SE-EDU initiative](https://se-education.org). It uses [JavaFX](https://openjfx.io/), [Jackson](https://github.com/FasterXML/jackson), and [JUnit 5](https://junit.org/junit5/).
 
+**AI-assisted development:** All team members used AI tools during TutorTrack's development. The tools used by the
+team include ChatGPT and Claude Code. AI assistance was used across implementation, debugging, code review, test
+development, and documentation. AI-assisted contributions were reviewed and verified before integration.
+
 ---
 
 ## **Setting up, getting started**
@@ -680,8 +684,15 @@ testers are expected to do more _exploratory_ testing.
    1. Test case: `add n/Charlie Lim e/charlie@example.com s/Mathematics g/T11 x/typo`<br>
       Expected: No student is added. The status message shows the `add` command usage because `x/` is unknown.
 
-   1. Test case: Repeat either successful command above with the same name but different contact details.<br>
-      Expected: No second student is added. The status message reports that the student already exists.
+   1. Test case: `add n/Charlie Lim e/charlie@example.com s/Mathematics`<br>
+      Expected: No student is added. The status message shows the `add` command usage because `g/` is missing.
+
+   1. Test case: `add n/Charlie Lim e/charlie@example.com s/Mathematics s/Physics g/T11`<br>
+      Expected: No student is added. The status message states that multiple values were specified for `s/`.
+
+   1. Test case: After adding Alice Tan above, enter `add n/ALICE TAN e/alice2@example.com s/Physics g/T12`.<br>
+      Expected: No student is added. The status message reports that the student already exists, because names are
+      compared ignoring case.
 
 ### Editing students
 
