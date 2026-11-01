@@ -2,6 +2,7 @@ package seedu.address.logic.parser;
 
 import static java.util.Objects.requireNonNull;
 import static seedu.address.logic.Messages.MESSAGE_INVALID_COMMAND_FORMAT;
+import static seedu.address.logic.Messages.MESSAGE_INVALID_PERSON_DISPLAYED_INDEX;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_EMAIL;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_GROUP;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_LEGACY_ADDRESS;
@@ -13,6 +14,7 @@ import static seedu.address.logic.parser.CliSyntax.PREFIX_TELEGRAM_HANDLE;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import seedu.address.logic.commands.EditCommand;
 import seedu.address.logic.commands.EditCommand.EditPersonDescriptor;
@@ -26,6 +28,10 @@ import seedu.address.model.person.Name;
  * Parses input arguments and creates a new EditCommand object
  */
 public class EditCommandParser implements Parser<EditCommand> {
+
+    // Recognizes numeric selections even when an index is negative or outside the integer range.
+    private static final Pattern NUMERIC_INDEX_EXPRESSION_PATTERN =
+            Pattern.compile("[+-]?\\d+(?:-[+-]?\\d+)?(?:,[+-]?\\d+(?:-[+-]?\\d+)?)*");
 
     private static final List<Prefix> EDIT_PREFIXES = List.of(PREFIX_NAME, PREFIX_PHONE, PREFIX_EMAIL,
             PREFIX_TELEGRAM_HANDLE, PREFIX_SUBJECT, PREFIX_GROUP, PREFIX_TAG, PREFIX_LEGACY_ADDRESS);
@@ -45,6 +51,9 @@ public class EditCommandParser implements Parser<EditCommand> {
         try {
             ranges = IndexRangeParser.parse(argMultimap.getPreamble());
         } catch (ParseException pe) {
+            if (NUMERIC_INDEX_EXPRESSION_PATTERN.matcher(argMultimap.getPreamble().trim()).matches()) {
+                throw new ParseException(MESSAGE_INVALID_PERSON_DISPLAYED_INDEX, pe);
+            }
             throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, EditCommand.MESSAGE_USAGE), pe);
         }
 
