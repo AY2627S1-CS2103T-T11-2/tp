@@ -1,0 +1,67 @@
+@startuml
+!include style.puml
+skinparam ArrowFontStyle plain
+hide footbox
+
+box Logic LOGIC_COLOR_T1
+participant ":EditCommandParser" as EditCommandParser LOGIC_COLOR
+participant "IndexRangeParser" as IndexRangeParser LOGIC_COLOR
+participant "descriptor:EditPersonDescriptor" as Descriptor LOGIC_COLOR
+participant "target:IndexPersonTarget" as Target LOGIC_COLOR
+participant "command:EditCommand" as EditCommand LOGIC_COLOR
+end box
+
+[-> EditCommandParser : parse("1-3 g/T11 t/Online")
+activate EditCommandParser
+
+EditCommandParser -> IndexRangeParser : parse("1-3")
+activate IndexRangeParser
+IndexRangeParser --> EditCommandParser : ranges
+deactivate IndexRangeParser
+
+note right of EditCommandParser
+Reject invalid prefixes and
+repeated non-tag prefixes.
+end note
+
+create Descriptor
+EditCommandParser -> Descriptor : new EditPersonDescriptor()
+activate Descriptor
+Descriptor --> EditCommandParser : descriptor
+deactivate Descriptor
+
+note over EditCommandParser, Descriptor
+Validate and store supplied fields using ParserUtil.
+Each t/ value becomes an ordered TagEdit.
+end note
+
+EditCommandParser -> Descriptor : isAnyFieldEdited()
+activate Descriptor
+Descriptor --> EditCommandParser : true
+deactivate Descriptor
+
+create Target
+EditCommandParser -> Target : new IndexPersonTarget(ranges)
+activate Target
+Target --> EditCommandParser : target
+deactivate Target
+
+EditCommandParser -> Target : selectsSingleIndex()
+activate Target
+Target --> EditCommandParser : false
+deactivate Target
+
+EditCommandParser -> Descriptor : hasSinglePersonOnlyFields()
+activate Descriptor
+Descriptor --> EditCommandParser : false
+deactivate Descriptor
+
+create EditCommand
+EditCommandParser -> EditCommand : new EditCommand(target, descriptor)
+activate EditCommand
+EditCommand --> EditCommandParser : command
+deactivate EditCommand
+
+[<-- EditCommandParser : command
+deactivate EditCommandParser
+@enduml

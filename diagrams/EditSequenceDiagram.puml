@@ -6,40 +6,65 @@ hide footbox
 box Logic LOGIC_COLOR_T1
 participant "command:EditCommand" as EditCommand LOGIC_COLOR
 participant "target:IndexPersonTarget" as IndexPersonTarget LOGIC_COLOR
+participant "result:CommandResult" as CommandResult LOGIC_COLOR
 end box
 
 box Model MODEL_COLOR_T1
 participant "model:Model" as Model MODEL_COLOR
 end box
 
-[-> EditCommand ++: execute(model)
-EditCommand -> IndexPersonTarget ++: resolve(model)
-IndexPersonTarget -> Model ++: getFilteredPersonList()
-Model --> IndexPersonTarget --: displayedPeople
-note right of IndexPersonTarget
-  Validate all indexes before
-  returning any students.
-end note
-IndexPersonTarget --> EditCommand --: peopleToEdit
+[-> EditCommand : execute(model)
+activate EditCommand
 
-loop prepare each edited student
-    EditCommand -> EditCommand : createEditedPerson(person, descriptor)
-end
+EditCommand -> IndexPersonTarget : resolve(model)
+activate IndexPersonTarget
+IndexPersonTarget -> Model : getFilteredPersonList()
+activate Model
+Model --> IndexPersonTarget : displayedPeople
+deactivate Model
+
+note right of IndexPersonTarget
+Copy the displayed list and validate
+all indexes before returning students.
+end note
+
+IndexPersonTarget --> EditCommand : peopleToEdit
+deactivate IndexPersonTarget
 
 note right of EditCommand
-  All replacements are prepared before
-  the model is changed.
+Reject single-person-only fields
+even for commands constructed directly.
 end note
 
-EditCommand -> EditCommand : prepare success CommandResult
-EditCommand -> Model ++: setPersonsInBatch(peopleToEdit, editedPeople)
-Model --> EditCommand --
+loop prepare each edited student
+    EditCommand -> EditCommand : createEditedPerson(person, editPersonDescriptor)
+    activate EditCommand
+    note right of EditCommand
+    Apply tag operations in order.
+    A missing rename source aborts
+    before any model update.
+    end note
+    EditCommand --> EditCommand : editedPerson
+    deactivate EditCommand
+end
+
+create CommandResult
+EditCommand -> CommandResult : new CommandResult(message)
+activate CommandResult
+CommandResult --> EditCommand : result
+deactivate CommandResult
+
+EditCommand -> Model : setPersonsInBatch(peopleToEdit, editedPeople)
+activate Model
+Model --> EditCommand
+deactivate Model
 
 note over EditCommand, Model
-  The batch replacement updates the observable list once.
-  The existing filter stays active after editing.
-  Students that no longer match disappear from the view.
+All replacements are prepared before this single update.
+The current filter stays active; students that no longer
+match disappear from the displayed list.
 end note
 
-[<-- EditCommand --: CommandResult
+[<-- EditCommand : result
+deactivate EditCommand
 @enduml
