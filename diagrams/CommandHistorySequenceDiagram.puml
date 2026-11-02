@@ -4,10 +4,16 @@ skinparam ArrowFontStyle plain
 box UI UI_COLOR_T1
 participant ":CommandBox" as CommandBox UI_COLOR
 participant "h:CommandHistory" as CommandHistory UI_COLOR
+participant ":MainWindow" as MainWindow UI_COLOR
 end box
-== Remember an entered command ==
+
+== Submit a command ==
+
 [-> CommandBox : handleCommandEntered()
 activate CommandBox
+alt input is empty
+    note right of CommandBox : Return without recording or executing.
+else input is not empty
 CommandBox -> CommandHistory : add(commandText)
 activate CommandHistory
 note right of CommandHistory
@@ -19,7 +25,27 @@ The saved draft is cleared.
 end note
 CommandHistory --> CommandBox
 deactivate CommandHistory
+
+CommandBox -> MainWindow : executeCommand(commandText)
+note right of MainWindow
+Invoked through CommandExecutor.execute(commandText).
+MainWindow calls Logic and displays the result or error.
+end note
+alt execution succeeds
+    MainWindow --> CommandBox : CommandResult
+    CommandBox -> CommandBox : commandTextField.setText("")
+    CommandBox -> CommandHistory : saveDraft("")
+else execution fails
+    MainWindow --> CommandBox : ParseException or CommandException
+    note right of CommandBox
+    Submitted text remains in the input.
+    Error styling is applied.
+    add() has already cleared the saved draft.
+    end note
+end
+end
 deactivate CommandBox
+
 == Preserve a user-edited draft ==
 
 [-> CommandBox : command text changed
@@ -46,13 +72,17 @@ activate CommandBox
 
 CommandBox -> CommandHistory : getPrevious()
 activate CommandHistory
-CommandHistory --> CommandBox : Optional.of(previousCommand)
+CommandHistory --> CommandBox : previousEntry: Optional<String>
 deactivate CommandHistory
 
+alt previousEntry is present
 CommandBox -> CommandBox ++ : displayHistoryEntry(previousCommand)
 deactivate CommandBox
-
+else already at oldest entry or history is empty
+note right of CommandBox : Leave input unchanged.
+end
 deactivate CommandBox
+
 == Navigate to a newer command ==
 
 [-> CommandBox : handleHistoryNavigation(downEvent)
@@ -60,30 +90,20 @@ activate CommandBox
 
 CommandBox -> CommandHistory : getNext()
 activate CommandHistory
-CommandHistory --> CommandBox : Optional.of(nextCommand)
+CommandHistory --> CommandBox : nextEntry: Optional<String>
 deactivate CommandHistory
 
+alt a newer stored entry is available
 CommandBox -> CommandBox ++ : displayHistoryEntry(nextCommand)
 deactivate CommandBox
-
-deactivate CommandBox
-== Navigate past the newest command ==
-
-[-> CommandBox : handleHistoryNavigation(downEvent)
-activate CommandBox
-
-CommandBox -> CommandHistory : getNext()
-activate CommandHistory
-CommandHistory --> CommandBox : Optional.of(draft)
-deactivate CommandHistory
-
+else moving down past the newest entry
 CommandBox -> CommandBox ++ : displayHistoryEntry(draft)
 deactivate CommandBox
 
-note right of CommandBox
-The saved draft is restored after the
-newest processed command.
-end note
+note right of CommandBox : Restore the saved draft.
+else already at the draft position
+note right of CommandBox : Leave input unchanged.
+end
 
 deactivate CommandBox
 @enduml

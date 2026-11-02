@@ -1,0 +1,46 @@
+@startuml
+!include style.puml
+skinparam ArrowFontStyle plain
+hide footbox
+
+participant "UI" as UI UI_COLOR
+participant "LogicManager" as Logic LOGIC_COLOR
+participant "Command parsing" as Parsing LOGIC_COLOR
+participant "DeleteCommand" as Delete LOGIC_COLOR
+participant "PersonTarget" as Target LOGIC_COLOR
+participant "Model" as Model MODEL_COLOR
+participant "Storage" as Storage STORAGE_COLOR
+
+UI -> Logic : execute(commandText)
+Logic -> Parsing : parseCommand(commandText)
+Parsing --> Logic : DeleteCommand
+Logic -> Delete : execute(model)
+Delete -> Target : resolve(model)
+Target -> Model : getFilteredPersonList()
+Model --> Target : displayed students
+Target --> Delete : validated selection
+
+alt delete student records
+    Delete -> Model : deletePersonsInBatch(selection)
+    Delete -> Model : updateFilteredPersonList(showAllPredicate)
+else clear optional fields
+    Delete -> Delete : prepare all replacements
+    Delete -> Model : setPersonsInBatch(selection, replacements)
+end
+
+Delete --> Logic : CommandResult
+Logic -> Model : getAddressBook()
+Model --> Logic : student data
+Logic -> Storage : saveAddressBook(student data)
+Storage --> Logic
+Logic --> UI : CommandResult
+
+note over Target, Model
+    Index validation completes before mutation.
+    Invalid indexes stop execution without changing records.
+end note
+note over Delete, Model
+    Field clearing keeps the current filter.
+    Missing requested tags reject all replacements.
+end note
+@enduml
