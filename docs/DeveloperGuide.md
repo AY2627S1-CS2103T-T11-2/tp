@@ -152,7 +152,10 @@ For example, `1,3-5,7` represents displayed indexes 1, 3, 4, 5, and 7.
 
 The parser does not check whether the selected indexes exist in the currently displayed person list. That list depends on the current model state and active filter, so bounds validation is performed when the resulting command executes.
 
-Command-specific parsers remain responsible for wrapping parsing failures in their own usage messages. This allows commands such as `delete`, `edit`, and future selection commands to share the same index-expression syntax while retaining command-specific feedback.
+Command-specific parsers translate parsing failures into their own feedback. `EditCommandParser` reports an invalid
+displayed index for numeric selections containing zero, negative or overflowing indexes, or reversed ranges. Other
+malformed expressions show the command usage. This allows commands to share the same index-expression syntax while
+retaining command-specific feedback.
 
 `AddCommandParser` treats `h/TELEGRAM_HANDLE` as optional. `EditCommandParser` preserves the current value when `h/`
 is omitted and rejects an empty `h/`; optional fields are cleared using `delete`. Both parsers explicitly reject the
@@ -284,70 +287,44 @@ fields keeps the current filter.
 
 ### Edit command
 
-`EditCommandParser` delegates parsing of the index expression to `IndexRangeParser`. This
-gives `edit` the same comma-separated index and inclusive-range syntax as other commands
-that operate on displayed persons.
+`EditCommandParser` uses `IndexRangeParser` to obtain canonical ranges, then constructs an `IndexPersonTarget` to
+check whether exactly one displayed index is selected. A single selection uses the index-based `EditCommand`
+constructor and permits all fields. Multiple selections use the `PersonTarget` constructor and permit only subject,
+group, and tags. Name, phone, email, and Telegram handle require a single selection; both the parser and the bulk
+execution path enforce this restriction.
 
-The following diagram summarizes how `EditCommandParser` validates the input and chooses the appropriate command
-constructor. Detailed field validation rules are described below the diagram.
+The parser rejects unknown prefixes, the legacy `a/` prefix, repeated non-tag prefixes, and commands with no field
+to edit. Field validation and normalization follow the shared rules in the [Logic component](#logic-component).
+Empty values are rejected; optional fields are cleared using `delete`.
 
-<puml src="diagrams/tracing/LogicSequenceDiagram.puml" width="700" alt="Edit command parsing sequence diagram" />
+The following sequence diagram shows successful parsing of `edit 1-3 g/T11 t/Online`. Field parsing is summarized
+in a note; displayed-list bounds are checked during execution.
 
-The parser rejects unknown parameter-like tokens such as `x/typo`, the legacy `a/` prefix,
-and repeated non-tag prefixes. Shared value objects validate supplied fields: `Phone` requires
-eight digits and stores `xxxx xxxx`, while `Email` accepts hyphens inside domain labels,
-including the final label, which must be at least two characters long. `Name` accepts
-periods only after one-to-three-letter initials or abbreviations that precede another name word.
+<puml src="diagrams/EditParsingSequenceDiagram.puml" width="900" alt="Parsing a bulk edit command" />
 
-For backward compatibility, an index expression that selects exactly one index produces
-an `EditCommand` using the existing index-based constructor. This preserves the original
-single-person edit workflow and allows name, phone, email, Telegram handle, subject, group, and
-tags to be edited.
+`EditPersonDescriptor` stores omitted replacement fields as `null` and tag operations as an ordered list, which is
+empty when no tags are supplied. Both command constructors copy the descriptor defensively. `createEditedPerson`
+preserves omitted fields and applies each `TagEdit` from left to right to a copy of the person's tags. Additions
+preserve existing tags and their spelling. Renames match without regard to case, retain the source position, and
+merge any existing destination tag using the replacement's spelling. A missing rename source throws a
+`CommandException` before any model update.
 
-Single-person duplicate validation uses `Person.isSamePerson`, as does `UniquePersonList.contains` and
-`UniquePersonList.setPerson`. Names are compared without regard to letter case. Because `setPerson` first checks
-whether the target and edited person have the same identity, capitalization-only edits are allowed; the edited
-`Person` still contains the newly supplied `Name`, preserving its capitalization.
+For a single edit, the command validates the displayed index, prepares the replacement, and checks for a duplicate
+using `Person.isSamePerson` before calling `Model#setPerson`. Names are compared without regard to case, so another
+student's name is rejected while a capitalization-only change to the selected student's name is stored.
 
-When multiple indexes are selected, `EditCommandParser` constructs an `IndexPersonTarget`. `IndexPersonTarget` implements the `PersonTarget` interface and
-resolves its ranges against the currently displayed person list when the command is
-executed.
+For a bulk edit, `IndexPersonTarget#resolve` validates every selected index against a snapshot of the displayed
+list. The command prepares all replacement persons and the success result before calling `Model#setPersonsInBatch`,
+which updates the observable list once. An invalid index or a missing rename source leaves every student unchanged.
+Resolving the complete selection first also prevents filter changes from causing later students to be skipped.
 
-`IndexPersonTarget` normalizes duplicate, overlapping, and adjacent ranges. It validates
-all selected indexes against a snapshot of the displayed list before returning any
-persons. Consequently, an invalid command such as `edit 1,999 t/student` fails without
-editing person 1.
+The following sequence diagram continues the same example, assuming displayed indexes 1 to 3 exist. It focuses on
+selection and batch replacement; parsing and saving are covered by the diagram above and `LogicManager` respectively.
 
-Bulk edits are restricted to subject, group, and tags. Name, phone, email, and Telegram handle
-remain available only when exactly one person is selected. This policy is checked by both
-`EditCommandParser` and `EditCommand`. The parser provides early feedback for user input,
-while the command protects callers that construct commands directly.
+<puml src="diagrams/EditSequenceDiagram.puml" width="800" alt="Executing a bulk edit command" />
 
-The edit descriptor represents fields that were not supplied using `null`. A supplied
-subject or group replaces the corresponding value for every selected person. Tags are not replaced as a set.
-Instead, `EditCommandParser` turns each `t/` value into a `TagEdit`: `t/TAG` becomes an addition and
-`t/OLD_TAG,NEW_TAG` becomes a rename. `createEditedPerson` applies these operations from left to right to a copy of
-each person's `LinkedHashSet` of tags, so unrelated tags and their order are preserved. A rename keeps the position
-of the source tag and removes any existing tag equal to the replacement, so the replacement's spelling is kept.
-Because `Tag` equality ignores case, matching ignores case too. If a rename source is missing, `TagEdit#applyTo`
-throws a `CommandException`. Empty `p/`, `h/`, and `t/` values are rejected; optional fields are cleared using
-`delete` instead. Both command constructors copy the descriptor defensively, including the ordered tag edits.
-
-For a bulk edit, all edited `Person` objects and the success result are prepared before the
-model is updated. The command then passes the resolved and edited lists to `Model#setPersonsInBatch`, which performs
-one observable-list update. Preparing the complete selection first prevents changes to the filtered list from
-causing later selected people to be skipped.
-
-The following diagram focuses on the bulk-edit execution flow. Parsing and saving are omitted because they are
-covered by the parsing diagram above and the general `LogicManager` workflow respectively.
-
-<puml src="diagrams/EditSequenceDiagram.puml" width="650" alt="Bulk edit execution sequence diagram" />
-
-Both single and bulk edits leave the current filter active. The filtered list is reevaluated
-as people are replaced, so edited people that no longer match disappear from the view. In
-contrast, `delete` resolves indexes against the currently displayed list and resets a successful
-deletion to show all remaining people. `LogicManager` saves the address book after successful
-execution.
+Both single and bulk edits keep the current filter. Edited students that no longer match disappear from the
+displayed list. `LogicManager` saves the address book after successful execution.
 
 ### Find command
 
@@ -478,6 +455,10 @@ Use case ends.
   - 3b1. TutorTrack shows an error message.
   - Use case ends.
 
+- 3c. A tag to rename does not exist after applying any preceding tag operations.
+  - 3c1. TutorTrack shows an error message without changing any particulars.
+  - Use case ends.
+
 Capitalization-only name edits refer to the same selected student and are accepted. The replacement `Name` is stored,
 so the newly entered capitalization appears in subsequent displays and saves.
 
@@ -510,6 +491,10 @@ Use case ends.
 
 - 3a. One or more indexes do not exist in the currently displayed list.
   - 3a1. TutorTrack shows an error message without editing any student.
+  - Use case ends.
+
+- 4a. A tag to rename does not exist for a selected student after applying any preceding tag operations.
+  - 4a1. TutorTrack shows an error message without editing any student.
   - Use case ends.
 
 **Use case: Delete students**
@@ -727,6 +712,13 @@ testers are expected to do more _exploratory_ testing.
 1. Editing several students
    1. Test case: `edit 1-3 g/T11 t/Online`<br>
       Expected: The first three students are moved to group `T11` and gain the tag `Online`.
+
+   1. Prerequisites: Run `list`. Among the first three students, the first has the tag `friends` and at least one
+      other does not, as with the sample students.
+
+   1. Test case: `edit 1-3 g/T12 t/friends,Graduate`<br>
+      Expected: No student is changed, including the first student's group and tags. The status message states
+      that the tag does not exist.
 
    1. Test case: `edit 1-2 p/91234567`<br>
       Expected: No student is changed. The status message states that only subject, group, and tags can be edited
