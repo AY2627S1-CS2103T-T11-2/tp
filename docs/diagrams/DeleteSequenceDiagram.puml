@@ -1,40 +1,111 @@
 @startuml
 !include style.puml
 skinparam ArrowFontStyle plain
-hide footbox
 
 box Logic LOGIC_COLOR_T1
-participant "command:DeleteCommand" as DeleteCommand LOGIC_COLOR
-participant "target:IndexPersonTarget" as IndexPersonTarget LOGIC_COLOR
+participant ":LogicManager" as LogicManager LOGIC_COLOR
+participant ":AddressBookParser" as AddressBookParser LOGIC_COLOR
+participant ":DeleteCommandParser" as DeleteCommandParser LOGIC_COLOR
+participant "t:IndexPersonTarget" as IndexPersonTarget LOGIC_COLOR
+participant "IndexRangeParser" as IndexRangeParser LOGIC_COLOR
+participant "d:DeleteCommand" as DeleteCommand LOGIC_COLOR
+participant "r:CommandResult" as CommandResult LOGIC_COLOR
 end box
 
 box Model MODEL_COLOR_T1
-participant "model:Model" as Model MODEL_COLOR
+participant "m:Model" as Model MODEL_COLOR
 end box
 
-[-> DeleteCommand ++: execute(model)
-DeleteCommand -> IndexPersonTarget ++: resolve(model)
-IndexPersonTarget -> Model ++: getFilteredPersonList()
-Model --> IndexPersonTarget --: displayedPeople
+[-> LogicManager : execute("delete 1,3-4")
+activate LogicManager
+
+LogicManager -> AddressBookParser : parseCommand("delete 1,3-4")
+activate AddressBookParser
+
+create DeleteCommandParser
+AddressBookParser -> DeleteCommandParser
+activate DeleteCommandParser
+
+DeleteCommandParser --> AddressBookParser
+deactivate DeleteCommandParser
+
+AddressBookParser -> DeleteCommandParser : parse("1,3-4")
+activate DeleteCommandParser
+
+DeleteCommandParser -> IndexRangeParser : parse("1,3-4")
+activate IndexRangeParser
+IndexRangeParser --> DeleteCommandParser : ranges
+deactivate IndexRangeParser
+
+create IndexPersonTarget
+DeleteCommandParser -> IndexPersonTarget : new IndexPersonTarget(ranges)
+activate IndexPersonTarget
+
+IndexPersonTarget --> DeleteCommandParser : t
+deactivate IndexPersonTarget
+
+create DeleteCommand
+DeleteCommandParser -> DeleteCommand : new DeleteCommand(t)
+activate DeleteCommand
+
+DeleteCommand --> DeleteCommandParser : d
+deactivate DeleteCommand
+
+DeleteCommandParser --> AddressBookParser : d
+deactivate DeleteCommandParser
+
+' Hidden arrow positions the destroy marker below the activation bar.
+DeleteCommandParser -[hidden]-> AddressBookParser
+destroy DeleteCommandParser
+
+AddressBookParser --> LogicManager : d
+deactivate AddressBookParser
+
+LogicManager -> DeleteCommand : execute(m)
+activate DeleteCommand
+
+DeleteCommand -> IndexPersonTarget : resolve(m)
+activate IndexPersonTarget
+
+IndexPersonTarget -> Model : getFilteredPersonList()
+activate Model
+
+Model --> IndexPersonTarget : displayedPeople
+deactivate Model
+
 note right of IndexPersonTarget
-  Validate all indexes against
-  the same displayed-list snapshot.
+Validates every index against the
+same displayed-list snapshot.
 
-  Resolve duplicate and overlapping
-  ranges only once.
-end note
-IndexPersonTarget --> DeleteCommand --: peopleToDelete
-
-DeleteCommand -> Model ++: deletePersonsInBatch(peopleToDelete)
-Model --> DeleteCommand --
-DeleteCommand -> DeleteCommand : prepare success CommandResult
-DeleteCommand -> Model ++: updateFilteredPersonList(showAllPredicate)
-Model --> DeleteCommand --
-
-note over DeleteCommand, Model
-  The batch deletion updates the observable list once.
-  A successful whole-person deletion resets the filter.
+Duplicate and overlapping ranges
+are resolved only once.
 end note
 
-[<-- DeleteCommand --: CommandResult
+IndexPersonTarget --> DeleteCommand : peopleToDelete
+deactivate IndexPersonTarget
+
+DeleteCommand -> Model : deletePersonsInBatch(peopleToDelete)
+activate Model
+
+Model --> DeleteCommand
+deactivate Model
+
+create CommandResult
+DeleteCommand -> CommandResult : new CommandResult(message)
+activate CommandResult
+
+CommandResult --> DeleteCommand : r
+deactivate CommandResult
+
+DeleteCommand -> Model : updateFilteredPersonList(showAllPredicate)
+activate Model
+
+Model --> DeleteCommand
+deactivate Model
+
+DeleteCommand --> LogicManager : r
+deactivate DeleteCommand
+
+[<--LogicManager
+deactivate LogicManager
 @enduml
