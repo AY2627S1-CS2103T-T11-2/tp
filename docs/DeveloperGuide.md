@@ -88,6 +88,9 @@ The `UI` component,
 - depends on some classes in the `Model` component because it displays `Person` objects from the model.
 - uses `PersonCard` to hide empty Phone and Telegram handle labels; a person with no tags has no tag labels.
 
+`MainWindow` owns one `HelpWindow`. `PersonListPanel` creates `PersonCard` instances for the JavaFX list cells that
+are currently displayed, rather than retaining one card for every student.
+
 #### Command history
 
 `CommandHistory` stores up to 100 submitted commands independently of the JavaFX components. Consecutive exact duplicates
@@ -102,8 +105,9 @@ The following sequence diagram shows how `CommandBox` records and retrieves comm
 
 #### Help window
 
-The `help` command returns a `CommandResult` that requests the UI to show the `HelpWindow`. The window displays a
-compact command summary and lets users copy the User Guide URL. The following sequence diagram shows this flow:
+The `help` command returns a `CommandResult` requesting that the UI show help. `MainWindow` displays the command
+feedback in `ResultDisplay`, then either shows the existing `HelpWindow` or brings it to the front. The window displays
+a compact command summary and lets users copy the User Guide URL. The following sequence diagram shows this flow:
 
 <puml src="diagrams/HelpCommandSequenceDiagram.puml" alt="Help command sequence diagram" />
 
@@ -355,6 +359,13 @@ sets this flag and returns a prompt, so nothing is saved. `clear confirm` emptie
 is set; otherwise, it reports that no confirmation is pending. Any other input, including input that fails to parse,
 resets the flag, so the confirmation must immediately follow `clear`.
 
+The following low-level sequence diagram shows the three outcomes of the confirmation flow: requesting confirmation,
+confirming a pending request, and attempting confirmation without a pending request. Saving occurs only after a
+confirmed clear; the other two outcomes leave the model unchanged.
+
+<puml src="diagrams/ClearConfirmationSequenceDiagram.puml" width="900"
+      alt="Clear confirmation sequence diagram" />
+
 ---
 
 ## **Documentation, logging, testing, dev-ops**
@@ -388,21 +399,24 @@ TutorTrack helps teaching assistants manage student information efficiently in o
 
 Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unlikely to have) - `*`
 
-| Priority | As a …      | I want to …                         | So that I can…                                            |
-| -------- | ----------- | ----------------------------------- | --------------------------------------------------------- |
-| `* * *`  | new TA user | see usage instructions              | refer to instructions when I forget how to use TutorTrack |
-| `* * *`  | TA          | add a student and their particulars | keep track of students under my care                      |
-| `* * *`  | TA          | edit a student's particulars        | correct or update their information                       |
-| `* * *`  | TA          | delete a student                    | remove records I no longer need                           |
-| `* * *`  | TA          | list all students                   | view all students I manage                                |
-| `* * *`  | TA          | organise students by tutorial group | manage students across different classes                  |
-| `* * *`  | TA          | list students from a tutorial group | view students belonging to that group                     |
-| `* * *`  | TA          | record a student's module           | distinguish students from different modules               |
-| `* * *`  | TA          | show a student's particulars        | retrieve their information quickly                        |
-| `* *`    | TA          | record tutorial participation       | keep track of student participation                       |
-| `* *`    | TA          | track consultation bookings         | manage consultations with students                        |
-| `*`      | TA          | record assessment grades            | keep track of students' academic progress                 |
-| `*`      | TA          | export student records              | keep an external copy of tutoring records                 |
+| Priority | Status | As a … | I want to … | So that I can… |
+| --- | --- | --- | --- | --- |
+| `* * *` | Implemented | new TA user | see usage instructions | refer to instructions when I forget how to use TutorTrack |
+| `* * *` | Implemented | TA | add a student and their particulars | keep track of students under my care |
+| `* * *` | Implemented | TA | edit a student's particulars | correct or update their information |
+| `* * *` | Implemented | TA | delete a student | remove records I no longer need |
+| `* * *` | Implemented | TA | clear all student records after confirmation | reset my records without accidentally deleting them |
+| `* * *` | Implemented | TA | list all students | view all students I manage |
+| `* * *` | Implemented | TA | organise students by tutorial group | manage students across different classes |
+| `* * *` | Implemented | TA | find students from a tutorial group | view students belonging to that group |
+| `* * *` | Implemented | TA | record a student's module | distinguish students from different modules |
+| `* * *` | Implemented | TA | view a student's particulars in the displayed list or search results | retrieve their information quickly |
+| `* *` | Implemented | TA | reuse a previously submitted command | repeat or amend a command efficiently |
+| `* *` | Implemented | TA | copy a displayed email address, Telegram handle, or phone number | use contact details in another application |
+| `* *` | Planned | TA | record tutorial participation | keep track of student participation |
+| `* *` | Planned | TA | track consultation bookings | manage consultations with students |
+| `*` | Planned | TA | record assessment grades | keep track of students' academic progress |
+| `*` | Planned | TA | export student records | keep an external copy of tutoring records |
 
 ### Use cases
 
@@ -538,6 +552,29 @@ Use case ends.
   - 3a1. TutorTrack informs the TA that no students were found.
   - Use case ends.
 
+**Use case: Clear all student records**
+
+**MSS**
+
+1. TA enters `clear`.
+2. TutorTrack asks the TA to confirm the operation.
+3. TA immediately enters `clear confirm`.
+4. TutorTrack deletes all student records and confirms that they were cleared.
+
+Use case ends.
+
+**Extensions**
+
+- 3a. The TA enters another command, or an invalid command.
+  - 3a1. TutorTrack cancels the pending confirmation.
+  - 3a2. TutorTrack does not delete any student records.
+  - Use case ends.
+
+- 3b. The TA enters `clear confirm` without first entering `clear`.
+  - 3b1. TutorTrack reports that no clear confirmation is pending.
+  - 3b2. TutorTrack does not delete any student records.
+  - Use case ends.
+
 ### Non-Functional Requirements
 
 1.  Should work on any _mainstream OS_ as long as it has Java `25` or above installed.
@@ -576,6 +613,10 @@ Use case ends.
 ## **Appendix: Instructions for manual testing**
 
 Given below are instructions to test the app manually.
+
+Unless a test says otherwise, run it in a new empty folder. This ensures TutorTrack starts with its six sample
+students. The application saves changes to `data/tutortrack.json`, so simply closing and reopening it does not reset
+the sample data. Treat each test case as independent unless it explicitly gives a sequence of commands.
 
 <box type="info" seamless>
 
@@ -767,14 +808,55 @@ testers are expected to do more _exploratory_ testing.
 ### Clearing all students
 
 1. Clearing with confirmation
+   1. Prerequisites: Launch the application with the sample students and run `list`.
    1. Test case: `clear`<br>
       Expected: No student is deleted. The status message asks you to enter `clear confirm`.
+
+   1. Test case: `clear confirm`<br>
+      Expected: No student is deleted. The status message states that no clear confirmation is pending.
 
    1. Test case: `clear`, then `list`, then `clear confirm`<br>
       Expected: No student is deleted. The status message states that no clear confirmation is pending.
 
    1. Test case: `clear`, then `clear confirm`<br>
       Expected: All students are deleted.
+
+   1. Test case: `clear`, then enter `clear now`, then `clear confirm`<br>
+      Expected: No student is deleted. `clear now` shows the command format error, and `clear confirm` states that no
+      clear confirmation is pending.
+
+   1. Test case: `clear`, then `clear confirm`, close TutorTrack, and relaunch it.<br>
+      Expected: The displayed student list remains empty, confirming that the cleared data was saved.
+
+### UI interactions
+
+1. Opening and closing help
+
+   1. Test case: Enter `help`.<br>
+      Expected: The Help window opens with a command summary and a User Guide URL.
+
+   1. Test case: With the main window focused, press <kbd>F1</kbd>, then choose **Help** > **Help** from the menu bar.<br>
+      Expected: Both actions open the Help window, or bring it to the front if it is already open.
+
+   1. Test case: In the Help window, press <kbd>Enter</kbd> or click **Copy URL**, then paste into a text editor.<br>
+      Expected: The pasted text is the User Guide URL.
+
+   1. Test case: Close the Help window and type a command without clicking the command box first.<br>
+      Expected: The command box has focus and receives the typed command.
+
+1. Navigating command history
+
+   1. Test case: Enter `list`, then `help`, then click the command box and press the Up Arrow twice.<br>
+      Expected: The command box first shows `help`, then `list`.
+
+   1. Test case: Type `find n/Alex`, press the Up Arrow, then press the Down Arrow until past the newest command.<br>
+      Expected: The command box restores `find n/Alex` as the unsubmitted draft.
+
+1. Copying displayed student details
+
+   1. Test case: Click the copy icon beside a displayed student's email address, Telegram handle, or phone number, then
+      paste into a text editor.<br>
+      Expected: The pasted text matches the selected detail.
 
 ### Saving data
 
