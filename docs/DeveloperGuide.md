@@ -401,8 +401,7 @@ The following low-level sequence diagram shows the three outcomes of the confirm
 confirming a pending request, and attempting confirmation without a pending request. Saving occurs only after a
 confirmed clear; the other two outcomes leave the model unchanged.
 
-<puml src="diagrams/ClearConfirmationSequenceDiagram.puml" width="900"
-      alt="Clear confirmation sequence diagram" />
+<puml src="diagrams/ClearConfirmationSequenceDiagram.puml" width="900" alt="Clear confirmation sequence diagram" />
 
 ---
 

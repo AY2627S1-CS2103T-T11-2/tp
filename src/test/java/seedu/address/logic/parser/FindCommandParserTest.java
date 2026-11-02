@@ -121,6 +121,36 @@ public class FindCommandParserTest {
     }
 
     @Test
+    public void parse_literalQuotesInGroup_preservesExactValueInEveryParameterOrder() {
+        for (String group : List.of("T11\"", "\"T11", "\"T11\"", "T\"11")) {
+            FindCommand expectedCommand = new FindCommand(new FindPredicate(
+                    Optional.of(new NameContainsSearchTermsPredicate(List.of(), List.of("ravi s/o kumar"))),
+                    Optional.empty(), Optional.of(new Group(group)), Set.of(new Tag("Online"))));
+            String name = "n/\"ravi s/o kumar\"";
+            String groupFilter = "g/" + group;
+            String tag = "t/Online";
+            for (String input : List.of(
+                    name + " " + groupFilter + " " + tag,
+                    name + " " + tag + " " + groupFilter,
+                    groupFilter + " " + name + " " + tag,
+                    groupFilter + " " + tag + " " + name,
+                    tag + " " + name + " " + groupFilter,
+                    tag + " " + groupFilter + " " + name)) {
+                assertParseSuccess(parser, input, expectedCommand);
+            }
+        }
+    }
+
+    @Test
+    public void parse_literalQuoteInGroup_doesNotHideUnknownOrDuplicatePrefixes() {
+        String usage = String.format(MESSAGE_INVALID_COMMAND_FORMAT, FindCommand.MESSAGE_USAGE);
+        assertParseFailure(parser, "g/T11\" x/typo", usage);
+        assertParseFailure(parser, "x/typo g/T11\"", usage);
+        assertParseFailure(parser, "g/T11\" t/Online t/Student",
+                Messages.getErrorMessageForDuplicatePrefixes(PREFIX_TAG));
+    }
+
+    @Test
     public void parse_tagFilters_returnsFindCommand() {
         FindCommand tagCommand = new FindCommand(new FindPredicate(
                 Optional.empty(), Optional.empty(), Optional.empty(), Set.of(new Tag("highParticipation"))));
