@@ -107,6 +107,7 @@ Format: `add n/NAME e/EMAIL s/SUBJECT g/GROUP [h/TELEGRAM_HANDLE] [p/PHONE] [t/T
 * `n/NAME`, `e/EMAIL`, `s/SUBJECT`, and `g/GROUP` are required.
 * `p/PHONE`, `h/TELEGRAM_HANDLE`, and `t/TAG` are optional.
 * If  `p/PHONE` or `h/TELEGRAM_HANDLE` is omitted or supplied without a value, the student has no phone number or Telegram handle.
+* Separate parameters with spaces.
 * A student can have zero or more tags. To add multiple tags, repeat the `t/TAG` parameter.
 * Parameters can be supplied in any order. Every parameter except `t/TAG` can appear at most once; for example, a
   command with two `n/` values is rejected.
@@ -170,9 +171,10 @@ Edits one or more students in the currently displayed list.
 
 Format: `edit INDEX_OR_RANGE[,INDEX_OR_RANGE]... [n/NAME] [p/PHONE] [e/EMAIL] [h/TELEGRAM_HANDLE] [s/SUBJECT] [g/GROUP] [t/TAG]... [t/OLD_TAG,NEW_TAG]...`
 
-At least one optional field must be supplied. Omitted fields remain unchanged.
-Fields are replaced by default. Tags are added using `t/TAG`, while an existing tag is renamed using `t/OLD_TAG,NEW_TAG`.
-Empty values, including whitespace-only values, are rejected; use `delete` to clear optional fields.
+* At least one optional field must be supplied. Omitted fields remain unchanged.
+* Parameters should be separated by a space. 
+* Tags are added using `t/TAG`, while an existing tag is renamed using `t/OLD_TAG,NEW_TAG`.
+* Empty values, including whitespace-only values, are rejected; use `delete` to clear optional fields.
 
 #### Selecting students
 
