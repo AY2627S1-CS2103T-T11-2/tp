@@ -115,21 +115,22 @@ Here's a (partial) class diagram of the `Logic` component:
 
 <puml src="diagrams/LogicClassDiagram.puml" width="900"/>
 
-The sequence diagram below illustrates the interactions within the `Logic` component, taking `execute("delete 1,3-4")` API call as an example.
+The sequence diagram below illustrates the interactions within the `Logic` component, taking
+`execute("delete 1,3-4")` API call as an example.
 
 <puml src="diagrams/DeleteSequenceDiagram.puml" alt="Interactions Inside the Logic Component for the `delete 1,3-4` Command" />
 
 <box type="info" seamless>
 
-**Note:** The lifeline for `DeleteCommandParser` should end at the destroy marker (X), but due to a limitation of PlantUML, the lifeline continues till the end of diagram.
+**Note:** The lifeline for `DeleteCommandParser` should end at the destroy marker (X), but due to a limitation of
+PlantUML, the lifeline continues till the end of diagram.
 </box>
 
 How the `Logic` component works:
 
 1. When `Logic` is called upon to execute a command, the command is passed to an `AddressBookParser` object, which in turn creates a parser that matches the command (e.g., `DeleteCommandParser`) and uses it to parse the command.
 1. This results in a `Command` object (more precisely, an object of one of its subclasses e.g., `DeleteCommand`) which is executed by the `LogicManager`.
-1. The command can communicate with the `Model` when it is executed (e.g. to delete a person).<br>
-   Note that although this is shown as a single step in the diagram above for simplicity, the code can require several interactions between the command object and the `Model` to complete the operation.
+1. The command can communicate with the `Model` when it is executed (e.g. to delete people in a batch). Note that although this is shown as a single step in the diagram above for simplicity, the code can require several interactions between the command object and the `Model` to complete the operation.
 1. The result of the command execution is encapsulated as a `CommandResult` object which is returned from `Logic`.
 
 Here are the other classes in `Logic` (omitted from the class diagram above) that are used for parsing a user command:
@@ -267,6 +268,9 @@ Before deleting any contacts, `IndexPersonTarget` resolves and validates every i
 currently displayed person list. Consequently, a command such as `delete 1,999` fails without deleting contact 1
 (suppose that contact index 999 does not exist).
 
+After validation, whole-person deletion uses `Model#deletePersonsInBatch` so the selected people are removed with a
+single observable-list update.
+
 `DeleteCommand` depends on the shared `PersonTarget` interface rather than directly on an index. This allows future
 implementations such as `GroupDeleteTarget`, `SubjectDeleteTarget`, and `TagDeleteTarget` to reuse the deletion
 workflow.
@@ -330,8 +334,9 @@ throws a `CommandException`. Empty `p/`, `h/`, and `t/` values are rejected; opt
 `delete` instead. Both command constructors copy the descriptor defensively, including the ordered tag edits.
 
 For a bulk edit, all edited `Person` objects and the success result are prepared before the
-model is updated. The command then passes the resolved selection and the replacements to
-`Model#setPersonsInBatch` in one call, so changes to the filtered list cannot cause later selected people to be skipped.
+model is updated. The command then passes the resolved and edited lists to `Model#setPersonsInBatch`, which performs
+one observable-list update. Preparing the complete selection first prevents changes to the filtered list from
+causing later selected people to be skipped.
 
 The following diagram focuses on the bulk-edit execution flow. Parsing and saving are omitted because they are
 covered by the parsing diagram above and the general `LogicManager` workflow respectively.
@@ -348,16 +353,22 @@ execution.
 
 `FindCommandParser` accepts the `n/`, `h/`, `s/`, `g/`, and `t/` prefixes. It rejects input that has no criterion,
 a non-empty preamble, an unknown prefix, or a repeated prefix. Name input is split on commas. Each term is either an
-unquoted keyword or a quoted phrase, and a blank phrase such as `" "` is rejected.
+unquoted keyword or a quoted phrase, and a blank phrase such as `" "` is rejected. Each normalized term is limited to
+`Name.MAX_LENGTH`. Keywords use valid name tokens. A phrase must be a possible substring of a valid name; it may begin
+or end at a valid punctuation boundary, such as `"Jean-"` for `Jean-Luc`. Prefix-like text inside quotations is kept
+as phrase text before this validation, which allows relationship qualifiers such as `"Ravi S/O Kumar"` to be parsed
+without treating `S/O` as the subject prefix.
 `NameContainsSearchTermsPredicate` matches a keyword against whole name components, which are separated by spaces,
-periods, hyphens, or apostrophes. It matches a phrase as a substring of the name. Both comparisons ignore case.
+hyphens, apostrophes, or periods. It normalizes repeated whitespace and matches a phrase as a literal substring of
+the name. Both comparisons ignore case, and a match against any supplied name term is sufficient.
 
 `FindPredicate` combines the optional name predicate with the optional Telegram handle, subject, group, and tag
-criteria. A person must satisfy every criterion supplied. Subject and group comparisons ignore case and collapse
-repeated spaces in the stored value. New values are already collapsed by `ParserUtil`, but records saved before that
-change may still contain repeated spaces, and the JSON file is not rewritten when it is loaded. A tag expression separated by `,` uses `TagMatchMode.ANY`,
-and one separated by `&` uses `TagMatchMode.ALL`; mixing both separators is rejected. `FindCommand` passes the
-predicate to `Model#updateFilteredPersonList`, and the UI updates because it observes the filtered list.
+criteria. A person must satisfy every criterion type supplied. Telegram handles are matched exactly while ignoring
+case. Subject and group comparisons ignore case and collapse repeated spaces in the stored value. New values are
+already collapsed by `ParserUtil`, but records saved before that change may still contain repeated spaces, and the
+JSON file is not rewritten when it is loaded. A tag expression separated by `,` uses `TagMatchMode.ANY`, while one
+separated by `&` uses `TagMatchMode.ALL`; mixing both separators is rejected. `FindCommand` passes the predicate to
+`Model#updateFilteredPersonList`, and the UI updates because it observes the filtered list.
 
 ### Clear confirmation
 
@@ -723,8 +734,8 @@ testers are expected to do more _exploratory_ testing.
 
 ### Finding students
 
-1. Finding contacts with keywords and phrases
-   1. Prerequisites: Launch the application with the sample contacts.
+1. Finding students with keywords and phrases
+   1. Prerequisites: Launch the application with the sample students.
 
    1. Test case: `find n/"Alex Yeoh",Li`<br>
       Expected: `Alex Yeoh` and `David Li` are displayed because each matches at least one search term.
