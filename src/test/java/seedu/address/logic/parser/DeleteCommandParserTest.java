@@ -65,14 +65,21 @@ public class DeleteCommandParserTest {
         String expectedError = String.format(MESSAGE_INVALID_COMMAND_FORMAT, DeleteCommand.MESSAGE_USAGE);
 
         String[] invalidInputs = {
-            "", "0", "a", "1,", ",1", "1,,2", "1-", "-2",
-            "1--2", "3-1", "1 2", "1-a", "2147483648", " 1, 3 - 5, 7 ", "\"\""
+            "", "a", "1,", ",1", "1,,2", "1-", "1 2", "1-a", " 1, 3 - 5, 7 ", "\"\""
         };
 
         for (String input : invalidInputs) {
             assertParseFailure(parser, input, expectedError);
         }
     }
+
+    @Test
+    public void parse_invalidNumericIndex_throwsIndexParseException() {
+        for (String input : List.of("0", "000", "-2", "+1", "1--2", "3-1", "2147483648", "0,000,000-000,-1-0")) {
+            assertParseFailure(parser, input, Messages.MESSAGE_INVALID_PERSON_DISPLAYED_INDEX);
+        }
+    }
+
 
     @Test
     public void parse_leadingAndTrailingWhitespace_returnsDeleteCommand() {
