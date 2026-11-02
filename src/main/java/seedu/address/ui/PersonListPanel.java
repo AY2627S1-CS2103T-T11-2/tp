@@ -3,11 +3,13 @@ package seedu.address.ui;
 import java.util.logging.Logger;
 
 import javafx.application.Platform;
+import javafx.beans.binding.Bindings;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
+import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.Region;
 import seedu.address.commons.core.LogsCenter;
 import seedu.address.model.person.Person;
@@ -53,10 +55,6 @@ public class PersonListPanel extends UiPart<Region> {
         private Region card;
         private boolean heightUpdateScheduled;
 
-        PersonListViewCell() {
-            widthProperty().addListener((observable, oldWidth, newWidth) -> scheduleHeightUpdate());
-        }
-
         @Override
         protected void updateItem(Person person, boolean empty) {
             super.updateItem(person, empty);
@@ -72,12 +70,14 @@ public class PersonListPanel extends UiPart<Region> {
                 int currentIndex = getIndex();
                 if (person != displayedPerson || currentIndex != displayedIndex) {
                     card = new PersonCard(person, currentIndex + 1).getRoot();
-                    card.prefWidthProperty().bind(personListView.widthProperty());
-                    card.maxWidthProperty().bind(personListView.widthProperty());
+                    card.prefWidthProperty().bind(Bindings.createDoubleBinding(this::getCardWidth, widthProperty()));
+                    card.maxWidthProperty().bind(card.prefWidthProperty());
+                    FlowPane tags = (FlowPane) card.lookup("#tags");
+                    tags.widthProperty().addListener((observable, oldWidth, newWidth) -> scheduleHeightUpdate());
                     setGraphic(card);
                     if (getWidth() > 0) {
                         card.applyCss();
-                        card.resize(getWidth(), card.prefHeight(getWidth()));
+                        card.resize(getCardWidth(), card.prefHeight(getCardWidth()));
                         card.layout();
                         setPrefHeight(computePrefHeight(getWidth()));
                     }
@@ -95,8 +95,16 @@ public class PersonListPanel extends UiPart<Region> {
             }
 
             Insets insets = getInsets();
-            double cardWidth = Math.max(0, width - insets.getLeft() - insets.getRight());
-            return insets.getTop() + card.prefHeight(cardWidth) + insets.getBottom();
+            return insets.getTop() + card.prefHeight(getCardWidth(width)) + insets.getBottom();
+        }
+
+        private double getCardWidth() {
+            return getCardWidth(getWidth());
+        }
+
+        private double getCardWidth(double cellWidth) {
+            Insets insets = getInsets();
+            return Math.max(0, cellWidth - insets.getLeft() - insets.getRight());
         }
 
         private void scheduleHeightUpdate() {
@@ -105,14 +113,23 @@ public class PersonListPanel extends UiPart<Region> {
             }
             heightUpdateScheduled = true;
             Platform.runLater(() -> {
-                heightUpdateScheduled = false;
                 if (card == null) {
+                    heightUpdateScheduled = false;
                     return;
                 }
 
-                setPrefHeight(computePrefHeight(getWidth()));
-                requestLayout();
-                personListView.requestLayout();
+                card.applyCss();
+                double cardWidth = getCardWidth();
+                card.resize(cardWidth, card.prefHeight(cardWidth));
+                card.layout();
+
+                double updatedHeight = computePrefHeight(getWidth());
+                if (Math.abs(getPrefHeight() - updatedHeight) > 0.5) {
+                    setPrefHeight(updatedHeight);
+                    requestLayout();
+                    personListView.requestLayout();
+                }
+                heightUpdateScheduled = false;
             });
         }
     }
