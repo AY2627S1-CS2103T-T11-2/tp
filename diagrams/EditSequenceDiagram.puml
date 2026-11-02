@@ -31,12 +31,12 @@ note right of EditCommand
   the model is changed.
 end note
 
-loop apply each prepared replacement
-    EditCommand -> Model ++: setPerson(originalPerson, editedPerson)
-    Model --> EditCommand --
-end
+EditCommand -> EditCommand : prepare success CommandResult
+EditCommand -> Model ++: setPersonsInBatch(peopleToEdit, editedPeople)
+Model --> EditCommand --
 
 note over EditCommand, Model
+  The batch replacement updates the observable list once.
   The existing filter stays active after editing.
   Students that no longer match disappear from the view.
 end note

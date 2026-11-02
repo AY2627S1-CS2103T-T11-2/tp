@@ -37,7 +37,6 @@ activate IndexRangeParser
 IndexRangeParser --> DeleteCommandParser : ranges
 deactivate IndexRangeParser
 
-
 create IndexPersonTarget
 DeleteCommandParser -> IndexPersonTarget : new IndexPersonTarget(ranges)
 activate IndexPersonTarget
@@ -85,14 +84,11 @@ end note
 IndexPersonTarget --> DeleteCommand : peopleToDelete
 deactivate IndexPersonTarget
 
+DeleteCommand -> Model : deletePersonsInBatch(peopleToDelete)
+activate Model
 
-loop for each person in peopleToDelete
-    DeleteCommand -> Model : deletePerson(person)
-    activate Model
-
-    Model --> DeleteCommand
-    deactivate Model
-end
+Model --> DeleteCommand
+deactivate Model
 
 create CommandResult
 DeleteCommand -> CommandResult : new CommandResult(message)
@@ -100,6 +96,12 @@ activate CommandResult
 
 CommandResult --> DeleteCommand : r
 deactivate CommandResult
+
+DeleteCommand -> Model : updateFilteredPersonList(showAllPredicate)
+activate Model
+
+Model --> DeleteCommand
+deactivate Model
 
 DeleteCommand --> LogicManager : r
 deactivate DeleteCommand

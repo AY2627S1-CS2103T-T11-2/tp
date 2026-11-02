@@ -12,6 +12,11 @@ Participant "command:EditCommand" as ec LOGIC_COLOR
 [-> ecp ++: parse(arguments)
 ecp -> irp ++: parse(preamble)
 irp --> ecp --: ranges
+note over ecp, irp
+  A malformed numeric selection reports an
+  invalid displayed index; other malformed
+  expressions report the command usage.
+end note
 ecp -> ecp : validate prefixes and supplied values
 
 create descriptor
