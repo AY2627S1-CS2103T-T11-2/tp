@@ -185,7 +185,7 @@ Edits one or more students in the currently displayed list.
 Format: `edit INDEX_OR_RANGE[,INDEX_OR_RANGE]... [n/NAME] [p/PHONE] [e/EMAIL] [h/TELEGRAM_HANDLE] [s/SUBJECT] [g/GROUP] [t/TAG]... [t/OLD_TAG,NEW_TAG]...`
 
 * At least one optional field must be supplied. Omitted fields remain unchanged.
-* Parameters should be separated by a space. 
+* Parameters should be separated by a space.
 * Tags are added using `t/TAG`, while an existing tag is renamed using `t/OLD_TAG,NEW_TAG`.
 * Empty values, including whitespace-only values, are rejected; use `delete` to clear optional fields.
 
