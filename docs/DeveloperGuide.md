@@ -37,6 +37,21 @@ The **_Architecture Diagram_** given above explains the high-level design of the
 
 The following provides a quick overview of the main components and their interactions.
 
+TutorTrack separates the interface, command processing, student data, and file access.
+
+- **UI** receives commands and displays feedback and student records.
+- **Logic** parses commands, executes them against the model, and saves student data.
+- **Model** holds student records, preferences, and the current filtered view.
+- **Storage** reads and writes JSON files.
+- **Main/MainApp** creates and connects these components at startup.
+
+`LogicManager` acts as the UI's command-processing facade. It coordinates parsing,
+execution, and saving; individual commands implement the requested operation.
+`AddressBookParser` selects a command-specific parser when one is needed.
+Commands such as `help`, `list`, and `exit` are constructed directly.
+`PersonTarget` is a selection strategy used by delete and bulk edit.
+Its current implementation, `IndexPersonTarget`, selects students by displayed indexes.
+
 **Main components of the architecture**
 
 **`Main`** (consisting of classes [`Main`](https://github.com/AY2627S1-CS2103T-T11-2/tp/tree/master/src/main/java/seedu/address/Main.java) and [`MainApp`](https://github.com/AY2627S1-CS2103T-T11-2/tp/tree/master/src/main/java/seedu/address/MainApp.java)) is in charge of the app launch and shut down.
@@ -94,11 +109,22 @@ The `UI` component,
 are stored only once, while commands that differ in case remain distinct. This allows its navigation behaviour to be tested
 using regular unit tests.
 
-`CommandBox` saves user-entered text as a separate draft. Programmatic text changes made while displaying history entries are excluded, preventing ordinary history navigation from overwriting the draft. Consequently, edits made to a recalled command are preserved and restored when the user navigates past the newest stored command.
+`CommandHistory` manages stored commands, navigation, and the saved draft.
+`CommandBox` handles input events, delegates history operations to `CommandHistory`, and displays the returned text. Its `isDisplayingHistoryEntry` flag prevents programmatic text changes from replacing the saved draft.
+Consequently, edits made to a recalled command are preserved and restored when the user navigates past the newest stored command.
 
-The following sequence diagram shows how `CommandBox` records and retrieves commands:
+Non-empty submissions are recorded before execution, including failed commands. Successful execution clears the input, while failure retains the submitted text.
+
+The overview shows how input, history, and execution work together. Displaying recalled text does not overwrite
+the draft; editing that text does. Moving down past the newest entry restores the latest saved draft.
+
+<puml src="diagrams/CommandHistoryOverview.puml" alt="Overview of command submission and history navigation" />
+
+<panel header="Detailed command-history sequence">
 
 <puml src="diagrams/CommandHistorySequenceDiagram.puml" alt="Command history navigation sequence diagram" />
+
+</panel>
 
 #### Help window
 
@@ -115,23 +141,16 @@ Here's a (partial) class diagram of the `Logic` component:
 
 <puml src="diagrams/LogicClassDiagram.puml" width="900"/>
 
-The sequence diagram below illustrates the interactions within the `Logic` component, taking
-`execute("delete 1,3-4")` API call as an example.
-
-<puml src="diagrams/DeleteSequenceDiagram.puml" alt="Interactions Inside the Logic Component for the `delete 1,3-4` Command" />
-
-<box type="info" seamless>
-
-**Note:** The lifeline for `DeleteCommandParser` should end at the destroy marker (X), but due to a limitation of
-PlantUML, the lifeline continues till the end of diagram.
-</box>
-
 How the `Logic` component works:
 
 1. When `Logic` is called upon to execute a command, the command is passed to an `AddressBookParser` object, which in turn creates a parser that matches the command (e.g., `DeleteCommandParser`) and uses it to parse the command.
 1. This results in a `Command` object (more precisely, an object of one of its subclasses e.g., `DeleteCommand`) which is executed by the `LogicManager`.
-1. The command can communicate with the `Model` when it is executed (e.g. to delete people in a batch). Note that although this is shown as a single step in the diagram above for simplicity, the code can require several interactions between the command object and the `Model` to complete the operation.
-1. The result of the command execution is encapsulated as a `CommandResult` object which is returned from `Logic`.
+1. `LogicManager` executes the command against `Model`. The command reads or updates student data. For example, `DeleteCommand` validates the displayed selection before applying a batch update.
+1. After normal execution, `LogicManager` saves student data through `Storage`, then returns the `CommandResult` to the UI.
+
+Clear-confirmation prompts return without saving. Parsing and command-validation failures also skip saving.
+
+If saving fails after execution, the UI displays an error. The command's changes may already exist in memory; they are not rolled back.
 
 Here are the other classes in `Logic` (omitted from the class diagram above) that are used for parsing a user command:
 
@@ -156,6 +175,8 @@ Command-specific parsers translate parsing failures into their own feedback. `Ed
 displayed index for numeric selections containing zero, negative or overflowing indexes, or reversed ranges. Other
 malformed expressions show the command usage. This allows commands to share the same index-expression syntax while
 retaining command-specific feedback.
+
+Both `DeleteCommandParser` and `EditCommandParser` report `Messages.MESSAGE_INVALID_PERSON_DISPLAYED_INDEX` for invalid numeric expressions, this numeric-expression check is intentionally present in both parsers.
 
 `AddCommandParser` treats `h/TELEGRAM_HANDLE` as optional. `EditCommandParser` preserves the current value when `h/`
 is omitted and rejects an empty `h/`; optional fields are cleared using `delete`. Both parsers explicitly reject the
@@ -259,31 +280,48 @@ This section describes some noteworthy details on how certain features are imple
 
 ### Delete command
 
+The overview shows the successful execution paths. Index validation finishes before mutation; field clearing also
+prepares every replacement before updating the model. A validation failure stops the flow without changing records
+or saving. Whole-record deletion resets the filter, while field clearing keeps it. See the
+[User Guide](UserGuide.md#correcting-delete-errors) for input examples and the corresponding messages.
+
+<puml src="diagrams/DeleteCommandOverview.puml" alt="Overview of student deletion and optional-field clearing" />
+
+The delete overview covers both whole-record deletion and optional-field clearing.
+
+The detailed diagram below expands the successful `execute("delete 1,3-4")` path, including saving.
+It assumes at least four students are displayed and no field prefixes are supplied.
+
+<panel header="Detailed sequence: delete 1,3-4">
+
+<puml src="diagrams/DeleteSequenceDiagram.puml" alt="Interactions Inside the Logic Component for the `delete 1,3-4` Command" />
+
+</panel>
+
 `DeleteCommandParser` delegates its index-expression parsing to the shared `IndexRangeParser`, then constructs an `IndexPersonTarget` from the canonical ranges.
 
 Each parsed component is represented by an `IndexRange`. An individual index is represented as a range whose start
 and end are equal.
 
 `IndexPersonTarget` sorts and merges duplicate, adjacent, or overlapping ranges. For example, `1-3,2-4,4` is
-normalized to `1-4`. This ensures that each contact is deleted at most once.
+normalized to `1-4`. This ensures that each student is selected at most once.
 
-Before deleting any contacts, `IndexPersonTarget` resolves and validates every index against a snapshot of the
-currently displayed person list. Consequently, a command such as `delete 1,999` fails without deleting contact 1
-(suppose that contact index 999 does not exist).
+Before deleting any students, `IndexPersonTarget` resolves and validates every index against a snapshot of the
+currently displayed student list. Consequently, a command such as `delete 1,999` fails without deleting student 1
+when displayed index 999 does not exist. This also applies to field clearing, for example `delete 1,999 p/`.
 
-After validation, whole-person deletion uses `Model#deletePersonsInBatch` so the selected people are removed with a
-single observable-list update.
+After validation, whole-record deletion calls `Model#deletePersonsInBatch` once, so the selected students are removed with a single observable-list update. The filter is then reset to show all remaining students.
 
 `DeleteCommand` depends on the shared `PersonTarget` interface rather than directly on an index. This allows future
-implementations such as `GroupDeleteTarget`, `SubjectDeleteTarget`, and `TagDeleteTarget` to reuse the deletion
-workflow.
+selection strategies to reuse the deletion workflow.
 
 `delete` can also clear optional fields. When `p/`, `h/`, or `t/` is present, `DeleteCommandParser` creates a
 `DeleteCommand.FieldsToDelete` record instead of deleting people. `p/` and `h/` must be empty and may each appear
-once. An empty `t/` clears all tags, while named tags are parsed into a set, so a repeated name counts once.
+once. An empty `t/` clears all tags and overrides named deletions, but supplied tag names must still pass validation.
+Named tags are parsed into a set, so a repeated name counts once.
 `DeleteCommand#deleteFields` builds every replacement `Person` before changing the model. If a named tag is missing
 from any selected person, it throws a `CommandException` and nobody is changed. Unlike deleting people, clearing
-fields keeps the current filter.
+fields keeps the current filter. Prepared replacements are applied through `Model#setPersonsInBatch` in one update.
 
 ### Edit command
 
@@ -599,27 +637,38 @@ testers are expected to do more _exploratory_ testing.
 
 ### Deleting students
 
-1. Deleting contacts while all persons are being shown
-   1. Prerequisites: List all persons using the `list` command, with at least 6 persons in the list, as in the sample data.
+Run each delete test independently against a restored copy of the six sample students. Successful deletion changes
+the displayed indexes, so do not reuse a previous test's modified data. Back up existing data before testing.
+
+1. Deleting contacts while the full list is shown.
+   1. Prerequisites: List all persons using the `list` command with all six sample students present.
 
    1. Test case: `delete 1`<br>
-      Expected: The first contact is deleted from the list. The status message shows the deleted contact's details.
+      Expected: The first student is deleted from the list. Feedback shows the deleted student's details.
 
    1. Test case: `delete 1,3,5-6`<br>
-      Expected: The 1st, 3rd, 5th and 6th contacts are deleted from the list. The status message
-      shows the deleted contacts' details.
+      Expected: The 1st, 3rd, 5th and 6th students from the original displayed list are deleted once each. The feedback message shows the deleted students' details.
 
    1. Test case: `delete 0`<br>
-      Expected: No person is deleted. The status message shows error details.
+      Expected: No student is deleted. Feedback is `The student index provided is invalid.`
 
-   1. Other incorrect delete commands to try: `delete`, `delete x`, `...` (where x is larger than the list size)<br>
-      Expected: Similar to previous.
+   1. Test cases: `delete -1`, `delete +1`, `delete 5-3`, and `delete 2147483648`<br>
+      Expected: Each reports `The student index provided is invalid.` No student is changed.
 
-1. Deleting a contact from a filtered list
-   1. Prerequisites: Filter the displayed person list using `find n/Alex`.
+   1. Test cases: `delete`, `delete x`, `delete 1,`, and `delete 1, 3`<br>
+      Expected: Each reports `Invalid command format!` followed by delete usage. No student is changed.
+
+   1. Test case: `delete 1,7`<br>
+      Expected: Feedback is `The student index provided is invalid.` All six students, including student 1, remain.
+
+1. Deleting from a filtered list
+   1. Prerequisites: Run `find n/Alex` against the six sample students; only Alex Yeoh is displayed.
+
+   1. Test case: `delete 2`<br>
+      Expected: Feedback is `The student index provided is invalid.` No student is deleted, even though the full student list contains more than one student.
 
    1. Test case: `delete 1`<br>
-      Expected: The first contact in the displayed list is deleted. The list then shows all remaining contacts.
+      Expected: Alex Yeoh is deleted. The list then shows all five remaining students.
 
 1. Clearing optional fields
    1. Prerequisites: Launch the application with the sample data and run `list`.
@@ -629,6 +678,36 @@ testers are expected to do more _exploratory_ testing.
 
    1. Test case: `delete 1 t/Missing`<br>
       Expected: No student is changed. The status message states that the tag does not exist.
+
+   1. Test case: `delete 1,7 p/`<br>
+      Expected: Feedback is `The student index provided is invalid.` Student 1's phone number is unchanged.
+
+   1. Test case: `find n/Alex`, followed by `delete 1 p/`<br>
+      Expected: Alex remains displayed without a phone number. The name filter stays active.
+
+   1. Test case: `delete 1 t/ t/Missing`<br>
+      Expected: All tags on the first student are cleared; the nonexistent named tag is overridden.
+
+   1. Test case: `delete 1 t/ t/Invalid!`<br>
+      Expected: The tag-format error is shown. No tags are cleared.
+
+### Navigating command history
+
+1. Prerequisites: Start a new session and submit `list`, then `find n/Alex`.
+   1. Type `delete 1` without submitting, press Up twice, then Down twice.<br>
+      Expected: The two submitted commands are recalled in order, then the unsubmitted draft `delete 1` is restored. No student is deleted.
+
+   1. Recall a command, edit its text, navigate away, then move down past the newest command.<br>
+      Expected: The edited draft is restored; recalling entries does not replace it.
+
+   1. Submit `delete 0`, then press Up.<br>
+      Expected: The index error appears, and the failed command can be recalled.
+
+   1. Press Up beyond the oldest command or Down beyond the restored draft.<br>
+      Expected: The input remains unchanged at the boundary.
+
+   1. Close and reopen TutorTrack, then press Up in the empty command box.<br>
+      Expected: No previous-session command is recalled.
 
 ### Adding students
 

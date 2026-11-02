@@ -51,6 +51,9 @@ TutorTrack is a **desktop application for tutors to manage student records, opti
 
 **Notes about the command format:**<br>
 
+- Type command words and prefixes in lowercase: `add`, `find`, `n/`, and `g/`.
+  For example, `ADD` and `N/` are not accepted.
+
 - Words in `UPPER_CASE` are the parameters to be supplied by the user.<br>
   For example, in `add n/NAME`, replace `NAME` with a value such as `John Doe`.
 
@@ -60,7 +63,14 @@ TutorTrack is a **desktop application for tutors to manage student records, opti
 - Items followed by `...` can appear zero or more times.<br>
   For example, `[t/TAG]... ` may be omitted, or written as `t/friend` or `t/friend t/family`.
 
-- Parameters can be in any order.<br>
+- Type prefixes exactly as shown. Do not type the square brackets or `...` used to describe optional and repeated parameters.
+
+- A range includes both endpoints: `3-5` selects students 3, 4, and 5. The first index must not exceed the last.
+
+- `edit` and `delete` use the numbers in the currently displayed list.<br>
+  For instance, after running the `find` command, these numbers refer to the search results. Check the displayed list before submitting either command.
+
+- Parameters can be in any order. For `edit` and `delete`, put the index expression before other parameter fields. <br>
   For example, if the command specifies `n/NAME p/PHONE_NUMBER`, `p/PHONE_NUMBER n/NAME` is also acceptable.
 
 - The old `a/` address prefix is no longer supported and is rejected by `add` and `edit`. Use
@@ -91,7 +101,10 @@ When the command box is focused, you can reuse previously submitted commands:
 - Moving down past the newest command restores the text you were previously typing.
 - If you edit a recalled command, the edited text is preserved as your current draft until you submit it by pressing Enter.
 
-Commands are added to the history when submitted, including commands that fail.
+Commands are added to the history when submitted, including commands that fail. Consecutive identical commands occupy one entry.
+
+History holds up to 100 entries and lasts only until TutorTrack closes.
+At either end of the history, further navigation leaves the command box unchanged.
 
 ### Copying student details
 
@@ -277,9 +290,16 @@ The following example shows a combined subject, group, and tag search.
 
 ### Deleting students or optional fields: `delete`
 
-Without field prefixes, deletes one or more students. With field prefixes, clears only the specified optional fields.
+For field clearing, supply at least one of `p/`, `h/`, or `t/`.
+Without a field prefix, the selected student records are deleted.
 
+WARNING: Deleting student records or tags takes effect immediately, without confirmation, and cannot be undone within TutorTrack.
+
+Clear **optional fields**:
 Format: `delete INDEX_OR_RANGE[,INDEX_OR_RANGE]... [p/] [h/] [t/TAG]...`
+
+Delete **student records**:
+Format: `delete INDEX_OR_RANGE[,INDEX_OR_RANGE]...`
 
 * `INDEX_OR_RANGE` is either an individual `INDEX` or an inclusive range written as `START_INDEX-END_INDEX`.
 
@@ -296,8 +316,7 @@ Format: `delete INDEX_OR_RANGE[,INDEX_OR_RANGE]... [p/] [h/] [t/TAG]...`
   once. Clearing an already empty phone or handle succeeds.
 - `t/TAG` deletes a tag by name, ignoring case. Repeat `t/TAG` to delete multiple tags. Repeated names are treated
   as one deletion.
-- An empty `t/` clears all tags, even when named tags in the same command do not exist:
-  `delete 1 t/ t/Missing` clears all tags.
+- An empty `t/` clears all tags and overrides named deletions. `delete 1 t/ t/Missing` clears all tags. The supplied tag names must still pass validation. Hence `delete 1 t/ t/Invalid!` will fail and no student tag is deleted.
 - Name (`n/`), email (`e/`), subject (`s/`), and group (`g/`) are compulsory and cannot be deleted.
 - Field deletions support the same indexes and ranges as deleting students. All indexes and requested tags are
   validated before any changes are made. Unless clearing all tags, a missing requested tag for any selected student
@@ -311,6 +330,18 @@ Examples:
 * `list` followed by `delete 1,3-5,6` deletes the 1st, 3rd, 4th, 5th and 6th students in TutorTrack.
 * `delete 1 p/ h/ t/Online t/needsHelp` clears phone and Telegram handle and removes those two tags.
 * `delete 1-3 t/` clears all tags for the first three displayed students.
+
+#### Correcting delete errors
+
+| Input or problem | Feedback | What to change |
+| --- | --- | --- |
+| `delete 0`, `delete -1`, or `delete +1` | `The student index provided is invalid.` | Use positive whole numbers without a sign, such as `delete 1`. |
+| `delete 5-3` | `The student index provided is invalid.` | Put the smaller endpoint first: `delete 3-5`. |
+| An index exceeds the displayed list size | `The student index provided is invalid.` | Check the displayed numbers. Use `list` to show everyone, or change your `find` criteria. |
+| `delete 1, 3`, `delete 1,`, or missing indexes | `Invalid command format!` followed by delete usage | Use an expression such as `delete 1,3-5`, with no spaces inside it. |
+| `delete 1 p/91234567` | `Invalid command format!` followed by delete usage | Use an empty `p/` to clear a phone number; use `edit` to replace it. |
+
+These validation errors leave all student records unchanged. The same index rules apply when clearing fields.
 
 ### Clearing all entries: `clear`
 

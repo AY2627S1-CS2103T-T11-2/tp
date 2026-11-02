@@ -13,6 +13,7 @@ Class CommandResult
 Class "{abstract}\nCommand" as Command
 
 Class DeleteCommand
+Class "DeleteCommand.FieldsToDelete" as FieldsToDelete
 Class "<<interface>>\nPersonTarget" as PersonTarget
 Class IndexPersonTarget
 Class IndexRange
@@ -47,6 +48,12 @@ EditCommand -up-|> Command
 LogicManager .left.> Command : <<call>>
 
 DeleteCommand --> "1" PersonTarget : target
+DeleteCommand --> "0..1" FieldsToDelete : fields
+note right of FieldsToDelete
+  Absent: delete student records.
+  Present: clear optional fields.
+  Clearing fields keeps the current filter.
+end note
 IndexPersonTarget .up.|> PersonTarget
 IndexPersonTarget --> "1..*" IndexRange : ranges
 

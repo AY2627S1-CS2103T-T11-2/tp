@@ -14,10 +14,30 @@ activate ui UI_COLOR
 ui -[UI_COLOR]> logic : execute("delete 1")
 activate logic LOGIC_COLOR
 
-logic -[LOGIC_COLOR]> model : deletePerson(p)
+note right of logic
+Parse the command and resolve the selection
+before changing student records.
+end note
+
+logic -[LOGIC_COLOR]> model : getFilteredPersonList()
 activate model MODEL_COLOR
 
-model -[MODEL_COLOR]-> logic
+model --[MODEL_COLOR]> logic : displayed students
+deactivate model
+
+logic -[LOGIC_COLOR]> model : deletePersonsInBatch(selectedStudents)
+activate model MODEL_COLOR
+model --[MODEL_COLOR]> logic
+deactivate model
+
+logic -[LOGIC_COLOR]> model : updateFilteredPersonList(showAllPredicate)
+activate model MODEL_COLOR
+model --[MODEL_COLOR]> logic
+deactivate model
+
+logic -[LOGIC_COLOR]> model : getAddressBook()
+activate model MODEL_COLOR
+model --[MODEL_COLOR]> logic : addressBook
 deactivate model
 
 logic -[LOGIC_COLOR]> storage : saveAddressBook(addressBook)
