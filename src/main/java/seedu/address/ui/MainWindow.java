@@ -163,9 +163,9 @@ public class MainWindow extends UiPart<Stage> {
     private void setWindowDefaultSize(GuiSettings guiSettings) {
         Rectangle2D visualBounds = Screen.getPrimary().getVisualBounds();
         primaryStage.setHeight(getWindowDimension(guiSettings.getWindowHeight(), visualBounds.getHeight(),
-                                MINIMUM_WINDOW_HEIGHT));
-                primaryStage.setWidth(getWindowDimension(guiSettings.getWindowWidth(), visualBounds.getWidth(),
-                                MINIMUM_WINDOW_WIDTH));
+                MINIMUM_WINDOW_HEIGHT));
+        primaryStage.setWidth(getWindowDimension(guiSettings.getWindowWidth(), visualBounds.getWidth(),
+                MINIMUM_WINDOW_WIDTH));
         if (guiSettings.getWindowCoordinates() != null) {
             primaryStage.setX(guiSettings.getWindowCoordinates().getX());
             primaryStage.setY(guiSettings.getWindowCoordinates().getY());
