@@ -6,6 +6,7 @@ import java.util.logging.Logger;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
@@ -14,6 +15,7 @@ import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.StackPane;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 import seedu.address.commons.core.GuiSettings;
 import seedu.address.commons.core.LogsCenter;
@@ -29,6 +31,9 @@ import seedu.address.logic.parser.exceptions.ParseException;
 public class MainWindow extends UiPart<Stage> {
 
     private static final String FXML = "MainWindow.fxml";
+
+    private static final double MINIMUM_WINDOW_WIDTH = 800;
+    private static final double MINIMUM_WINDOW_HEIGHT = 430;
 
     private final Logger logger = LogsCenter.getLogger(getClass());
 
@@ -156,12 +161,22 @@ public class MainWindow extends UiPart<Stage> {
      * Sets the default size based on {@code guiSettings}.
      */
     private void setWindowDefaultSize(GuiSettings guiSettings) {
-        primaryStage.setHeight(guiSettings.getWindowHeight());
-        primaryStage.setWidth(guiSettings.getWindowWidth());
+        Rectangle2D visualBounds = Screen.getPrimary().getVisualBounds();
+        primaryStage.setHeight(getWindowDimension(guiSettings.getWindowHeight(), visualBounds.getHeight(),
+                                MINIMUM_WINDOW_HEIGHT));
+                primaryStage.setWidth(getWindowDimension(guiSettings.getWindowWidth(), visualBounds.getWidth(),
+                                MINIMUM_WINDOW_WIDTH));
         if (guiSettings.getWindowCoordinates() != null) {
             primaryStage.setX(guiSettings.getWindowCoordinates().getX());
             primaryStage.setY(guiSettings.getWindowCoordinates().getY());
         }
+    }
+
+    /**
+     * Returns a saved dimension constrained to the visible screen area
+     */
+    private double getWindowDimension(double savedDimension, double availableDimension, double minimumDimension) {
+        return Math.max(minimumDimension, Math.min(savedDimension, availableDimension));
     }
 
     /**
