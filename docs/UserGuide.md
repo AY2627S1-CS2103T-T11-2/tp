@@ -241,12 +241,16 @@ Formats:
 - Separate multiple name terms with commas. A student matching any name term is returned (an `OR` search).
 - An unquoted keyword matches only a complete name component. Spaces, hyphens, apostrophes, and periods separate
   components; for example, `n/Jean` matches `Jean-Luc`, `n/df` matches `df. f`, while `n/Han` does not match `Hans`.
-- A quoted phrase performs a substring match; for example, `n/"lex Ye"` matches `Alex Yeoh`.
-- Each name keyword or phrase is limited to 100 characters and uses the same word, abbreviation, and relationship
-  qualifier syntax as names. Invalid terms such as `n/!!!`, `n/@`, `n/-`, and `n/"abc/def"` are rejected.
+- A quoted phrase performs a literal substring match; for example, `n/"lex Ye"` matches `Alex Yeoh`. Consecutive
+  whitespace in the phrase is treated as one space. A phrase may start or end at a valid punctuation boundary, so
+  `n/"Jean-"` can match `Jean-Luc`.
+- After surrounding whitespace is removed and repeated whitespace in a phrase is collapsed, each name keyword or
+  phrase is limited to 100 characters. Keywords follow the word, abbreviation, and relationship
+  qualifier syntax used by names, while quoted phrases must be possible substrings of a valid name. Invalid terms
+  such as `n/!!!`, `n/@`, `n/-`, and `n/"abc/def"` are rejected.
 - A Telegram handle must include its leading `@` and is matched exactly, ignoring letter case.
 - Subject, group, and tag filters require an exact match, ignoring letter case. Repeated spaces in subjects and groups
-  are also ignored, so `s/CS 2103T` also finds a student whose subject an earlier version saved with two spaces
+  are also ignored, so `s/CS 2103T` also finds a student whose subject was saved by an earlier version with two spaces
   after `CS`.
 - Within `TAG_EXPRESSION`, separate tags with `,` for an `OR` search; for example, `t/lowAttendance,needsHelp` matches a
   student with either the `lowAttendance` or `needsHelp` tag.
@@ -254,7 +258,7 @@ Formats:
   student with both the `lowAttendance` and `needsHelp` tags.
 - `,` and `&` cannot be used together in the same tag expression.
 - When criteria for name, Telegram handle, subject, group, or tag are combined, a student must match every supplied
-  criterion type
+  criterion type.
   (an `AND` search).
 
 Examples:
