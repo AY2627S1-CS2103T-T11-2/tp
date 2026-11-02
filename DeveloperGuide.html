@@ -135,570 +135,111 @@ sets this flag and returns a prompt, so nothing is saved. <code class="hljs inli
 is set; otherwise, it reports that no confirmation is pending. Any other input, including input that fails to parse,
 resets the flag, so the confirmation must immediately follow <code class="hljs inline no-lang">clear</code>.</p> <p>The following low-level sequence diagram shows the three outcomes of the confirmation flow: requesting confirmation,
 confirming a pending request, and attempting confirmation without a pending request. Saving occurs only after a
-confirmed clear; the other two outcomes leave the model unchanged.</p> <span class="image-wrapper"><img src="/tp/diagrams/ClearConfirmationSequenceDiagram.png" alt="Clear confirmation sequence diagram" width="900" height="" loading="eager" class="img-fluid rounded"><span class="image-caption"><!--[--><!--]--></span></span>
-
----
-
-## **Documentation, logging, testing, dev-ops**
-
-- [Documentation guide](Documentation.md)
-- [Testing guide](Testing.md)
-- [Logging guide](Logging.md)
-- [DevOps guide](DevOps.md)
-
----
-
-## **Appendix: Requirements**
-
-### Product scope
-
-**Target user profile**:
-
-- is a teaching assistant or tutor managing many students
-- teaches one or more modules or tutorial groups
-- needs to retrieve and update student particulars quickly
-- prefers desktop applications
-- can type quickly
-- prefers typing to mouse interactions
-- is reasonably comfortable using CLI-style commands
-
-**Value proposition**:
-
-TutorTrack helps teaching assistants manage student information efficiently in one place, including contact details, modules, and tutorial groups, using fast keyboard-based commands.
-
-### User stories
-
-Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unlikely to have) - `*`
-
-| Priority | Status | As a … | I want to … | So that I can… |
-| --- | --- | --- | --- | --- |
-| `* * *` | Implemented | new TA user | see usage instructions | refer to instructions when I forget how to use TutorTrack |
-| `* * *` | Implemented | TA | add a student and their particulars | keep track of students under my care |
-| `* * *` | Implemented | TA | edit a student&#39;s particulars | correct or update their information |
-| `* * *` | Implemented | TA | delete a student | remove records I no longer need |
-| `* * *` | Implemented | TA | clear all student records after confirmation | reset my records without accidentally deleting them |
-| `* * *` | Implemented | TA | list all students | view all students I manage |
-| `* * *` | Implemented | TA | organise students by tutorial group | manage students across different classes |
-| `* * *` | Implemented | TA | find students from a tutorial group | view students belonging to that group |
-| `* * *` | Implemented | TA | record a student&#39;s module | distinguish students from different modules |
-| `* * *` | Implemented | TA | view a student&#39;s particulars in the displayed list or search results | retrieve their information quickly |
-| `* *` | Implemented | TA | reuse a previously submitted command | repeat or amend a command efficiently |
-| `* *` | Implemented | TA | copy a displayed email address, Telegram handle, or phone number | use contact details in another application |
-| `* *` | Planned | TA | record tutorial participation | keep track of student participation |
-| `* *` | Planned | TA | track consultation bookings | manage consultations with students |
-| `*` | Planned | TA | record assessment grades | keep track of students&#39; academic progress |
-| `*` | Planned | TA | export student records | keep an external copy of tutoring records |
-
-### Use cases
-
-(For all use cases below, the **System** is the `TutorTrack` and the **Actor** is the `user`, unless specified otherwise)
-
-**Use case: Add a student**
-
-**MSS**
-
-1. TA requests to add a student with a name, email, subject, and group, plus any optional particulars.
-2. TutorTrack validates the supplied particulars.
-3. TutorTrack adds the student.
-4. TutorTrack confirms that the student was added.
-
-Use case ends.
-
-**Extensions**
-
-- 2a. The supplied name or particulars are invalid.
-  - 2a1. TutorTrack shows the corresponding error message.
-  - Use case ends.
-
-- 2b. A student with the same name, ignoring letter case, already exists.
-  - 2b1. TutorTrack shows an error message.
-  - Use case ends.
-
-**Use case: Edit a single student&#39;s particulars**
-
-**MSS**
-
-1. TA requests to edit one student, identified by their index in the displayed list.
-2. TutorTrack finds the student at that index.
-3. TutorTrack validates the new particulars.
-4. TutorTrack updates the specified particulars.
-5. TutorTrack confirms that the student record was updated.
-
-Use case ends.
-
-**Extensions**
-
-- 2a. The index is not in the displayed list.
-  - 2a1. TutorTrack shows an error message.
-  - Use case ends.
-
-- 3a. One or more new particulars are invalid.
-  - 3a1. TutorTrack shows the corresponding error message.
-  - Use case ends.
-
-- 3b. The new name is already used by another student, ignoring letter case.
-  - 3b1. TutorTrack shows an error message.
-  - Use case ends.
-
-- 3c. A tag to rename does not exist after applying any preceding tag operations.
-  - 3c1. TutorTrack shows an error message without changing any particulars.
-  - Use case ends.
-
-Capitalization-only name edits refer to the same selected student and are accepted. The replacement `Name` is stored,
-so the newly entered capitalization appears in subsequent displays and saves.
-
-**Use case: Edit multiple students&#39; common particulars**
-
-**MSS**
-
-1. TA requests to edit students identified by displayed indexes or index ranges.
-2. TutorTrack validates the index expression and supplied particulars.
-3. TutorTrack resolves the indexes against the currently displayed student list.
-4. TutorTrack updates the supplied subject, group, or tags for every selected student.
-5. TutorTrack confirms which student records were updated.
-
-Use case ends.
-
-**Extensions**
-
-- 2a. The index expression or a supplied particular is invalid.
-  - 2a1. TutorTrack shows the corresponding error message.
-  - Use case ends.
-
-- 2b. No field to edit is supplied.
-  - 2b1. TutorTrack informs the TA that at least one field must be provided.
-  - Use case ends.
-
-- 2c. A name, phone number, email address, or Telegram handle is supplied.
-  - 2c1. TutorTrack informs the TA that only subject, group, and tags can be edited
-    for multiple students.
-  - Use case ends.
-
-- 3a. One or more indexes do not exist in the currently displayed list.
-  - 3a1. TutorTrack shows an error message without editing any student.
-  - Use case ends.
-
-- 4a. A tag to rename does not exist for a selected student after applying any preceding tag operations.
-  - 4a1. TutorTrack shows an error message without editing any student.
-  - Use case ends.
-
-**Use case: Delete students**
-
-**MSS**
-
-1. TA requests to list or find students.
-2. TutorTrack shows the matching students.
-3. TA requests to delete one or more students by their displayed indexes or index ranges.
-4. TutorTrack deletes the selected students and confirms which students were deleted.
-
-Use case ends.
-
-**Extensions**
-
-- 2a. The list is empty.
-  - Use case ends.
-
-- 3a. The index expression is invalid, or an index is not in the displayed list.
-  - 3a1. TutorTrack shows an error message without deleting any student.
-  - Use case resumes at step 2.
-
-**Use case: List students from a tutorial group**
-
-**MSS**
-
-1. TA requests to list students from a specified tutorial group.
-2. TutorTrack validates the tutorial group.
-3. TutorTrack finds students belonging to that tutorial group.
-4. TutorTrack displays the matching students.
-
-Use case ends.
-
-**Extensions**
-
-- 2a. The supplied tutorial group is invalid.
-  - 2a1. TutorTrack shows an error message.
-  - Use case ends.
-
-- 3a. No students belong to the specified tutorial group.
-  - 3a1. TutorTrack informs the TA that no students were found.
-  - Use case ends.
-
-**Use case: Clear all student records**
-
-**MSS**
-
-1. TA enters `clear`.
-2. TutorTrack asks the TA to confirm the operation.
-3. TA immediately enters `clear confirm`.
-4. TutorTrack deletes all student records and confirms that they were cleared.
-
-Use case ends.
-
-**Extensions**
-
-- 3a. The TA enters another command, or an invalid command.
-  - 3a1. TutorTrack cancels the pending confirmation.
-  - 3a2. TutorTrack does not delete any student records.
-  - Use case ends.
-
-- 3b. The TA enters `clear confirm` without first entering `clear`.
-  - 3b1. TutorTrack reports that no clear confirmation is pending.
-  - 3b2. TutorTrack does not delete any student records.
-  - Use case ends.
-
-### Non-Functional Requirements
-
-1.  Should work on any _mainstream OS_ as long as it has Java `25` or above installed.
-2.  Should be able to hold up to 1000 persons without noticeable sluggishness in performance for typical usage.
-3.  A user with above average typing speed for regular English text (i.e. not code, not system admin commands) should
-    be able to accomplish most of the tasks faster using commands than using the mouse.
-4.  Normal operations should complete within 1 second for 200 records.
-5.  Should save data locally in a human-editable text file.
-6.  Should preserve data after being closed and reopened.
-7.  Should prevent partially written files during saving.
-8.  Should provide clear confirmation for destructive operations.
-9.  Should validate all user-entered and imported data.
-10. Should not transmit student data to external services.
-11. Should provide clear error messages and usage instructions.
-12. Should support keyboard or command-based interaction for core tasks.
-13. Should work on Windows, Linux, and macOS using Java 25.
-14. Should work without an installer.
-15. Should not require a remote server.
-16. Should not exceed 100 MB.
-17. Should remain usable at the required screen resolutions and display scales.
-18. Should not require an internet connection for core functionality.
-
-### Glossary
-
-- **TA**: Teaching Assistant.
-- **Tutorial Group**: A tutorial class or group that a student belongs to.
-- **Module/Subject**: An academic course associated with a student, e.g. `CS1231S`.
-- **Student particulars**: Information stored about a student, such as name, phone number, email, module/subject, and tutorial group.
-- **CLI-style command**: A text command entered by the user to perform an action in TutorTrack.
-- **Mainstream OS**: Windows, Linux, and macOS.
-- **Displayed list**: The list of students currently shown, which may be filtered by `find`. Command indexes refer to this list.
-- **Index range**: An inclusive range of displayed indexes written as `START_INDEX-END_INDEX`, for example `3-5`.
-
----
-
-## **Appendix: Instructions for manual testing**
-
-Given below are instructions to test the app manually.
-
-Unless a test says otherwise, run it in a new empty folder. This ensures TutorTrack starts with its six sample
-students. The application saves changes to `data/tutortrack.json`, so simply closing and reopening it does not reset
-the sample data. Treat each test case as independent unless it explicitly gives a sequence of commands.
-
-<div class="alert box-container seamless" style="" data-v-2c3d295c><!--Icon and vertical divider for seamless header box--><!----><div class="header-and-body" data-v-2c3d295c><!-- Header wrapper, not rendered if there is no header attribute --><!----><!-- Body wrapper --><div class="box-body-wrapper" data-v-2c3d295c><!-- icon on the left, not shown if there is a header --><div class="icon-wrapper text-info" style="" data-v-2c3d295c><!--[--><i class="fas fa-info" data-v-2c3d295c></i><!--]--></div><!-- Icon -- content divider for seamless boxes without the header attribute --><div class="alert-info vertical-divider" aria-hidden="true" data-v-2c3d295c></div><!-- Content wrapper --><div class="contents" style="" data-v-2c3d295c><!--[-->
-
-**Note:** These instructions only provide a starting point for testers to work on;
-testers are expected to do more _exploratory_ testing.
-<!--]--></div><!-- dismiss button on the right, not shown if there is a header --><!----></div></div></div>
-
-### Launch and shutdown
-
-1. Initial launch
-   1. Download the JAR file and copy it into an empty folder.
-
-   1. Double-click the JAR file, or open a terminal in that folder and run `java -jar tutortrack.jar`.<br>
-      Expected: The GUI opens with a set of sample students. The window size may not be optimal.
-
-1. Saving window preferences
-   1. Resize the window to an optimal size. Move the window to a different location. Close the window.
-
-   1. Relaunch the app by double-clicking the JAR file.<br>
-      Expected: The most recent window size and location are retained.
-
-### Deleting students
-
-Run each delete test independently against a restored copy of the six sample students. Successful deletion changes
-the displayed indexes, so do not reuse a previous test&#39;s modified data. Back up existing data before testing.
-
-1. Deleting contacts while the full list is shown.
-   1. Prerequisites: List all persons using the `list` command with all six sample students present.
-
-   1. Test case: `delete 1`<br>
-      Expected: The first student is deleted from the list. Feedback shows the deleted student&#39;s details.
-
-   1. Test case: `delete 1,3,5-6`<br>
-      Expected: The 1st, 3rd, 5th and 6th students from the original displayed list are deleted once each. The feedback message shows the deleted students&#39; details.
-
-   1. Test case: `delete 0`<br>
-      Expected: No student is deleted. Feedback is `The student index provided is invalid.`
-
-   1. Test cases: `delete -1`, `delete +1`, `delete 5-3`, and `delete 2147483648`<br>
-      Expected: Each reports `The student index provided is invalid.` No student is changed.
-
-   1. Test cases: `delete`, `delete x`, `delete 1,`, and `delete 1, 3`<br>
-      Expected: Each reports `Invalid command format!` followed by delete usage. No student is changed.
-
-   1. Test case: `delete 1,7`<br>
-      Expected: Feedback is `The student index provided is invalid.` All six students, including student 1, remain.
-
-1. Deleting from a filtered list
-   1. Prerequisites: Run `find n/Alex` against the six sample students; only Alex Yeoh is displayed.
-
-   1. Test case: `delete 2`<br>
-      Expected: Feedback is `The student index provided is invalid.` No student is deleted, even though the full student list contains more than one student.
-
-   1. Test case: `delete 1`<br>
-      Expected: Alex Yeoh is deleted. The list then shows all five remaining students.
-
-1. Clearing optional fields
-   1. Prerequisites: Launch the application with the sample data and run `list`.
-
-   1. Test case: `delete 1 p/ h/`<br>
-      Expected: The first student&#39;s phone number and Telegram handle are removed. The student is not deleted.
-
-   1. Test case: `delete 1 t/Missing`<br>
-      Expected: No student is changed. The status message states that the tag does not exist.
-
-   1. Test case: `delete 1,7 p/`<br>
-      Expected: Feedback is `The student index provided is invalid.` Student 1&#39;s phone number is unchanged.
-
-   1. Test case: `find n/Alex`, followed by `delete 1 p/`<br>
-      Expected: Alex remains displayed without a phone number. The name filter stays active.
-
-   1. Test case: `delete 1 t/ t/Missing`<br>
-      Expected: All tags on the first student are cleared; the nonexistent named tag is overridden.
-
-   1. Test case: `delete 1 t/ t/Invalid!`<br>
-      Expected: The tag-format error is shown. No tags are cleared.
-
-### Navigating command history
-
-1. Prerequisites: Start a new session and submit `list`, then `find n/Alex`.
-   1. Type `delete 1` without submitting, press Up twice, then Down twice.<br>
-      Expected: The two submitted commands are recalled in order, then the unsubmitted draft `delete 1` is restored. No student is deleted.
-
-   1. Recall a command, edit its text, navigate away, then move down past the newest command.<br>
-      Expected: The edited draft is restored; recalling entries does not replace it.
-
-   1. Submit `delete 0`, then press Up.<br>
-      Expected: The index error appears, and the failed command can be recalled.
-
-   1. Press Up beyond the oldest command or Down beyond the restored draft.<br>
-      Expected: The input remains unchanged at the boundary.
-
-   1. Close and reopen TutorTrack, then press Up in the empty command box.<br>
-      Expected: No previous-session command is recalled.
-
-### Adding students
-
-1. Adding a student with all fields
-   1. Test case: `add n/Alice Tan p/91234567 e/alice@example.com h/@alice_tan s/Mathematics g/Sec 3A t/Student`<br>
-      Expected: Alice is added. The phone is displayed as `9123 4567`, and all supplied fields are shown.
-
-1. Adding a student without optional fields
-   1. Test case: `add n/Bob Lee e/bob@example.com s/Physics g/J1A`<br>
-      Expected: Bob is added without a phone number, Telegram handle, or tags; no empty contact labels are shown.
-
-1. Adding a student whose name contains initials or a short abbreviation
-   1. Test case: `add n/Aisyah Bte. Ahmad e/aisyah@example.com s/Mathematics g/T11`<br>
-      Expected: Aisyah is added with the name stored as `Aisyah Bte. Ahmad`.
-
-   1. Test case: Replace the name above with `John..Tan`, `.John`, or `John.`.<br>
-      Expected: No student is added. The status message shows the name constraints.
-
-1. Adding a student whose name contains `D/O` or `S/O`
-   1. Test case: `add n/Ravi S/O Kumar e/ravi@example.com s/CS2103T g/T11`<br>
-      Expected: Ravi is added with the name `Ravi S/O Kumar` and the subject `CS2103T`.
-
-   1. Test case: `add n/Ravi Kumar e/ravi2@example.com s/CS2103T g/T11 S/O`<br>
-      Expected: No student is added. The status message shows the `add` command usage because `S/O` is not part of
-      the name.
-
-   1. Test case: `add n/Ali s/o Abu e/ali@example.com s/CS2103T g/T11`<br>
-      Expected: No student is added. The status message asks for `D/O` or `S/O` in uppercase.
-
-   1. Test case: `add s/O Level n/Ali Abu e/ali@example.com g/T11`<br>
-      Expected: Ali is added with the subject `O Level`. Typing `s/O Level` directly after the name is rejected
-      with the same uppercase message.
-
-1. Normalizing subjects and groups, and validating Telegram handles
-   1. Test case: `add n/Siti Rahman e/siti@example.com s/CS   2103T g/Sec  3A`, typing several spaces inside the
-      subject and the group.<br>
-      Expected: Siti is added with the subject `CS 2103T` and the group `Sec 3A`. `find s/cs 2103t` then shows her.
-
-   1. Test case: `add n/Siti Lim e/sitilim@example.com h/siti_lim s/CS2103T g/T11`<br>
-      Expected: No student is added. The status message shows the Telegram handle constraints. Using `h/@_siti`
-      gives the same message.
-
-1. Rejecting values longer than their maximum length
-   1. Test case: `add n/Dan Ong e/dan@example.com s/CS2103T g/T11 t/` followed by 51 letters, for example
-      `aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa`.<br>
-      Expected: No student is added. The status message states that tags can have at most 50 characters.
-
-1. Rejecting malformed input without changing data
-   1. Test case: `add n/Charlie Lim e/charlie@example.com s/Mathematics g/T11 x/typo`<br>
-      Expected: No student is added. The status message shows the `add` command usage because `x/` is unknown.
-
-   1. Test case: `add n/Charlie Lim e/charlie@example.com s/Mathematics`<br>
-      Expected: No student is added. The status message shows the `add` command usage because `g/` is missing.
-
-   1. Test case: `add n/Charlie Lim e/charlie@example.com s/Mathematics s/Physics g/T11`<br>
-      Expected: No student is added. The status message states that multiple values were specified for `s/`.
-
-   1. Test case: After adding Alice Tan above, enter `add n/ALICE TAN e/alice2@example.com s/Physics g/T12`.<br>
-      Expected: No student is added. The status message reports that the student already exists, because names are
-      compared ignoring case.
-
-### Editing students
-
-1. Editing one student
-   1. Prerequisites: Launch the application with the sample data and run `list`.
-
-   1. Test case: `edit 2 n/Betsy Crower t/friends,Graduate`<br>
-      Expected: The 2nd student is renamed to `Betsy Crower`, and the tag `friends` is renamed to `Graduate`. Other
-      tags are unchanged.
-
-   1. Test case: `edit 1 t/Missing,Graduate`<br>
-      Expected: No student is changed. The status message states that the tag does not exist.
-
-   1. Test case: `edit 1 p/`<br>
-      Expected: No student is changed. The status message states that edit values cannot be empty.
-
-   1. Test case: `edit 1 n/Ravi s/o Kumar`<br>
-      Expected: No student is changed, including the subject. The status message asks for `D/O` or `S/O` in
-      uppercase.
-
-1. Editing several students
-   1. Test case: `edit 1-3 g/T11 t/Online`<br>
-      Expected: The first three students are moved to group `T11` and gain the tag `Online`.
-
-   1. Prerequisites: Run `list`. Among the first three students, the first has the tag `friends` and at least one
-      other does not, as with the sample students.
-
-   1. Test case: `edit 1-3 g/T12 t/friends,Graduate`<br>
-      Expected: No student is changed, including the first student&#39;s group and tags. The status message states
-      that the tag does not exist.
-
-   1. Test case: `edit 1-2 p/91234567`<br>
-      Expected: No student is changed. The status message states that only subject, group, and tags can be edited
-      for multiple students.
-
-### Finding students
-
-1. Finding students with keywords and phrases
-   1. Prerequisites: Launch the application with the sample students.
-
-   1. Test case: `find n/&quot;Alex Yeoh&quot;,Li`<br>
-      Expected: `Alex Yeoh` and `David Li` are displayed because each matches at least one search term.
-
-   1. Test case: `find n/&quot;Alex Yeoh&quot;,&quot;David Li&quot;`<br>
-      Expected: `Alex Yeoh` and `David Li` are displayed.
-
-   1. Incorrect command: `find n/Alex,&quot;Yeoh`<br>
-      Expected: The displayed list remains unchanged. The status message shows the `find` command usage.
-
-   1. Incorrect command: `find n/&quot; &quot;`<br>
-      Expected: The displayed list remains unchanged. The status message shows the `find` command usage.
-
-1. Finding students using other criteria
-   1. Prerequisites: Launch the application with the sample students.
-
-   1. Test case: `find h/@alex_yeoh`<br>
-      Expected: Only `Alex Yeoh` is displayed because Telegram handles are matched exactly, ignoring case.
-
-   1. Test case: `find s/General g/General t/friends`<br>
-      Expected: `Alex Yeoh` and `Bernice Yu` are displayed because both students match every supplied criterion.
-
-   1. Test case: `find t/friends&amp;colleagues`<br>
-      Expected: Only `Bernice Yu` is displayed because she has both tags.
-
-   1. Test case: `find t/friends,colleagues`<br>
-      Expected: Students having either the `friends` or `colleagues` tag are displayed.
-
-   1. Incorrect command: `find t/friends,colleagues&amp;family`<br>
-      Expected: The displayed list remains unchanged. The status message shows the `find` command usage because
-      comma and ampersand separators cannot be mixed.
-
-   1. Incorrect command: `find t/friends t/colleagues`<br>
-      Expected: The displayed list remains unchanged. The status message shows the `find` command usage because a
-      criterion prefix cannot be repeated.
-
-### Clearing all students
-
-1. Clearing with confirmation
-   1. Prerequisites: Launch the application with the sample students and run `list`.
-   1. Test case: `clear`<br>
-      Expected: No student is deleted. The status message asks you to enter `clear confirm`.
-
-   1. Test case: `clear confirm`<br>
-      Expected: No student is deleted. The status message states that no clear confirmation is pending.
-
-   1. Test case: `clear`, then `list`, then `clear confirm`<br>
-      Expected: No student is deleted. The status message states that no clear confirmation is pending.
-
-   1. Test case: `clear`, then `clear confirm`<br>
-      Expected: All students are deleted.
-
-   1. Test case: `clear`, then enter `clear now`, then `clear confirm`<br>
-      Expected: No student is deleted. `clear now` shows the command format error, and `clear confirm` states that no
-      clear confirmation is pending.
-
-   1. Test case: `clear`, then `clear confirm`, close TutorTrack, and relaunch it.<br>
-      Expected: The displayed student list remains empty, confirming that the cleared data was saved.
-
-### UI interactions
-
-1. Opening and closing help
-
-   1. Test case: Enter `help`.<br>
-      Expected: The Help window opens with a command summary and a User Guide URL.
-
-   1. Test case: With the main window focused, press <kbd>F1</kbd>, then choose **Help** &gt; **Help** from the menu bar.<br>
-      Expected: Both actions open the Help window, or bring it to the front if it is already open.
-
-   1. Test case: In the Help window, press <kbd>Enter</kbd> or click **Copy URL**, then paste into a text editor.<br>
-      Expected: The pasted text is the User Guide URL.
-
-   1. Test case: Close the Help window and type a command without clicking the command box first.<br>
-      Expected: The command box has focus and receives the typed command.
-
-1. Navigating command history
-
-   1. Test case: Enter `list`, then `help`, then click the command box and press the Up Arrow twice.<br>
-      Expected: The command box first shows `help`, then `list`.
-
-   1. Test case: Type `find n/Alex`, press the Up Arrow, then press the Down Arrow until past the newest command.<br>
-      Expected: The command box restores `find n/Alex` as the unsubmitted draft.
-
-1. Copying displayed student details
-
-   1. Test case: Click the copy icon beside a displayed student&#39;s email address, Telegram handle, or phone number, then
-      paste into a text editor.<br>
-      Expected: The pasted text matches the selected detail.
-
-### Saving data
-
-1. Dealing with missing/corrupted data files
-   1. Prerequisites: Launch TutorTrack and run `list` so that `data/tutortrack.json` is created, close it, and keep
-      a copy of the file. Launching and closing TutorTrack without running a command does not create the file.
-
-   1. Test case: In `data/tutortrack.json`, change one student&#39;s `&quot;email&quot;` value to `&quot;invalid&quot;`, save the file,
-      and relaunch TutorTrack.<br>
-      Expected: An error dialog names the data file and the reason. TutorTrack closes after the dialog is dismissed,
-      and the data file is unchanged.
-
-   1. Test case: In `data/tutortrack.json`, replace the contents with `{ &quot;persons&quot; : [ null ] }` and relaunch
-      TutorTrack.<br>
-      Expected: An error dialog names the data file. TutorTrack closes after the dialog is dismissed, and the data
-      file is unchanged.
-
-   1. Test case: Restore the copy. In `data/tutortrack.json`, change one student&#39;s `&quot;address&quot;` value, which stores
-      the Telegram handle, to `&quot;Blk 123 Clementi&quot;` and relaunch TutorTrack.<br>
-      Expected: All students load, and that student has no Telegram handle. The data file is unchanged until a command,
-      such as `list`, runs successfully.
-
-   1. Test case: Move `data/tutortrack.json` to another folder and relaunch TutorTrack.<br>
-      Expected: TutorTrack starts with sample students. A new `data/tutortrack.json` is created only after a command,
-      such as `list`, runs successfully.
-
-   1. Test case: Close TutorTrack, rename `data/tutortrack.json` to `data/addressbook.json`, and relaunch TutorTrack.<br>
-      Expected: The same students are shown. A new `data/tutortrack.json` is created and `data/addressbook.json` is kept.
-
-  </div> <nav id="page-nav" data-v-6b1b63d2><!--[--><div class="nav-component slim-scroll"><nav id="mb-page-nav" class="nav nav-pills flex-column my-0 small no-flex-wrap" data-v-6b1b63d2><!--[--><a class="nav-link py-1" href="#tutortrack-developer-guide">TutorTrack Developer Guide‎</a> <nav class="nav nav-pills flex-column my-0 nested no-flex-wrap"><a class="nav-link py-1" href="#acknowledgements">Acknowledgements‎</a> <a class="nav-link py-1" href="#setting-up-getting-started">Setting up, getting started‎</a> <a class="nav-link py-1" href="#design">Design‎</a> <nav class="nav nav-pills flex-column my-0 nested no-flex-wrap"><a class="nav-link py-1" href="#architecture">Architecture‎</a> <a class="nav-link py-1" href="#ui-component">UI component‎</a> <a class="nav-link py-1" href="#logic-component">Logic component‎</a> <a class="nav-link py-1" href="#model-component">Model component‎</a> <a class="nav-link py-1" href="#storage-component">Storage component‎</a> <a class="nav-link py-1" href="#common-classes">Common classes‎</a></nav> <a class="nav-link py-1" href="#implementation">Implementation‎</a> <nav class="nav nav-pills flex-column my-0 nested no-flex-wrap"><a class="nav-link py-1" href="#delete-command">Delete command‎</a> <a class="nav-link py-1" href="#edit-command">Edit command‎</a> <a class="nav-link py-1" href="#find-command">Find command‎</a> <a class="nav-link py-1" href="#clear-confirmation">Clear confirmation‎</a></nav></nav><!--]--><!--v-if--></nav></div><!--]--><!--v-if--></nav> <div class="scroll-top-button fa-lg d-print-none" style="display:none;bottom:2%;right:2%;position:fixed;" aria-hidden="true"><!--[--><i class="fas fa-arrow-circle-up"></i><!--]--></div></div> <footer><div class="text-center"><small>[<span><strong>Powered by</strong></span> <img src="https://markbind.org/favicon.ico" width="30"> <a href="https://markbind.org/">MarkBind 7.2.1</a>, generated on Mon, 2 Nov 2026, 22:13:02 GMT+8]</small></div></footer><!--]--></div>
+confirmed clear; the other two outcomes leave the model unchanged.</p> <span class="image-wrapper"><img src="/tp/diagrams/ClearConfirmationSequenceDiagram.png" alt="Clear confirmation sequence diagram" width="900" height="" loading="eager" class="img-fluid rounded"><span class="image-caption"><!--[--><!--]--></span></span> <hr> <h2 id="documentation-logging-testing-dev-ops"><strong>Documentation, logging, testing, dev-ops</strong><a class="fa fa-anchor" href="#documentation-logging-testing-dev-ops" onclick="event.stopPropagation()"></a></h2> <ul><li><a href="/tp/Documentation.html">Documentation guide</a></li> <li><a href="/tp/Testing.html">Testing guide</a></li> <li><a href="/tp/Logging.html">Logging guide</a></li> <li><a href="/tp/DevOps.html">DevOps guide</a></li></ul> <hr> <h2 id="appendix-requirements"><strong>Appendix: Requirements</strong><a class="fa fa-anchor" href="#appendix-requirements" onclick="event.stopPropagation()"></a></h2> <h3 id="product-scope">Product scope<a class="fa fa-anchor" href="#product-scope" onclick="event.stopPropagation()"></a></h3> <p><strong>Target user profile</strong>:</p> <ul><li>is a teaching assistant or tutor managing many students</li> <li>teaches one or more modules or tutorial groups</li> <li>needs to retrieve and update student particulars quickly</li> <li>prefers desktop applications</li> <li>can type quickly</li> <li>prefers typing to mouse interactions</li> <li>is reasonably comfortable using CLI-style commands</li></ul> <p><strong>Value proposition</strong>:</p> <p>TutorTrack helps teaching assistants manage student information efficiently in one place, including contact details, modules, and tutorial groups, using fast keyboard-based commands.</p> <h3 id="user-stories">User stories<a class="fa fa-anchor" href="#user-stories" onclick="event.stopPropagation()"></a></h3> <p>Priorities: High (must have) - <code class="hljs inline no-lang">* * *</code>, Medium (nice to have) - <code class="hljs inline no-lang">* *</code>, Low (unlikely to have) - <code class="hljs inline no-lang">*</code></p> <div class="table-responsive"><table class="markbind-table table table-bordered table-striped"><thead><tr><th>Priority</th> <th>Status</th> <th>As a …</th> <th>I want to …</th> <th>So that I can…</th></tr></thead> <tbody class="table-group-divider"><tr><td><code class="hljs inline no-lang">* * *</code></td> <td>Implemented</td> <td>new TA user</td> <td>see usage instructions</td> <td>refer to instructions when I forget how to use TutorTrack</td></tr> <tr><td><code class="hljs inline no-lang">* * *</code></td> <td>Implemented</td> <td>TA</td> <td>add a student and their particulars</td> <td>keep track of students under my care</td></tr> <tr><td><code class="hljs inline no-lang">* * *</code></td> <td>Implemented</td> <td>TA</td> <td>edit a student&#39;s particulars</td> <td>correct or update their information</td></tr> <tr><td><code class="hljs inline no-lang">* * *</code></td> <td>Implemented</td> <td>TA</td> <td>delete a student</td> <td>remove records I no longer need</td></tr> <tr><td><code class="hljs inline no-lang">* * *</code></td> <td>Implemented</td> <td>TA</td> <td>clear all student records after confirmation</td> <td>reset my records without accidentally deleting them</td></tr> <tr><td><code class="hljs inline no-lang">* * *</code></td> <td>Implemented</td> <td>TA</td> <td>list all students</td> <td>view all students I manage</td></tr> <tr><td><code class="hljs inline no-lang">* * *</code></td> <td>Implemented</td> <td>TA</td> <td>organise students by tutorial group</td> <td>manage students across different classes</td></tr> <tr><td><code class="hljs inline no-lang">* * *</code></td> <td>Implemented</td> <td>TA</td> <td>find students from a tutorial group</td> <td>view students belonging to that group</td></tr> <tr><td><code class="hljs inline no-lang">* * *</code></td> <td>Implemented</td> <td>TA</td> <td>record a student&#39;s module</td> <td>distinguish students from different modules</td></tr> <tr><td><code class="hljs inline no-lang">* * *</code></td> <td>Implemented</td> <td>TA</td> <td>view a student&#39;s particulars in the displayed list or search results</td> <td>retrieve their information quickly</td></tr> <tr><td><code class="hljs inline no-lang">* *</code></td> <td>Implemented</td> <td>TA</td> <td>reuse a previously submitted command</td> <td>repeat or amend a command efficiently</td></tr> <tr><td><code class="hljs inline no-lang">* *</code></td> <td>Implemented</td> <td>TA</td> <td>copy a displayed email address, Telegram handle, or phone number</td> <td>use contact details in another application</td></tr> <tr><td><code class="hljs inline no-lang">* *</code></td> <td>Planned</td> <td>TA</td> <td>record tutorial participation</td> <td>keep track of student participation</td></tr> <tr><td><code class="hljs inline no-lang">* *</code></td> <td>Planned</td> <td>TA</td> <td>track consultation bookings</td> <td>manage consultations with students</td></tr> <tr><td><code class="hljs inline no-lang">*</code></td> <td>Planned</td> <td>TA</td> <td>record assessment grades</td> <td>keep track of students&#39; academic progress</td></tr> <tr><td><code class="hljs inline no-lang">*</code></td> <td>Planned</td> <td>TA</td> <td>export student records</td> <td>keep an external copy of tutoring records</td></tr></tbody></table></div><h3 id="use-cases">Use cases<a class="fa fa-anchor" href="#use-cases" onclick="event.stopPropagation()"></a></h3> <p>(For all use cases below, the <strong>System</strong> is the <code class="hljs inline no-lang">TutorTrack</code> and the <strong>Actor</strong> is the <code class="hljs inline no-lang">user</code>, unless specified otherwise)</p> <p><strong>Use case: Add a student</strong></p> <p><strong>MSS</strong></p> <ol><li>TA requests to add a student with a name, email, subject, and group, plus any optional particulars.</li> <li>TutorTrack validates the supplied particulars.</li> <li>TutorTrack adds the student.</li> <li>TutorTrack confirms that the student was added.</li></ol> <p>Use case ends.</p> <p><strong>Extensions</strong></p> <ul><li><p>2a. The supplied name or particulars are invalid.</p> <ul><li>2a1. TutorTrack shows the corresponding error message.</li> <li>Use case ends.</li></ul></li> <li><p>2b. A student with the same name, ignoring letter case, already exists.</p> <ul><li>2b1. TutorTrack shows an error message.</li> <li>Use case ends.</li></ul></li></ul> <p><strong>Use case: Edit a single student&#39;s particulars</strong></p> <p><strong>MSS</strong></p> <ol><li>TA requests to edit one student, identified by their index in the displayed list.</li> <li>TutorTrack finds the student at that index.</li> <li>TutorTrack validates the new particulars.</li> <li>TutorTrack updates the specified particulars.</li> <li>TutorTrack confirms that the student record was updated.</li></ol> <p>Use case ends.</p> <p><strong>Extensions</strong></p> <ul><li><p>2a. The index is not in the displayed list.</p> <ul><li>2a1. TutorTrack shows an error message.</li> <li>Use case ends.</li></ul></li> <li><p>3a. One or more new particulars are invalid.</p> <ul><li>3a1. TutorTrack shows the corresponding error message.</li> <li>Use case ends.</li></ul></li> <li><p>3b. The new name is already used by another student, ignoring letter case.</p> <ul><li>3b1. TutorTrack shows an error message.</li> <li>Use case ends.</li></ul></li> <li><p>3c. A tag to rename does not exist after applying any preceding tag operations.</p> <ul><li>3c1. TutorTrack shows an error message without changing any particulars.</li> <li>Use case ends.</li></ul></li></ul> <p>Capitalization-only name edits refer to the same selected student and are accepted. The replacement <code class="hljs inline no-lang">Name</code> is stored,
+so the newly entered capitalization appears in subsequent displays and saves.</p> <p><strong>Use case: Edit multiple students&#39; common particulars</strong></p> <p><strong>MSS</strong></p> <ol><li>TA requests to edit students identified by displayed indexes or index ranges.</li> <li>TutorTrack validates the index expression and supplied particulars.</li> <li>TutorTrack resolves the indexes against the currently displayed student list.</li> <li>TutorTrack updates the supplied subject, group, or tags for every selected student.</li> <li>TutorTrack confirms which student records were updated.</li></ol> <p>Use case ends.</p> <p><strong>Extensions</strong></p> <ul><li><p>2a. The index expression or a supplied particular is invalid.</p> <ul><li>2a1. TutorTrack shows the corresponding error message.</li> <li>Use case ends.</li></ul></li> <li><p>2b. No field to edit is supplied.</p> <ul><li>2b1. TutorTrack informs the TA that at least one field must be provided.</li> <li>Use case ends.</li></ul></li> <li><p>2c. A name, phone number, email address, or Telegram handle is supplied.</p> <ul><li>2c1. TutorTrack informs the TA that only subject, group, and tags can be edited
+for multiple students.</li> <li>Use case ends.</li></ul></li> <li><p>3a. One or more indexes do not exist in the currently displayed list.</p> <ul><li>3a1. TutorTrack shows an error message without editing any student.</li> <li>Use case ends.</li></ul></li> <li><p>4a. A tag to rename does not exist for a selected student after applying any preceding tag operations.</p> <ul><li>4a1. TutorTrack shows an error message without editing any student.</li> <li>Use case ends.</li></ul></li></ul> <p><strong>Use case: Delete students</strong></p> <p><strong>MSS</strong></p> <ol><li>TA requests to list or find students.</li> <li>TutorTrack shows the matching students.</li> <li>TA requests to delete one or more students by their displayed indexes or index ranges.</li> <li>TutorTrack deletes the selected students and confirms which students were deleted.</li></ol> <p>Use case ends.</p> <p><strong>Extensions</strong></p> <ul><li><p>2a. The list is empty.</p> <ul><li>Use case ends.</li></ul></li> <li><p>3a. The index expression is invalid, or an index is not in the displayed list.</p> <ul><li>3a1. TutorTrack shows an error message without deleting any student.</li> <li>Use case resumes at step 2.</li></ul></li></ul> <p><strong>Use case: List students from a tutorial group</strong></p> <p><strong>MSS</strong></p> <ol><li>TA requests to list students from a specified tutorial group.</li> <li>TutorTrack validates the tutorial group.</li> <li>TutorTrack finds students belonging to that tutorial group.</li> <li>TutorTrack displays the matching students.</li></ol> <p>Use case ends.</p> <p><strong>Extensions</strong></p> <ul><li><p>2a. The supplied tutorial group is invalid.</p> <ul><li>2a1. TutorTrack shows an error message.</li> <li>Use case ends.</li></ul></li> <li><p>3a. No students belong to the specified tutorial group.</p> <ul><li>3a1. TutorTrack informs the TA that no students were found.</li> <li>Use case ends.</li></ul></li></ul> <p><strong>Use case: Clear all student records</strong></p> <p><strong>MSS</strong></p> <ol><li>TA enters <code class="hljs inline no-lang">clear</code>.</li> <li>TutorTrack asks the TA to confirm the operation.</li> <li>TA immediately enters <code class="hljs inline no-lang">clear confirm</code>.</li> <li>TutorTrack deletes all student records and confirms that they were cleared.</li></ol> <p>Use case ends.</p> <p><strong>Extensions</strong></p> <ul><li><p>3a. The TA enters another command, or an invalid command.</p> <ul><li>3a1. TutorTrack cancels the pending confirmation.</li> <li>3a2. TutorTrack does not delete any student records.</li> <li>Use case ends.</li></ul></li> <li><p>3b. The TA enters <code class="hljs inline no-lang">clear confirm</code> without first entering <code class="hljs inline no-lang">clear</code>.</p> <ul><li>3b1. TutorTrack reports that no clear confirmation is pending.</li> <li>3b2. TutorTrack does not delete any student records.</li> <li>Use case ends.</li></ul></li></ul> <h3 id="non-functional-requirements">Non-Functional Requirements<a class="fa fa-anchor" href="#non-functional-requirements" onclick="event.stopPropagation()"></a></h3> <ol><li>Should work on any <em>mainstream OS</em> as long as it has Java <code class="hljs inline no-lang">25</code> or above installed.</li> <li>Should be able to hold up to 1000 persons without noticeable sluggishness in performance for typical usage.</li> <li>A user with above average typing speed for regular English text (i.e. not code, not system admin commands) should
+be able to accomplish most of the tasks faster using commands than using the mouse.</li> <li>Normal operations should complete within 1 second for 200 records.</li> <li>Should save data locally in a human-editable text file.</li> <li>Should preserve data after being closed and reopened.</li> <li>Should prevent partially written files during saving.</li> <li>Should provide clear confirmation for destructive operations.</li> <li>Should validate all user-entered and imported data.</li> <li>Should not transmit student data to external services.</li> <li>Should provide clear error messages and usage instructions.</li> <li>Should support keyboard or command-based interaction for core tasks.</li> <li>Should work on Windows, Linux, and macOS using Java 25.</li> <li>Should work without an installer.</li> <li>Should not require a remote server.</li> <li>Should not exceed 100 MB.</li> <li>Should remain usable at the required screen resolutions and display scales.</li> <li>Should not require an internet connection for core functionality.</li></ol> <h3 id="glossary">Glossary<a class="fa fa-anchor" href="#glossary" onclick="event.stopPropagation()"></a></h3> <ul><li><strong>TA</strong>: Teaching Assistant.</li> <li><strong>Tutorial Group</strong>: A tutorial class or group that a student belongs to.</li> <li><strong>Module/Subject</strong>: An academic course associated with a student, e.g. <code class="hljs inline no-lang">CS1231S</code>.</li> <li><strong>Student particulars</strong>: Information stored about a student, such as name, phone number, email, module/subject, and tutorial group.</li> <li><strong>CLI-style command</strong>: A text command entered by the user to perform an action in TutorTrack.</li> <li><strong>Mainstream OS</strong>: Windows, Linux, and macOS.</li> <li><strong>Displayed list</strong>: The list of students currently shown, which may be filtered by <code class="hljs inline no-lang">find</code>. Command indexes refer to this list.</li> <li><strong>Index range</strong>: An inclusive range of displayed indexes written as <code class="hljs inline no-lang">START_INDEX-END_INDEX</code>, for example <code class="hljs inline no-lang">3-5</code>.</li></ul> <hr> <h2 id="appendix-instructions-for-manual-testing"><strong>Appendix: Instructions for manual testing</strong><a class="fa fa-anchor" href="#appendix-instructions-for-manual-testing" onclick="event.stopPropagation()"></a></h2> <p>Given below are instructions to test the app manually.</p> <p>Unless a test says otherwise, run it in a new empty folder. This ensures TutorTrack starts with its six sample
+students. The application saves changes to <code class="hljs inline no-lang">data/tutortrack.json</code>, so simply closing and reopening it does not reset
+the sample data. Treat each test case as independent unless it explicitly gives a sequence of commands.</p> <div class="alert box-container seamless" style="" data-v-2c3d295c><!--Icon and vertical divider for seamless header box--><!----><div class="header-and-body" data-v-2c3d295c><!-- Header wrapper, not rendered if there is no header attribute --><!----><!-- Body wrapper --><div class="box-body-wrapper" data-v-2c3d295c><!-- icon on the left, not shown if there is a header --><div class="icon-wrapper text-info" style="" data-v-2c3d295c><!--[--><i class="fas fa-info" data-v-2c3d295c></i><!--]--></div><!-- Icon -- content divider for seamless boxes without the header attribute --><div class="alert-info vertical-divider" aria-hidden="true" data-v-2c3d295c></div><!-- Content wrapper --><div class="contents" style="" data-v-2c3d295c><!--[--><p><strong>Note:</strong> These instructions only provide a starting point for testers to work on;
+testers are expected to do more <em>exploratory</em> testing.</p><!--]--></div><!-- dismiss button on the right, not shown if there is a header --><!----></div></div></div> <h3 id="launch-and-shutdown">Launch and shutdown<a class="fa fa-anchor" href="#launch-and-shutdown" onclick="event.stopPropagation()"></a></h3> <ol><li><p>Initial launch</p> <ol><li><p>Download the JAR file and copy it into an empty folder.</p></li> <li><p>Double-click the JAR file, or open a terminal in that folder and run <code class="hljs inline no-lang">java -jar tutortrack.jar</code>.<br>
+Expected: The GUI opens with a set of sample students. The window size may not be optimal.</p></li></ol></li> <li><p>Saving window preferences</p> <ol><li><p>Resize the window to an optimal size. Move the window to a different location. Close the window.</p></li> <li><p>Relaunch the app by double-clicking the JAR file.<br>
+Expected: The most recent window size and location are retained.</p></li></ol></li></ol> <h3 id="deleting-students">Deleting students<a class="fa fa-anchor" href="#deleting-students" onclick="event.stopPropagation()"></a></h3> <p>Run each delete test independently against a restored copy of the six sample students. Successful deletion changes
+the displayed indexes, so do not reuse a previous test&#39;s modified data. Back up existing data before testing.</p> <ol><li><p>Deleting contacts while the full list is shown.</p> <ol><li><p>Prerequisites: List all persons using the <code class="hljs inline no-lang">list</code> command with all six sample students present.</p></li> <li><p>Test case: <code class="hljs inline no-lang">delete 1</code><br>
+Expected: The first student is deleted from the list. Feedback shows the deleted student&#39;s details.</p></li> <li><p>Test case: <code class="hljs inline no-lang">delete 1,3,5-6</code><br>
+Expected: The 1st, 3rd, 5th and 6th students from the original displayed list are deleted once each. The feedback message shows the deleted students&#39; details.</p></li> <li><p>Test case: <code class="hljs inline no-lang">delete 0</code><br>
+Expected: No student is deleted. Feedback is <code class="hljs inline no-lang">The student index provided is invalid.</code></p></li> <li><p>Test cases: <code class="hljs inline no-lang">delete -1</code>, <code class="hljs inline no-lang">delete +1</code>, <code class="hljs inline no-lang">delete 5-3</code>, and <code class="hljs inline no-lang">delete 2147483648</code><br>
+Expected: Each reports <code class="hljs inline no-lang">The student index provided is invalid.</code> No student is changed.</p></li> <li><p>Test cases: <code class="hljs inline no-lang">delete</code>, <code class="hljs inline no-lang">delete x</code>, <code class="hljs inline no-lang">delete 1,</code>, and <code class="hljs inline no-lang">delete 1, 3</code><br>
+Expected: Each reports <code class="hljs inline no-lang">Invalid command format!</code> followed by delete usage. No student is changed.</p></li> <li><p>Test case: <code class="hljs inline no-lang">delete 1,7</code><br>
+Expected: Feedback is <code class="hljs inline no-lang">The student index provided is invalid.</code> All six students, including student 1, remain.</p></li></ol></li> <li><p>Deleting from a filtered list</p> <ol><li><p>Prerequisites: Run <code class="hljs inline no-lang">find n/Alex</code> against the six sample students; only Alex Yeoh is displayed.</p></li> <li><p>Test case: <code class="hljs inline no-lang">delete 2</code><br>
+Expected: Feedback is <code class="hljs inline no-lang">The student index provided is invalid.</code> No student is deleted, even though the full student list contains more than one student.</p></li> <li><p>Test case: <code class="hljs inline no-lang">delete 1</code><br>
+Expected: Alex Yeoh is deleted. The list then shows all five remaining students.</p></li></ol></li> <li><p>Clearing optional fields</p> <ol><li><p>Prerequisites: Launch the application with the sample data and run <code class="hljs inline no-lang">list</code>.</p></li> <li><p>Test case: <code class="hljs inline no-lang">delete 1 p/ h/</code><br>
+Expected: The first student&#39;s phone number and Telegram handle are removed. The student is not deleted.</p></li> <li><p>Test case: <code class="hljs inline no-lang">delete 1 t/Missing</code><br>
+Expected: No student is changed. The status message states that the tag does not exist.</p></li> <li><p>Test case: <code class="hljs inline no-lang">delete 1,7 p/</code><br>
+Expected: Feedback is <code class="hljs inline no-lang">The student index provided is invalid.</code> Student 1&#39;s phone number is unchanged.</p></li> <li><p>Test case: <code class="hljs inline no-lang">find n/Alex</code>, followed by <code class="hljs inline no-lang">delete 1 p/</code><br>
+Expected: Alex remains displayed without a phone number. The name filter stays active.</p></li> <li><p>Test case: <code class="hljs inline no-lang">delete 1 t/ t/Missing</code><br>
+Expected: All tags on the first student are cleared; the nonexistent named tag is overridden.</p></li> <li><p>Test case: <code class="hljs inline no-lang">delete 1 t/ t/Invalid!</code><br>
+Expected: The tag-format error is shown. No tags are cleared.</p></li></ol></li></ol> <h3 id="navigating-command-history">Navigating command history<a class="fa fa-anchor" href="#navigating-command-history" onclick="event.stopPropagation()"></a></h3> <ol><li>Prerequisites: Start a new session and submit <code class="hljs inline no-lang">list</code>, then <code class="hljs inline no-lang">find n/Alex</code>.
+<ol><li><p>Type <code class="hljs inline no-lang">delete 1</code> without submitting, press Up twice, then Down twice.<br>
+Expected: The two submitted commands are recalled in order, then the unsubmitted draft <code class="hljs inline no-lang">delete 1</code> is restored. No student is deleted.</p></li> <li><p>Recall a command, edit its text, navigate away, then move down past the newest command.<br>
+Expected: The edited draft is restored; recalling entries does not replace it.</p></li> <li><p>Submit <code class="hljs inline no-lang">delete 0</code>, then press Up.<br>
+Expected: The index error appears, and the failed command can be recalled.</p></li> <li><p>Press Up beyond the oldest command or Down beyond the restored draft.<br>
+Expected: The input remains unchanged at the boundary.</p></li> <li><p>Close and reopen TutorTrack, then press Up in the empty command box.<br>
+Expected: No previous-session command is recalled.</p></li></ol></li></ol> <h3 id="adding-students">Adding students<a class="fa fa-anchor" href="#adding-students" onclick="event.stopPropagation()"></a></h3> <ol><li><p>Adding a student with all fields</p> <ol><li>Test case: <code class="hljs inline no-lang">add n/Alice Tan p/91234567 e/alice@example.com h/@alice_tan s/Mathematics g/Sec 3A t/Student</code><br>
+Expected: Alice is added. The phone is displayed as <code class="hljs inline no-lang">9123 4567</code>, and all supplied fields are shown.</li></ol></li> <li><p>Adding a student without optional fields</p> <ol><li>Test case: <code class="hljs inline no-lang">add n/Bob Lee e/bob@example.com s/Physics g/J1A</code><br>
+Expected: Bob is added without a phone number, Telegram handle, or tags; no empty contact labels are shown.</li></ol></li> <li><p>Adding a student whose name contains initials or a short abbreviation</p> <ol><li><p>Test case: <code class="hljs inline no-lang">add n/Aisyah Bte. Ahmad e/aisyah@example.com s/Mathematics g/T11</code><br>
+Expected: Aisyah is added with the name stored as <code class="hljs inline no-lang">Aisyah Bte. Ahmad</code>.</p></li> <li><p>Test case: Replace the name above with <code class="hljs inline no-lang">John..Tan</code>, <code class="hljs inline no-lang">.John</code>, or <code class="hljs inline no-lang">John.</code>.<br>
+Expected: No student is added. The status message shows the name constraints.</p></li></ol></li> <li><p>Adding a student whose name contains <code class="hljs inline no-lang">D/O</code> or <code class="hljs inline no-lang">S/O</code></p> <ol><li><p>Test case: <code class="hljs inline no-lang">add n/Ravi S/O Kumar e/ravi@example.com s/CS2103T g/T11</code><br>
+Expected: Ravi is added with the name <code class="hljs inline no-lang">Ravi S/O Kumar</code> and the subject <code class="hljs inline no-lang">CS2103T</code>.</p></li> <li><p>Test case: <code class="hljs inline no-lang">add n/Ravi Kumar e/ravi2@example.com s/CS2103T g/T11 S/O</code><br>
+Expected: No student is added. The status message shows the <code class="hljs inline no-lang">add</code> command usage because <code class="hljs inline no-lang">S/O</code> is not part of
+the name.</p></li> <li><p>Test case: <code class="hljs inline no-lang">add n/Ali s/o Abu e/ali@example.com s/CS2103T g/T11</code><br>
+Expected: No student is added. The status message asks for <code class="hljs inline no-lang">D/O</code> or <code class="hljs inline no-lang">S/O</code> in uppercase.</p></li> <li><p>Test case: <code class="hljs inline no-lang">add s/O Level n/Ali Abu e/ali@example.com g/T11</code><br>
+Expected: Ali is added with the subject <code class="hljs inline no-lang">O Level</code>. Typing <code class="hljs inline no-lang">s/O Level</code> directly after the name is rejected
+with the same uppercase message.</p></li></ol></li> <li><p>Normalizing subjects and groups, and validating Telegram handles</p> <ol><li><p>Test case: <code class="hljs inline no-lang">add n/Siti Rahman e/siti@example.com s/CS   2103T g/Sec  3A</code>, typing several spaces inside the
+subject and the group.<br>
+Expected: Siti is added with the subject <code class="hljs inline no-lang">CS 2103T</code> and the group <code class="hljs inline no-lang">Sec 3A</code>. <code class="hljs inline no-lang">find s/cs 2103t</code> then shows her.</p></li> <li><p>Test case: <code class="hljs inline no-lang">add n/Siti Lim e/sitilim@example.com h/siti_lim s/CS2103T g/T11</code><br>
+Expected: No student is added. The status message shows the Telegram handle constraints. Using <code class="hljs inline no-lang">h/@_siti</code>
+gives the same message.</p></li></ol></li> <li><p>Rejecting values longer than their maximum length</p> <ol><li>Test case: <code class="hljs inline no-lang">add n/Dan Ong e/dan@example.com s/CS2103T g/T11 t/</code> followed by 51 letters, for example
+<code class="hljs inline no-lang">aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</code>.<br>
+Expected: No student is added. The status message states that tags can have at most 50 characters.</li></ol></li> <li><p>Rejecting malformed input without changing data</p> <ol><li><p>Test case: <code class="hljs inline no-lang">add n/Charlie Lim e/charlie@example.com s/Mathematics g/T11 x/typo</code><br>
+Expected: No student is added. The status message shows the <code class="hljs inline no-lang">add</code> command usage because <code class="hljs inline no-lang">x/</code> is unknown.</p></li> <li><p>Test case: <code class="hljs inline no-lang">add n/Charlie Lim e/charlie@example.com s/Mathematics</code><br>
+Expected: No student is added. The status message shows the <code class="hljs inline no-lang">add</code> command usage because <code class="hljs inline no-lang">g/</code> is missing.</p></li> <li><p>Test case: <code class="hljs inline no-lang">add n/Charlie Lim e/charlie@example.com s/Mathematics s/Physics g/T11</code><br>
+Expected: No student is added. The status message states that multiple values were specified for <code class="hljs inline no-lang">s/</code>.</p></li> <li><p>Test case: After adding Alice Tan above, enter <code class="hljs inline no-lang">add n/ALICE TAN e/alice2@example.com s/Physics g/T12</code>.<br>
+Expected: No student is added. The status message reports that the student already exists, because names are
+compared ignoring case.</p></li></ol></li></ol> <h3 id="editing-students">Editing students<a class="fa fa-anchor" href="#editing-students" onclick="event.stopPropagation()"></a></h3> <ol><li><p>Editing one student</p> <ol><li><p>Prerequisites: Launch the application with the sample data and run <code class="hljs inline no-lang">list</code>.</p></li> <li><p>Test case: <code class="hljs inline no-lang">edit 2 n/Betsy Crower t/friends,Graduate</code><br>
+Expected: The 2nd student is renamed to <code class="hljs inline no-lang">Betsy Crower</code>, and the tag <code class="hljs inline no-lang">friends</code> is renamed to <code class="hljs inline no-lang">Graduate</code>. Other
+tags are unchanged.</p></li> <li><p>Test case: <code class="hljs inline no-lang">edit 1 t/Missing,Graduate</code><br>
+Expected: No student is changed. The status message states that the tag does not exist.</p></li> <li><p>Test case: <code class="hljs inline no-lang">edit 1 p/</code><br>
+Expected: No student is changed. The status message states that edit values cannot be empty.</p></li> <li><p>Test case: <code class="hljs inline no-lang">edit 1 n/Ravi s/o Kumar</code><br>
+Expected: No student is changed, including the subject. The status message asks for <code class="hljs inline no-lang">D/O</code> or <code class="hljs inline no-lang">S/O</code> in
+uppercase.</p></li></ol></li> <li><p>Editing several students</p> <ol><li><p>Test case: <code class="hljs inline no-lang">edit 1-3 g/T11 t/Online</code><br>
+Expected: The first three students are moved to group <code class="hljs inline no-lang">T11</code> and gain the tag <code class="hljs inline no-lang">Online</code>.</p></li> <li><p>Prerequisites: Run <code class="hljs inline no-lang">list</code>. Among the first three students, the first has the tag <code class="hljs inline no-lang">friends</code> and at least one
+other does not, as with the sample students.</p></li> <li><p>Test case: <code class="hljs inline no-lang">edit 1-3 g/T12 t/friends,Graduate</code><br>
+Expected: No student is changed, including the first student&#39;s group and tags. The status message states
+that the tag does not exist.</p></li> <li><p>Test case: <code class="hljs inline no-lang">edit 1-2 p/91234567</code><br>
+Expected: No student is changed. The status message states that only subject, group, and tags can be edited
+for multiple students.</p></li></ol></li></ol> <h3 id="finding-students">Finding students<a class="fa fa-anchor" href="#finding-students" onclick="event.stopPropagation()"></a></h3> <ol><li><p>Finding students with keywords and phrases</p> <ol><li><p>Prerequisites: Launch the application with the sample students.</p></li> <li><p>Test case: <code class="hljs inline no-lang">find n/&quot;Alex Yeoh&quot;,Li</code><br>
+Expected: <code class="hljs inline no-lang">Alex Yeoh</code> and <code class="hljs inline no-lang">David Li</code> are displayed because each matches at least one search term.</p></li> <li><p>Test case: <code class="hljs inline no-lang">find n/&quot;Alex Yeoh&quot;,&quot;David Li&quot;</code><br>
+Expected: <code class="hljs inline no-lang">Alex Yeoh</code> and <code class="hljs inline no-lang">David Li</code> are displayed.</p></li> <li><p>Incorrect command: <code class="hljs inline no-lang">find n/Alex,&quot;Yeoh</code><br>
+Expected: The displayed list remains unchanged. The status message shows the <code class="hljs inline no-lang">find</code> command usage.</p></li> <li><p>Incorrect command: <code class="hljs inline no-lang">find n/&quot; &quot;</code><br>
+Expected: The displayed list remains unchanged. The status message shows the <code class="hljs inline no-lang">find</code> command usage.</p></li></ol></li> <li><p>Finding students using other criteria</p> <ol><li><p>Prerequisites: Launch the application with the sample students.</p></li> <li><p>Test case: <code class="hljs inline no-lang">find h/@alex_yeoh</code><br>
+Expected: Only <code class="hljs inline no-lang">Alex Yeoh</code> is displayed because Telegram handles are matched exactly, ignoring case.</p></li> <li><p>Test case: <code class="hljs inline no-lang">find s/General g/General t/friends</code><br>
+Expected: <code class="hljs inline no-lang">Alex Yeoh</code> and <code class="hljs inline no-lang">Bernice Yu</code> are displayed because both students match every supplied criterion.</p></li> <li><p>Test case: <code class="hljs inline no-lang">find t/friends&amp;colleagues</code><br>
+Expected: Only <code class="hljs inline no-lang">Bernice Yu</code> is displayed because she has both tags.</p></li> <li><p>Test case: <code class="hljs inline no-lang">find t/friends,colleagues</code><br>
+Expected: Students having either the <code class="hljs inline no-lang">friends</code> or <code class="hljs inline no-lang">colleagues</code> tag are displayed.</p></li> <li><p>Incorrect command: <code class="hljs inline no-lang">find t/friends,colleagues&amp;family</code><br>
+Expected: The displayed list remains unchanged. The status message shows the <code class="hljs inline no-lang">find</code> command usage because
+comma and ampersand separators cannot be mixed.</p></li> <li><p>Incorrect command: <code class="hljs inline no-lang">find t/friends t/colleagues</code><br>
+Expected: The displayed list remains unchanged. The status message shows the <code class="hljs inline no-lang">find</code> command usage because a
+criterion prefix cannot be repeated.</p></li></ol></li></ol> <h3 id="clearing-all-students">Clearing all students<a class="fa fa-anchor" href="#clearing-all-students" onclick="event.stopPropagation()"></a></h3> <ol><li>Clearing with confirmation
+<ol><li><p>Prerequisites: Launch the application with the sample students and run <code class="hljs inline no-lang">list</code>.</p></li> <li><p>Test case: <code class="hljs inline no-lang">clear</code><br>
+Expected: No student is deleted. The status message asks you to enter <code class="hljs inline no-lang">clear confirm</code>.</p></li> <li><p>Test case: <code class="hljs inline no-lang">clear confirm</code><br>
+Expected: No student is deleted. The status message states that no clear confirmation is pending.</p></li> <li><p>Test case: <code class="hljs inline no-lang">clear</code>, then <code class="hljs inline no-lang">list</code>, then <code class="hljs inline no-lang">clear confirm</code><br>
+Expected: No student is deleted. The status message states that no clear confirmation is pending.</p></li> <li><p>Test case: <code class="hljs inline no-lang">clear</code>, then <code class="hljs inline no-lang">clear confirm</code><br>
+Expected: All students are deleted.</p></li> <li><p>Test case: <code class="hljs inline no-lang">clear</code>, then enter <code class="hljs inline no-lang">clear now</code>, then <code class="hljs inline no-lang">clear confirm</code><br>
+Expected: No student is deleted. <code class="hljs inline no-lang">clear now</code> shows the command format error, and <code class="hljs inline no-lang">clear confirm</code> states that no
+clear confirmation is pending.</p></li> <li><p>Test case: <code class="hljs inline no-lang">clear</code>, then <code class="hljs inline no-lang">clear confirm</code>, close TutorTrack, and relaunch it.<br>
+Expected: The displayed student list remains empty, confirming that the cleared data was saved.</p></li></ol></li></ol> <h3 id="ui-interactions">UI interactions<a class="fa fa-anchor" href="#ui-interactions" onclick="event.stopPropagation()"></a></h3> <ol><li><p>Opening and closing help</p> <ol><li><p>Test case: Enter <code class="hljs inline no-lang">help</code>.<br>
+Expected: The Help window opens with a command summary and a User Guide URL.</p></li> <li><p>Test case: With the main window focused, press <kbd>F1</kbd>, then choose <strong>Help</strong> &gt; <strong>Help</strong> from the menu bar.<br>
+Expected: Both actions open the Help window, or bring it to the front if it is already open.</p></li> <li><p>Test case: In the Help window, press <kbd>Enter</kbd> or click <strong>Copy URL</strong>, then paste into a text editor.<br>
+Expected: The pasted text is the User Guide URL.</p></li> <li><p>Test case: Close the Help window and type a command without clicking the command box first.<br>
+Expected: The command box has focus and receives the typed command.</p></li></ol></li> <li><p>Navigating command history</p> <ol><li><p>Test case: Enter <code class="hljs inline no-lang">list</code>, then <code class="hljs inline no-lang">help</code>, then click the command box and press the Up Arrow twice.<br>
+Expected: The command box first shows <code class="hljs inline no-lang">help</code>, then <code class="hljs inline no-lang">list</code>.</p></li> <li><p>Test case: Type <code class="hljs inline no-lang">find n/Alex</code>, press the Up Arrow, then press the Down Arrow until past the newest command.<br>
+Expected: The command box restores <code class="hljs inline no-lang">find n/Alex</code> as the unsubmitted draft.</p></li></ol></li> <li><p>Copying displayed student details</p> <ol><li>Test case: Click the copy icon beside a displayed student&#39;s email address, Telegram handle, or phone number, then
+paste into a text editor.<br>
+Expected: The pasted text matches the selected detail.</li></ol></li></ol> <h3 id="saving-data">Saving data<a class="fa fa-anchor" href="#saving-data" onclick="event.stopPropagation()"></a></h3> <ol><li>Dealing with missing/corrupted data files
+<ol><li><p>Prerequisites: Launch TutorTrack and run <code class="hljs inline no-lang">list</code> so that <code class="hljs inline no-lang">data/tutortrack.json</code> is created, close it, and keep
+a copy of the file. Launching and closing TutorTrack without running a command does not create the file.</p></li> <li><p>Test case: In <code class="hljs inline no-lang">data/tutortrack.json</code>, change one student&#39;s <code class="hljs inline no-lang">&quot;email&quot;</code> value to <code class="hljs inline no-lang">&quot;invalid&quot;</code>, save the file,
+and relaunch TutorTrack.<br>
+Expected: An error dialog names the data file and the reason. TutorTrack closes after the dialog is dismissed,
+and the data file is unchanged.</p></li> <li><p>Test case: In <code class="hljs inline no-lang">data/tutortrack.json</code>, replace the contents with <code class="hljs inline no-lang">{ &quot;persons&quot; : [ null ] }</code> and relaunch
+TutorTrack.<br>
+Expected: An error dialog names the data file. TutorTrack closes after the dialog is dismissed, and the data
+file is unchanged.</p></li> <li><p>Test case: Restore the copy. In <code class="hljs inline no-lang">data/tutortrack.json</code>, change one student&#39;s <code class="hljs inline no-lang">&quot;address&quot;</code> value, which stores
+the Telegram handle, to <code class="hljs inline no-lang">&quot;Blk 123 Clementi&quot;</code> and relaunch TutorTrack.<br>
+Expected: All students load, and that student has no Telegram handle. The data file is unchanged until a command,
+such as <code class="hljs inline no-lang">list</code>, runs successfully.</p></li> <li><p>Test case: Move <code class="hljs inline no-lang">data/tutortrack.json</code> to another folder and relaunch TutorTrack.<br>
+Expected: TutorTrack starts with sample students. A new <code class="hljs inline no-lang">data/tutortrack.json</code> is created only after a command,
+such as <code class="hljs inline no-lang">list</code>, runs successfully.</p></li> <li><p>Test case: Close TutorTrack, rename <code class="hljs inline no-lang">data/tutortrack.json</code> to <code class="hljs inline no-lang">data/addressbook.json</code>, and relaunch TutorTrack.<br>
+Expected: The same students are shown. A new <code class="hljs inline no-lang">data/tutortrack.json</code> is created and <code class="hljs inline no-lang">data/addressbook.json</code> is kept.</p></li></ol></li></ol></div> <nav id="page-nav" data-v-6b1b63d2><!--[--><div class="nav-component slim-scroll"><nav id="mb-page-nav" class="nav nav-pills flex-column my-0 small no-flex-wrap" data-v-6b1b63d2><!--[--><a class="nav-link py-1" href="#tutortrack-developer-guide">TutorTrack Developer Guide‎</a> <nav class="nav nav-pills flex-column my-0 nested no-flex-wrap"><a class="nav-link py-1" href="#acknowledgements">Acknowledgements‎</a> <a class="nav-link py-1" href="#setting-up-getting-started">Setting up, getting started‎</a> <a class="nav-link py-1" href="#design">Design‎</a> <nav class="nav nav-pills flex-column my-0 nested no-flex-wrap"><a class="nav-link py-1" href="#architecture">Architecture‎</a> <a class="nav-link py-1" href="#ui-component">UI component‎</a> <a class="nav-link py-1" href="#logic-component">Logic component‎</a> <a class="nav-link py-1" href="#model-component">Model component‎</a> <a class="nav-link py-1" href="#storage-component">Storage component‎</a> <a class="nav-link py-1" href="#common-classes">Common classes‎</a></nav> <a class="nav-link py-1" href="#implementation">Implementation‎</a> <nav class="nav nav-pills flex-column my-0 nested no-flex-wrap"><a class="nav-link py-1" href="#delete-command">Delete command‎</a> <a class="nav-link py-1" href="#edit-command">Edit command‎</a> <a class="nav-link py-1" href="#find-command">Find command‎</a> <a class="nav-link py-1" href="#clear-confirmation">Clear confirmation‎</a></nav> <a class="nav-link py-1" href="#documentation-logging-testing-dev-ops">Documentation, logging, testing, dev-ops‎</a> <a class="nav-link py-1" href="#appendix-requirements">Appendix: Requirements‎</a> <nav class="nav nav-pills flex-column my-0 nested no-flex-wrap"><a class="nav-link py-1" href="#product-scope">Product scope‎</a> <a class="nav-link py-1" href="#user-stories">User stories‎</a> <a class="nav-link py-1" href="#use-cases">Use cases‎</a> <a class="nav-link py-1" href="#non-functional-requirements">Non-Functional Requirements‎</a> <a class="nav-link py-1" href="#glossary">Glossary‎</a></nav> <a class="nav-link py-1" href="#appendix-instructions-for-manual-testing">Appendix: Instructions for manual testing‎</a> <nav class="nav nav-pills flex-column my-0 nested no-flex-wrap"><a class="nav-link py-1" href="#launch-and-shutdown">Launch and shutdown‎</a> <a class="nav-link py-1" href="#deleting-students">Deleting students‎</a> <a class="nav-link py-1" href="#navigating-command-history">Navigating command history‎</a> <a class="nav-link py-1" href="#adding-students">Adding students‎</a> <a class="nav-link py-1" href="#editing-students">Editing students‎</a> <a class="nav-link py-1" href="#finding-students">Finding students‎</a> <a class="nav-link py-1" href="#clearing-all-students">Clearing all students‎</a> <a class="nav-link py-1" href="#ui-interactions">UI interactions‎</a> <a class="nav-link py-1" href="#saving-data">Saving data‎</a></nav></nav><!--]--><!--v-if--></nav></div><!--]--><!--v-if--></nav> <div class="scroll-top-button fa-lg d-print-none" style="display:none;bottom:2%;right:2%;position:fixed;" aria-hidden="true"><!--[--><i class="fas fa-arrow-circle-up"></i><!--]--></div></div> <footer><div class="text-center"><small>[<span><strong>Powered by</strong></span> <img src="https://markbind.org/favicon.ico" width="30"> <a href="https://markbind.org/">MarkBind 7.2.1</a>, generated on Tue, 3 Nov 2026, 0:53:25 GMT+8]</small></div></footer><!--]--></div>
 </body><script src="/tp/markbind/js/bootstrap-utility.min.js"></script>
 <script src="/tp/markbind/js/polyfill.min.js"></script>
 <script src="/tp/markbind/js/vue.global.prod.min.js"></script>
