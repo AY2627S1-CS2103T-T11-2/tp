@@ -1,0 +1,39 @@
+@startuml
+!include style.puml
+skinparam ArrowFontStyle plain
+hide footbox
+
+actor User USER_COLOR
+participant "CommandBox" as Box UI_COLOR
+participant "CommandHistory" as History UI_COLOR
+participant "MainWindow" as Window UI_COLOR
+
+== Submit ==
+User -> Box : press Enter
+opt input is not empty
+    Box -> History : add(commandText)
+    Box -> Window : executeCommand(commandText)
+    alt command succeeds
+        Window --> Box : CommandResult
+        Box -> Box : clear input
+    else command fails
+        Window --> Box : ParseException or CommandException
+        Box -> Box : retain input and apply error style
+    end
+end
+
+== Recall ==
+User -> Box : press Up or Down
+Box -> History : getPrevious() or getNext()
+History --> Box : Optional text
+opt text is present
+    Box -> Box : displayHistoryEntry(text)
+end
+
+note over Box, History
+    User edits update the saved draft.
+    Displaying recalled entries does not overwrite it.
+    Down event past the newest entry restores the draft.
+    History lasts for the current session only.
+end note
+@enduml
