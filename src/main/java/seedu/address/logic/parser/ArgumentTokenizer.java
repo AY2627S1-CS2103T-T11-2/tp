@@ -38,8 +38,8 @@ public class ArgumentTokenizer {
     }
 
     /**
-     * Tokenizes arguments while ignoring prefix-like text enclosed in double quotation marks.
-     * This is used by commands that support quoted argument values.
+     * Tokenizes arguments while ignoring prefix-like text enclosed in quoted name phrases.
+     * Quotes in other fields are literal characters and do not hide subsequent prefixes.
      */
     public static ArgumentMultimap tokenizeIgnoringQuotedPrefixes(String argsString, Prefix... prefixes) {
         List<PrefixPosition> positions = findAllPrefixPositions(argsString, true, prefixes);
@@ -61,7 +61,7 @@ public class ArgumentTokenizer {
         Matcher matcher = PARAMETER_PREFIX.matcher(argsString);
         Prefix activePrefix = null;
         while (matcher.find()) {
-            if (ignoreQuotedPrefixes && isInsideDoubleQuotes(argsString, matcher.start())) {
+            if (ignoreQuotedPrefixes && isInsideNamePhrase(argsString, matcher.start())) {
                 continue;
             }
             Prefix matchedPrefix = new Prefix(matcher.group());
@@ -75,7 +75,7 @@ public class ArgumentTokenizer {
     }
 
     /**
-     * Returns whether an unknown parameter-like token occurs outside double quotation marks.
+     * Returns whether an unknown parameter-like token occurs outside quoted name phrases.
      */
     public static boolean containsUnknownPrefixIgnoringQuotedPrefixes(String argsString, Prefix... prefixes) {
         return containsUnknownPrefix(argsString, true, prefixes);
@@ -165,7 +165,7 @@ public class ArgumentTokenizer {
         int prefixIndex = argsString.indexOf(" " + prefix, fromIndex);
         while (prefixIndex != -1) {
             int prefixStart = prefixIndex + 1;
-            if (!ignoreQuotedPrefixes || !isInsideDoubleQuotes(argsString, prefixStart)) {
+            if (!ignoreQuotedPrefixes || !isInsideNamePhrase(argsString, prefixStart)) {
                 return prefixStart;
             }
             prefixIndex = argsString.indexOf(" " + prefix, prefixStart);
@@ -173,11 +173,24 @@ public class ArgumentTokenizer {
         return -1;
     }
 
-    private static boolean isInsideDoubleQuotes(String text, int position) {
+    /**
+     * Returns whether the position lies inside a quoted phrase belonging to n/.
+     * Other fields, including groups containing literal quotes, cannot open a phrase.
+     */
+    private static boolean isInsideNamePhrase(String text, int position) {
         boolean insideQuotes = false;
+        Prefix activePrefix = null;
+        Matcher matcher = PARAMETER_PREFIX.matcher(text);
         for (int i = 0; i < position; i++) {
-            if (text.charAt(i) == '"') {
+            if (PREFIX_NAME.equals(activePrefix) && text.charAt(i) == '"') {
                 insideQuotes = !insideQuotes;
+            }
+            if (insideQuotes || (i > 0 && !Character.isWhitespace(text.charAt(i - 1)))) {
+                continue;
+            }
+            matcher.region(i, text.length());
+            if (matcher.lookingAt() && !isNameRelationshipQualifier(text, matcher, activePrefix)) {
+                activePrefix = new Prefix(matcher.group());
             }
         }
         return insideQuotes;
